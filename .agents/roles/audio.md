@@ -1,4 +1,4 @@
-# bible150-audio
+# chronos-bible-audio
 
 Own listening. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `src/audio/`, `data/audio/`, `scripts/*audio*`, `hosting/`, `docs/audio.md`.
 

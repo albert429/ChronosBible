@@ -1,4 +1,4 @@
-# bible150-progress-storage
+# chronos-bible-progress-storage
 
 Own progress, profiles, backups, and streak logic. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `src/plan/` (including `src/plan/streak.ts`), `src/lib/`.
 

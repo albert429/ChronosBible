@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Bible150 is a static React/TypeScript Arabic Bible reader built with Vite.
+chronosBible is a static React/TypeScript Arabic Bible reader built with Vite.
 `src/reader/` renders Scripture; `src/plan/` manages schedules, profiles, and
 backups; `src/navigation/` holds the toolbar and sheets. Audio, study, and
 optional AI use `src/audio/`, `src/study/`, and `src/ai/`. Shared helpers go in

@@ -1,4 +1,4 @@
-# bible150-product
+# chronos-bible-product
 
 Guard what the reader is and promises. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `docs/product.md`, `README.md`, `docs/plans/`.
 

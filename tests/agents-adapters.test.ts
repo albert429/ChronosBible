@@ -25,8 +25,8 @@ type Role = {
   skills: string[];
 };
 
-const SKILL_A = "bible150-alpha-skill";
-const SKILL_B = "bible150-beta-skill";
+const SKILL_A = "chronos-bible-alpha-skill";
+const SKILL_B = "chronos-bible-beta-skill";
 
 function write(root: string, rel: string, text: string) {
   const file = join(root, rel);
@@ -41,7 +41,7 @@ function read(root: string, rel: string) {
 function role(id: string, skills: string[]): Role {
   return {
     id,
-    name: `bible150-${id}`,
+    name: `chronos-bible-${id}`,
     description: `The ${id} role: tidy "quoted" work`,
     instructions: `.agents/roles/${id}.md`,
     recommendedPaths: ["src/", "docs/audio.md"],
@@ -153,10 +153,10 @@ test("sync generates Claude agents, Claude skill copies and Codex agents", async
     assert.equal(result.skills, 2);
     assert.equal(result.files, 2 * 2 + 4);
 
-    const claude = read(root, ".claude/agents/bible150-alpha.md");
+    const claude = read(root, ".claude/agents/chronos-bible-alpha.md");
     assert.match(
       claude,
-      /^---\nname: bible150-alpha\ndescription: "The alpha role: tidy \\"quoted\\" work"\n---\n/,
+      /^---\nname: chronos-bible-alpha\ndescription: "The alpha role: tidy \\"quoted\\" work"\n---\n/,
     );
     assert.doesNotMatch(
       claude.split("\n---\n")[0],
@@ -173,21 +173,24 @@ test("sync generates Claude agents, Claude skill copies and Codex agents", async
       /Edit only the files and directories your assignment lists/,
     );
 
-    const toml = read(root, ".codex/agents/bible150-beta.toml");
+    const toml = read(root, ".codex/agents/chronos-bible-beta.toml");
     assert.match(toml, /^# generated: scripts\/agents\/adapters\.mjs/);
-    assert.match(toml, /^name = "bible150-beta"$/m);
+    assert.match(toml, /^name = "chronos-bible-beta"$/m);
     assert.match(
       toml,
       /^description = "The beta role: tidy \\"quoted\\" work"$/m,
     );
-    assert.match(toml, /^developer_instructions = """\n# bible150-beta\n/m);
+    assert.match(
+      toml,
+      /^developer_instructions = """\n# chronos-bible-beta\n/m,
+    );
     assert.match(toml, /a \\\\ backslash/);
     assert.doesNotMatch(toml, /^model\s*=/m);
 
     const skill = read(root, `.claude/skills/${SKILL_A}/SKILL.md`);
     assert.match(
       skill,
-      /^---\nname: bible150-alpha-skill\ndescription: .*\n---\n\n<!-- generated: .*files: SKILL\.md references\/guide\.md/,
+      /^---\nname: chronos-bible-alpha-skill\ndescription: .*\n---\n\n<!-- generated: .*files: SKILL\.md references\/guide\.md/,
     );
     assert.equal(
       read(root, `.claude/skills/${SKILL_A}/references/guide.md`),
@@ -221,16 +224,23 @@ test("check reports missing generated files and changed canonical sources", asyn
   await withFixture(async (root) => {
     await assert.rejects(
       () => checkConventions(root),
-      /bible150-alpha\.md: missing generated file/,
+      /chronos-bible-alpha\.md: missing generated file/,
     );
     await syncAdapters(root);
-    write(root, ".agents/roles/alpha.md", "# bible150-alpha\n\nChanged.\n");
+    write(
+      root,
+      ".agents/roles/alpha.md",
+      "# chronos-bible-alpha\n\nChanged.\n",
+    );
     await assert.rejects(
       () => checkConventions(root),
-      /bible150-alpha\.md: differs from the canonical source/,
+      /chronos-bible-alpha\.md: differs from the canonical source/,
     );
     await syncAdapters(root);
-    assert.match(read(root, ".claude/agents/bible150-alpha.md"), /Changed\./);
+    assert.match(
+      read(root, ".claude/agents/chronos-bible-alpha.md"),
+      /Changed\./,
+    );
     await checkConventions(root);
 
     write(root, `.agents/skills/${SKILL_A}/references/guide.md`, "# New\n");
@@ -249,11 +259,11 @@ test("check reports missing generated files and changed canonical sources", asyn
 test("check flags hand-edited and extra generated outputs", async () => {
   await withFixture(async (root) => {
     await syncAdapters(root);
-    const file = ".codex/agents/bible150-beta.toml";
+    const file = ".codex/agents/chronos-bible-beta.toml";
     write(root, file, read(root, file) + 'model = "x"\n');
     await assert.rejects(
       () => checkConventions(root),
-      /bible150-beta\.toml: differs/,
+      /chronos-bible-beta\.toml: differs/,
     );
     await syncAdapters(root);
     write(root, `.claude/skills/${SKILL_A}/notes.md`, "mine\n");
@@ -269,22 +279,22 @@ test("check flags hand-edited and extra generated outputs", async () => {
   });
 });
 
-test("sync refuses foreign files, even with the bible150 prefix, and writes nothing", async () => {
+test("sync refuses foreign files, even with the chronos-bible prefix, and writes nothing", async () => {
   await withFixture(async (root) => {
-    write(root, ".claude/agents/bible150-beta.md", "my own agent\n");
+    write(root, ".claude/agents/chronos-bible-beta.md", "my own agent\n");
     write(root, ".claude/agents/promo-video.md", "keep me\n");
     write(root, ".codex/agents/promo-video.toml", 'name = "promo-video"\n');
     write(root, ".codex/config.toml", "# user config\n");
     await assert.rejects(
       () => syncAdapters(root),
-      /bible150-beta\.md exists but is not a generated file/,
+      /chronos-bible-beta\.md exists but is not a generated file/,
     );
     assert.equal(
-      read(root, ".claude/agents/bible150-beta.md"),
+      read(root, ".claude/agents/chronos-bible-beta.md"),
       "my own agent\n",
     );
     assert.equal(
-      existsSync(join(root, ".claude/agents/bible150-alpha.md")),
+      existsSync(join(root, ".claude/agents/chronos-bible-alpha.md")),
       false,
     );
     assert.equal(existsSync(join(root, ".claude/skills")), false);
@@ -305,22 +315,29 @@ test("sync refuses a foreign skill directory but overwrites a marked one", async
     await syncAdapters(root);
     write(
       root,
-      ".claude/agents/bible150-alpha.md",
-      read(root, ".claude/agents/bible150-alpha.md").replace(
+      ".claude/agents/chronos-bible-alpha.md",
+      read(root, ".claude/agents/chronos-bible-alpha.md").replace(
         "Own alpha",
         "Edited alpha",
       ),
     );
     const result = await syncAdapters(root);
-    assert.deepEqual(result.changed, [".claude/agents/bible150-alpha.md"]);
-    assert.match(read(root, ".claude/agents/bible150-alpha.md"), /Own alpha/);
+    assert.deepEqual(result.changed, [".claude/agents/chronos-bible-alpha.md"]);
+    assert.match(
+      read(root, ".claude/agents/chronos-bible-alpha.md"),
+      /Own alpha/,
+    );
   });
 });
 
 test("removed roles and resources delete only generated outputs", async () => {
   await withFixture(async (root) => {
     await syncAdapters(root);
-    write(root, ".claude/agents/bible150-legacy.md", "foreign legacy agent\n");
+    write(
+      root,
+      ".claude/agents/chronos-bible-legacy.md",
+      "foreign legacy agent\n",
+    );
     write(root, ".claude/agents/other.md", "other\n");
     write(
       root,
@@ -340,13 +357,13 @@ test("removed roles and resources delete only generated outputs", async () => {
       skillText(SKILL_A).replace(/\n\nSee .*\./, ""),
     );
     const result = await syncAdapters(root);
-    assert.ok(result.changed.includes(".claude/agents/bible150-beta.md"));
+    assert.ok(result.changed.includes(".claude/agents/chronos-bible-beta.md"));
     assert.equal(
-      existsSync(join(root, ".claude/agents/bible150-beta.md")),
+      existsSync(join(root, ".claude/agents/chronos-bible-beta.md")),
       false,
     );
     assert.equal(
-      existsSync(join(root, ".codex/agents/bible150-beta.toml")),
+      existsSync(join(root, ".codex/agents/chronos-bible-beta.toml")),
       false,
     );
     assert.equal(
@@ -354,7 +371,7 @@ test("removed roles and resources delete only generated outputs", async () => {
       false,
     );
     assert.equal(
-      read(root, ".claude/agents/bible150-legacy.md"),
+      read(root, ".claude/agents/chronos-bible-legacy.md"),
       "foreign legacy agent\n",
     );
     assert.equal(read(root, ".claude/agents/other.md"), "other\n");
@@ -373,7 +390,7 @@ test("a removed skill's generated directory is deleted but foreign files stay", 
     rmSync(join(root, `.agents/skills/${SKILL_B}`), { recursive: true });
     await assert.rejects(
       () => checkConventions(root),
-      /bible150-beta-skill: generated skill with no canonical source|bible150-beta/,
+      /chronos-bible-beta-skill: generated skill with no canonical source|chronos-bible-beta/,
     );
     await syncAdapters(root);
     assert.equal(existsSync(join(root, `.claude/skills/${SKILL_B}`)), false);
@@ -394,11 +411,14 @@ test("invalid catalog metadata is reported with every problem", async () => {
       () => "",
       (error: Error) => error.message,
     );
-    assert.match(message, /name must be "bible150-alpha"/);
+    assert.match(message, /name must be "chronos-bible-alpha"/);
     assert.match(message, /instructions must be "\.agents\/roles\/beta\.md"/);
     assert.match(message, /recommendedPaths must be/);
     assert.match(message, /id must be lowercase/);
-    assert.match(message, /skills must be an array of bible150-\* skill names/);
+    assert.match(
+      message,
+      /skills must be an array of chronos-bible-\* skill names/,
+    );
     assert.match(message, /description must be one non-empty line/);
     assert.equal(existsSync(join(root, ".claude")), false);
   }, bad);
@@ -411,12 +431,12 @@ test("catalog skills must exist and every skill must be referenced", async () =>
       ".agents/catalog.json",
       JSON.stringify({
         version: 1,
-        roles: [role("alpha", ["bible150-ghost"])],
+        roles: [role("alpha", ["chronos-bible-ghost"])],
       }),
     );
     await assert.rejects(
       () => checkConventions(root),
-      /references missing skill "bible150-ghost"/,
+      /references missing skill "chronos-bible-ghost"/,
     );
     await assert.rejects(
       () => checkConventions(root),
@@ -551,7 +571,7 @@ test("a symlinked generated target is never written through", async () => {
       writeFileSync(join(outside, "target.md"), "untouched\n");
       symlinkSync(
         join(outside, "target.md"),
-        join(root, ".claude/agents/bible150-alpha.md"),
+        join(root, ".claude/agents/chronos-bible-alpha.md"),
       );
       await assert.rejects(() => syncAdapters(root), /refusing symlink/);
       assert.equal(
@@ -640,7 +660,7 @@ test("a planted symlink at the old temp name is never written through", async ()
       const external = join(outside, "victim.txt");
       writeFileSync(external, "untouched\n");
       mkdirSync(join(root, ".claude/agents"), { recursive: true });
-      for (const name of ["bible150-alpha.md", "bible150-beta.md"]) {
+      for (const name of ["chronos-bible-alpha.md", "chronos-bible-beta.md"]) {
         symlinkSync(
           external,
           join(root, ".claude/agents", `${name}.${process.pid}.tmp`),
@@ -648,7 +668,10 @@ test("a planted symlink at the old temp name is never written through", async ()
       }
       await syncAdapters(root);
       assert.equal(readFileSync(external, "utf8"), "untouched\n");
-      assert.match(read(root, ".claude/agents/bible150-alpha.md"), /Own alpha/);
+      assert.match(
+        read(root, ".claude/agents/chronos-bible-alpha.md"),
+        /Own alpha/,
+      );
       const leftovers = readdirSync(join(root, ".claude/agents")).filter(
         (name) => name.endsWith(".tmp") && !name.includes(`${process.pid}`),
       );
@@ -697,5 +720,65 @@ test("session metadata, dependencies, and profile models are validated", async (
     assert.match(message, /dependencies must be an array of task ids/);
     assert.match(message, /writablePaths must be/);
     assert.match(message, /models values must be strings/);
+  });
+});
+
+test("upgrading removes legacy generated bible150 files and keeps foreign ones", async () => {
+  await withFixture(async (root) => {
+    const marker = (source: string) =>
+      `generated: scripts/agents/adapters.mjs | source: ${source}`;
+    write(
+      root,
+      ".claude/agents/bible150-alpha.md",
+      `---\nname: x\n---\n<!-- ${marker(".agents/roles/alpha.md")} | do not edit -->\n`,
+    );
+    write(
+      root,
+      ".codex/agents/bible150-alpha.toml",
+      `# ${marker(".agents/roles/alpha.md")} | do not edit\nname = "x"\n`,
+    );
+    write(
+      root,
+      ".claude/skills/bible150-alpha-skill/SKILL.md",
+      `---\nname: bible150-alpha-skill\ndescription: d\n---\n<!-- ${marker(".agents/skills/bible150-alpha-skill/")} | files: SKILL.md references/guide.md | do not edit -->\n`,
+    );
+    write(
+      root,
+      ".claude/skills/bible150-alpha-skill/references/guide.md",
+      "old\n",
+    );
+    write(root, ".claude/agents/bible150-mine.md", "my agent\n");
+    write(root, ".codex/agents/bible150-mine.toml", 'name = "mine"\n');
+    write(root, ".claude/skills/bible150-mine/SKILL.md", "my skill\n");
+    write(root, ".claude/agents/promo-video.md", "keep me\n");
+
+    await assert.rejects(
+      () => checkConventions(root),
+      /bible150-alpha\.md: generated output with no canonical source[\s\S]*bible150-alpha-skill: generated skill with no canonical source/,
+    );
+
+    const result = await syncAdapters(root);
+    assert.ok(result.changed.includes(".claude/agents/bible150-alpha.md"));
+    for (const gone of [
+      ".claude/agents/bible150-alpha.md",
+      ".codex/agents/bible150-alpha.toml",
+      ".claude/skills/bible150-alpha-skill",
+    ]) {
+      assert.equal(existsSync(join(root, gone)), false, gone);
+    }
+    // Only the new names exist for the migrated role and skill.
+    assert.ok(existsSync(join(root, ".claude/agents/chronos-bible-alpha.md")));
+    assert.ok(existsSync(join(root, `.claude/skills/${SKILL_A}/SKILL.md`)));
+    assert.equal(read(root, ".claude/agents/bible150-mine.md"), "my agent\n");
+    assert.equal(
+      read(root, ".codex/agents/bible150-mine.toml"),
+      'name = "mine"\n',
+    );
+    assert.equal(
+      read(root, ".claude/skills/bible150-mine/SKILL.md"),
+      "my skill\n",
+    );
+    assert.equal(read(root, ".claude/agents/promo-video.md"), "keep me\n");
+    await checkConventions(root);
   });
 });

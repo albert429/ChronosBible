@@ -6,5 +6,5 @@
     "coordinator": "Opus",
     "qa-performance": "Sol"
   },
-  "mediaRoot": "/absolute/path/outside/any/worktree/bible150-media"
+  "mediaRoot": "/absolute/path/outside/any/worktree/chronos-bible-media"
 }

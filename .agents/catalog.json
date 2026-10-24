@@ -3,23 +3,26 @@
   "roles": [
     {
       "id": "coordinator",
-      "name": "bible150-coordinator",
+      "name": "chronos-bible-coordinator",
       "description": "Plans, assigns, reviews, and integrates agent work",
       "instructions": ".agents/roles/coordinator.md",
       "recommendedPaths": [".agents/", "AGENTS.md", "CLAUDE.md"],
-      "skills": ["bible150-task-coordination", "bible150-handoff-recovery"]
+      "skills": [
+        "chronos-bible-task-coordination",
+        "chronos-bible-handoff-recovery"
+      ]
     },
     {
       "id": "product",
-      "name": "bible150-product",
+      "name": "chronos-bible-product",
       "description": "Guards product scope, claims, and acceptance wording",
       "instructions": ".agents/roles/product.md",
       "recommendedPaths": ["docs/product.md", "README.md", "docs/plans/"],
-      "skills": ["bible150-task-coordination"]
+      "skills": ["chronos-bible-task-coordination"]
     },
     {
       "id": "ui-ux",
-      "name": "bible150-ui-ux",
+      "name": "chronos-bible-ui-ux",
       "description": "Reader and navigation presentation, Arabic typography, accessibility",
       "instructions": ".agents/roles/ui-ux.md",
       "recommendedPaths": [
@@ -29,11 +32,11 @@
         "src/reader/",
         "src/streak/"
       ],
-      "skills": ["bible150-arabic-reader-review"]
+      "skills": ["chronos-bible-arabic-reader-review"]
     },
     {
       "id": "bible-data",
-      "name": "bible150-bible-data",
+      "name": "chronos-bible-bible-data",
       "description": "Scripture and plan data, importers, exact-text checks",
       "instructions": ".agents/roles/bible-data.md",
       "recommendedPaths": [
@@ -48,19 +51,19 @@
         "scripts/build-chronology.js",
         "scripts/build-readings.js"
       ],
-      "skills": ["bible150-scripture-data-audit"]
+      "skills": ["chronos-bible-scripture-data-audit"]
     },
     {
       "id": "progress-storage",
-      "name": "bible150-progress-storage",
+      "name": "chronos-bible-progress-storage",
       "description": "Progress, profiles, backups, streaks, and storage migrations",
       "instructions": ".agents/roles/progress-storage.md",
       "recommendedPaths": ["src/plan/", "src/lib/"],
-      "skills": ["bible150-verification-release"]
+      "skills": ["chronos-bible-verification-release"]
     },
     {
       "id": "audio",
-      "name": "bible150-audio",
+      "name": "chronos-bible-audio",
       "description": "Audio playback, preparation, verification, and publication",
       "instructions": ".agents/roles/audio.md",
       "recommendedPaths": [
@@ -70,11 +73,14 @@
         "docs/audio.md",
         "scripts/build-audio-index.js"
       ],
-      "skills": ["bible150-audio-publication", "bible150-scripture-data-audit"]
+      "skills": [
+        "chronos-bible-audio-publication",
+        "chronos-bible-scripture-data-audit"
+      ]
     },
     {
       "id": "ai-study",
-      "name": "bible150-ai-study",
+      "name": "chronos-bible-ai-study",
       "description": "Study panel and optional AI explanations",
       "instructions": ".agents/roles/ai-study.md",
       "recommendedPaths": [
@@ -83,11 +89,11 @@
         "scripts/build-study.js",
         "scripts/check-ai-models.mjs"
       ],
-      "skills": ["bible150-verification-release"]
+      "skills": ["chronos-bible-verification-release"]
     },
     {
       "id": "deployment",
-      "name": "bible150-deployment",
+      "name": "chronos-bible-deployment",
       "description": "Build, hosting, and CI configuration",
       "instructions": ".agents/roles/deployment.md",
       "recommendedPaths": [
@@ -97,11 +103,14 @@
         ".github/",
         ".env.example"
       ],
-      "skills": ["bible150-verification-release", "bible150-audio-publication"]
+      "skills": [
+        "chronos-bible-verification-release",
+        "chronos-bible-audio-publication"
+      ]
     },
     {
       "id": "qa-performance",
-      "name": "bible150-qa-performance",
+      "name": "chronos-bible-qa-performance",
       "description": "Tests, end-to-end checks, and performance measurement",
       "instructions": ".agents/roles/qa-performance.md",
       "recommendedPaths": [
@@ -111,8 +120,8 @@
         "scripts/capture-preview.mjs"
       ],
       "skills": [
-        "bible150-verification-release",
-        "bible150-arabic-reader-review"
+        "chronos-bible-verification-release",
+        "chronos-bible-arabic-reader-review"
       ]
     }
   ]

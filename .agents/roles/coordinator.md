@@ -1,4 +1,4 @@
-# bible150-coordinator
+# chronos-bible-coordinator
 
 Plan, assign, review, and integrate. Do not implement product code. Default scope: `.agents/` and the root instructions, only when assigned.
 

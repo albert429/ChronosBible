@@ -27,7 +27,15 @@ const MAX_SKILL_FILES = 200;
 const TASK_ID = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const SESSION_KEYS = ["tool", "model", "sessionId", "watchPath", "startedAt"];
 const ID_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-const SKILL_PATTERN = /^bible150-[a-z0-9]+(-[a-z0-9]+)*$/;
+/**
+ * Generated names start with the first prefix. The legacy prefix is scanned
+ * only so that files this generator wrote under the old name are removed on
+ * upgrade; unmarked files under either prefix are foreign and left alone.
+ */
+const MANAGED_PREFIXES = ["chronos-bible-", "bible150-"];
+const isManagedName = (/** @type {string} */ name) =>
+  MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
+const SKILL_PATTERN = /^chronos-bible-[a-z0-9]+(-[a-z0-9]+)*$/;
 const RESOURCE_NAME = /^[A-Za-z0-9._-]+$/;
 const ROOT_WORDS = { min: 300, max: 400 };
 
@@ -371,8 +379,8 @@ async function loadCatalog(root, problems) {
       problems.push(`${label}: duplicate id "${id}"`);
       valid = false;
     } else ids.add(id);
-    if (typeof id === "string" && name !== `bible150-${id}`) {
-      problems.push(`${label}: name must be "bible150-${id}"`);
+    if (typeof id === "string" && name !== `chronos-bible-${id}`) {
+      problems.push(`${label}: name must be "chronos-bible-${id}"`);
       valid = false;
     } else if (typeof name === "string" && names.has(name)) {
       problems.push(`${label}: duplicate name "${name}"`);
@@ -407,7 +415,7 @@ async function loadCatalog(root, problems) {
       !skills.every((s) => typeof s === "string" && SKILL_PATTERN.test(s))
     ) {
       problems.push(
-        `${label}: skills must be an array of bible150-* skill names`,
+        `${label}: skills must be an array of chronos-bible-* skill names`,
       );
       valid = false;
     }
@@ -446,7 +454,7 @@ async function loadSkills(root, problems) {
     const before = problems.length;
     if (!SKILL_PATTERN.test(name) || name.length > 64) {
       problems.push(
-        `${dir}: skill directory must be a lowercase hyphenated bible150-* name of at most 64 characters`,
+        `${dir}: skill directory must be a lowercase hyphenated chronos-bible-* name of at most 64 characters`,
       );
     }
     const files = await walkFiles(root, dir, problems);
@@ -863,7 +871,7 @@ async function inspectDisk(root, outputs, source) {
     [CODEX_AGENTS, ".toml"],
   ]) {
     for (const entry of await listDir(root, dir)) {
-      if (!entry.startsWith("bible150-") || !entry.endsWith(ext)) continue;
+      if (!isManagedName(entry) || !entry.endsWith(ext)) continue;
       const rel = `${dir}/${entry}`;
       if (wanted.has(rel)) continue;
       const stats = await lstat(join(root, rel));
@@ -875,7 +883,7 @@ async function inspectDisk(root, outputs, source) {
 
   // Skill directories
   for (const entry of await listDir(root, CLAUDE_SKILLS)) {
-    if (!entry.startsWith("bible150-")) continue;
+    if (!isManagedName(entry)) continue;
     if (source.skills.has(entry)) continue;
     const dir = `${CLAUDE_SKILLS}/${entry}`;
     const stats = await lstat(join(root, dir));

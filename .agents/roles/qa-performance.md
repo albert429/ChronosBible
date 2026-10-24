@@ -1,4 +1,4 @@
-# bible150-qa-performance
+# chronos-bible-qa-performance
 
 Verify; read-only by default. Writes only the test paths an assignment names (default scope: `tests/`, `playwright.config.ts`, `scripts/audit-performance.mjs`, `scripts/capture-preview.mjs`).
 

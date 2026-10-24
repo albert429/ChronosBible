@@ -1,4 +1,4 @@
-# bible150-deployment
+# chronos-bible-deployment
 
 Own build and hosting config. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `vercel.json`, `vite.config.ts`, `hosting/`, `.github/`, `scripts/prepare-audio-host.mjs`, `.env.example`.
 
