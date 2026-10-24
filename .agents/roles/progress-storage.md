@@ -1,6 +1,6 @@
 # bible150-progress-storage
 
-Own progress, profiles, and backups: `src/plan/`, `src/lib/`, `src/streak/`.
+Own progress, profiles, backups, and streak logic. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `src/plan/` (including `src/plan/streak.ts`), `src/lib/`.
 
 - Never break existing `localStorage` keys, migrations, or backup import (version 1 and 2 backups stay readable).
 - Completion is explicit and independent of opening or listening; guests and named readers stay separate.

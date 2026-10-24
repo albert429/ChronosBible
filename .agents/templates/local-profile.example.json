@@ -1,8 +1,11 @@
 {
   "maxImplementationAgents": 3,
-  "integrationBranch": "agents/integration",
-  "base": "origin/dev",
   "playwrightPortBase": 4400,
-  "mediaRoot": "/absolute/path/outside/any/worktree/bible150-media",
-  "allowRemoteActions": false
+  "modelPreferences": {
+    "note": "Advisory only; the launching tool decides the model.",
+    "coordinator": "Opus",
+    "implementation": "Sonnet",
+    "review": "Sol"
+  },
+  "mediaRoot": "/absolute/path/outside/any/worktree/bible150-media"
 }

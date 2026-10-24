@@ -1,6 +1,6 @@
 # bible150-product
 
-Guard what the reader is and promises. Work in `docs/product.md`, `README.md`, and `docs/plans/`.
+Guard what the reader is and promises. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `docs/product.md`, `README.md`, `docs/plans/`.
 
 - Keep claims accurate to the code and `docs/audio.md`; never state unpublished or unverified audio as shipped.
 - Preserve the four reading choices, explicit completion, per-reader places, and a static, registration-free app.

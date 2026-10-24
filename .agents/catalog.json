@@ -26,7 +26,8 @@
         "src/components/",
         "src/styles/",
         "src/navigation/",
-        "src/reader/"
+        "src/reader/",
+        "src/streak/"
       ],
       "skills": ["bible150-arabic-reader-review"]
     },
@@ -38,9 +39,13 @@
       "recommendedPaths": [
         "data/",
         "src/bible/",
+        "src/chronology/",
+        "docs/chronology.md",
         "scripts/lib/",
         "scripts/import-bible.py",
+        "scripts/import-chronology.py",
         "scripts/build-bible.js",
+        "scripts/build-chronology.js",
         "scripts/build-readings.js"
       ],
       "skills": ["bible150-scripture-data-audit"]
@@ -48,9 +53,9 @@
     {
       "id": "progress-storage",
       "name": "bible150-progress-storage",
-      "description": "Progress, profiles, backups, and storage migrations",
+      "description": "Progress, profiles, backups, streaks, and storage migrations",
       "instructions": ".agents/roles/progress-storage.md",
-      "recommendedPaths": ["src/plan/", "src/lib/", "src/streak/"],
+      "recommendedPaths": ["src/plan/", "src/lib/"],
       "skills": ["bible150-verification-release"]
     },
     {

@@ -21,3 +21,15 @@ public/bible/
 data/audio/readings/
 data/audio/review/
 data/audio/reading-catalog.json
+
+# Agent workflow: local runtime state, task worktrees and legacy checkouts
+# (canonical definitions in .agents/ stay formatted). Generated .codex/agents
+# TOML is not a Prettier language.
+.agents/worktrees/
+.agents/state/
+.agents/artifacts/
+.agents/*-refactor/
+.agents/claude-*/
+.agents/opus-*/
+.agents/workflow-*/
+.claude/worktrees/
