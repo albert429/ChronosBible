@@ -91,8 +91,10 @@ Day JSON remains on Vercel with revalidation, so timing fixes take effect. `verc
 
 The 150 recordings live in the `bible-reading-audio` Pages project. Vercel proxies
 only `/audio/days/:file` to that host; timing manifests remain in the app build.
-Set `VITE_AUDIO_BASE_URL=/` to enable the same-origin media route in a Git-only
-build. The `dev` preview is configured this way. Production/main must be configured
+The Cloudflare app worker (`hosting/cloudflare-app/`) proxies the same media
+paths for `chronosbible.com`. Set `VITE_AUDIO_BASE_URL=/` to enable the
+same-origin media route in a Git-only build. The `dev` preview is configured
+this way. Production/main must be configured
 separately when promoting the audio release. `vite.config.ts` validates the value
 and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`.
 

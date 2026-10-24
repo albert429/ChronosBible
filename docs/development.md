@@ -48,6 +48,7 @@
 | `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
 | `npm run audio:host:prepare`                       | Build the Cloudflare Pages audio bundle in `artifacts/pages-audio`                       |
 | `npm run audio:host:deploy`                        | Prepare, then deploy that bundle with wrangler                                           |
+| `npm run app:host:deploy`                          | Build, then deploy the app to Cloudflare Workers with wrangler                           |
 | `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                |
 | `python3 -I -m unittest discover -s scripts/tests` | Python audio hash tests (standard library only; CI also runs `py_compile`)               |
 | `npm run test:visual`                              | Save preview screenshots under `artifacts/`                                              |
@@ -177,6 +178,16 @@ The `ai-chromium` Playwright project builds `dist-ai/` with a dummy key and serv
 ## Static hosting
 
 On Vercel, import the repository, use the **Vite** preset, build with **`npm run build`**, and publish **`dist`**. `vercel.json` records these settings. Pushes to the connected production branch redeploy automatically. There are no `/api` routes or database environment variables; the optional AI explanations use only the build-time variables described above.
+
+### Cloudflare
+
+`wrangler.json` hosts the same build on Cloudflare Workers static assets at `chronosbible.com`. Deploy with `npm run app:host:deploy`; wrangler runs `VITE_AUDIO_BASE_URL=/ npm run build`, copies `hosting/cloudflare-app/_headers` into `dist/` and uploads it. The build sets `VITE_AUDIO_BASE_URL=/` because the worker provides the same-origin media route; other `VITE_*` values (AI) come from the environment, or from Workers Builds build variables. Run `npm run app:host:deploy` from a clean checkout, because a local build reads `.env.local` and copies any media in `public/audio/`. `_headers` exists only in the Cloudflare build, so Vercel never serves it. It marks `/assets/*` immutable; assets are otherwise revalidated by default, as on Vercel.
+
+Static files are served without running code. Only `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*` run `hosting/cloudflare-app/worker.js`, which forwards GET and HEAD (with `Range` and conditional headers) to the `bible-reading-audio` Pages project and returns its answer unchanged; other methods get 405. `tests/app-host.test.ts` keeps the routes and origin in step with `vercel.json` and `src/audio/contract.ts`. The Workers URL and preview URLs are off, so there is one origin.
+
+Reader progress is stored per origin. To move a reader from the vercel.app address to `chronosbible.com`, use backup and restore.
+
+For Git auto-deploys, connect the repository in Workers Builds with an empty build command and the deploy command `npx wrangler deploy`; wrangler then runs the build itself.
 
 Study data is generated the same way into `public/study/` and served with the same revalidating cache header. Nothing under `/study/` loads until a reader opens a verse.
 
