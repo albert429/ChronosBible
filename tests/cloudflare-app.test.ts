@@ -13,9 +13,11 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   buildEnvironment,
   deployArguments,
+  gitEnvironment,
   preflight,
   scanAssets,
 } from "../scripts/cloudflare-app.mjs";
@@ -25,6 +27,7 @@ function checkout(branch = "main") {
   const git = (...args: string[]) =>
     execFileSync("git", ["-C", root, ...args], {
       encoding: "utf8",
+      env: gitEnvironment(),
       stdio: ["ignore", "pipe", "pipe"],
     }).trim();
   git("init", "-b", branch);
@@ -105,6 +108,7 @@ test("The build helpers can be imported from a Node stdin module", () => {
   const result = spawnSync(process.execPath, ["--input-type=module", "-"], {
     input: `import { deployment } from ${JSON.stringify(new URL("../scripts/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
     encoding: "utf8",
+    env: gitEnvironment(),
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), "main");
@@ -201,11 +205,13 @@ test("CLI rejects a wrong cwd before removing dist or running a build", () => {
     const result = spawnSync(
       process.execPath,
       [
-        new URL("../scripts/cloudflare-app.mjs", import.meta.url).pathname,
+        fileURLToPath(
+          new URL("../scripts/cloudflare-app.mjs", import.meta.url),
+        ),
         "build",
         "production",
       ],
-      { cwd: f.root, encoding: "utf8" },
+      { cwd: f.root, encoding: "utf8", env: gitEnvironment() },
     );
     assert.equal(result.status, 1);
     assert.match(result.stderr, /repository root/);
@@ -297,7 +303,7 @@ fs.writeFileSync("dist/index.html", "safe app");
         {
           cwd: f.root,
           env: {
-            ...process.env,
+            ...gitEnvironment(),
             VITE_OPENROUTER_API_KEY: "private-test-key-123",
             VITE_AI_PROVIDERS: "openrouter",
             VITE_FUTURE_KEY: "private-test-key-123",
@@ -329,3 +335,48 @@ fs.writeFileSync("dist/index.html", "safe app");
     }
   }
 });
+
+test(
+  "Inherited Git hook context cannot change the outer HEAD, index or config",
+  {
+    skip: process.env.CLOUDFLARE_GIT_REGRESSION_CHILD === "1",
+  },
+  () => {
+    const outer = checkout();
+    try {
+      const head = outer.git("rev-parse", "HEAD");
+      const index = readFileSync(join(outer.root, ".git/index"));
+      const config = readFileSync(join(outer.root, ".git/config"));
+      const childEnv: NodeJS.ProcessEnv = {
+        ...gitEnvironment(),
+        CLOUDFLARE_GIT_REGRESSION_CHILD: "1",
+        GIT_DIR: join(outer.root, ".git"),
+        GIT_COMMON_DIR: join(outer.root, ".git"),
+        GIT_WORK_TREE: outer.root,
+        GIT_INDEX_FILE: join(outer.root, ".git/index"),
+        GIT_PREFIX: "",
+      };
+      // A nested node --test otherwise silently skips executing its test files.
+      delete childEnv.NODE_TEST_CONTEXT;
+      const result = spawnSync(
+        process.execPath,
+        [
+          "--experimental-strip-types",
+          "--test",
+          fileURLToPath(new URL("./cloudflare-app.test.ts", import.meta.url)),
+        ],
+        {
+          env: childEnv,
+          encoding: "utf8",
+        },
+      );
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.match(result.stdout, /# pass 8\b/);
+      assert.equal(outer.git("rev-parse", "HEAD"), head);
+      assert.deepEqual(readFileSync(join(outer.root, ".git/index")), index);
+      assert.deepEqual(readFileSync(join(outer.root, ".git/config")), config);
+    } finally {
+      outer.close();
+    }
+  },
+);
