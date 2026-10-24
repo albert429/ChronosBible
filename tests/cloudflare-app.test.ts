@@ -101,6 +101,15 @@ test("Deploy CLI always selects an explicit config and environment", () => {
   assert.throws(() => deployArguments("preview"), /production or dev/);
 });
 
+test("The build helpers can be imported from a Node stdin module", () => {
+  const result = spawnSync(process.execPath, ["--input-type=module", "-"], {
+    input: `import { deployment } from ${JSON.stringify(new URL("../scripts/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), "main");
+});
+
 test("Preflight binds environment to a clean branch, checkout root and CI commit", () => {
   const f = checkout();
   const options = { root: f.root, cwd: f.root, env: {} };
