@@ -1,0 +1,9 @@
+{
+  "goal": "Show the completion date under each finished day in the plan grid.",
+  "writablePaths": ["src/plan/", "tests/plan-grid.test.ts"],
+  "dependencies": [],
+  "acceptanceChecks": [
+    "npm run validate",
+    "Existing progress and v1/v2 backups still import unchanged"
+  ]
+}

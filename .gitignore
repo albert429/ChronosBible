@@ -21,7 +21,21 @@ public/study/
 public/audio/
 dist-ai/
 .claude/worktrees/
-.agents/
+# Agent workflow: track only the shared definitions; runtime state, worktrees
+# and artifacts under .agents/ stay local.
+.agents/*
+!.agents/README.md
+!.agents/catalog.json
+!.agents/roles/
+!.agents/templates/
+!.agents/skills/
+
+# Tool-local memory and settings (generated adapters such as .claude/skills
+# and .claude/agents stay visible)
+.claude/settings.local.json
+.claude/memory/
+.claude/agent-memory-local/
+CLAUDE.local.md
 
 public/bible/
 public/chronology/

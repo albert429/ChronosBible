@@ -1,0 +1,8 @@
+{
+  "maxImplementationAgents": 3,
+  "integrationBranch": "agents/integration",
+  "base": "origin/dev",
+  "playwrightPortBase": 4400,
+  "mediaRoot": "/absolute/path/outside/any/worktree/bible150-media",
+  "allowRemoteActions": false
+}

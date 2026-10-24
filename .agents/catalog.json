@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "roles": [
+    {
+      "id": "coordinator",
+      "name": "bible150-coordinator",
+      "description": "Plans, assigns, reviews, and integrates agent work",
+      "instructions": ".agents/roles/coordinator.md",
+      "recommendedPaths": [".agents/", "AGENTS.md", "CLAUDE.md"],
+      "skills": ["bible150-task-coordination", "bible150-handoff-recovery"]
+    },
+    {
+      "id": "product",
+      "name": "bible150-product",
+      "description": "Guards product scope, claims, and acceptance wording",
+      "instructions": ".agents/roles/product.md",
+      "recommendedPaths": ["docs/product.md", "README.md", "docs/plans/"],
+      "skills": ["bible150-task-coordination"]
+    },
+    {
+      "id": "ui-ux",
+      "name": "bible150-ui-ux",
+      "description": "Reader and navigation presentation, Arabic typography, accessibility",
+      "instructions": ".agents/roles/ui-ux.md",
+      "recommendedPaths": [
+        "src/components/",
+        "src/styles/",
+        "src/navigation/",
+        "src/reader/"
+      ],
+      "skills": ["bible150-arabic-reader-review"]
+    },
+    {
+      "id": "bible-data",
+      "name": "bible150-bible-data",
+      "description": "Scripture and plan data, importers, exact-text checks",
+      "instructions": ".agents/roles/bible-data.md",
+      "recommendedPaths": [
+        "data/",
+        "src/bible/",
+        "scripts/lib/",
+        "scripts/import-bible.py",
+        "scripts/build-bible.js",
+        "scripts/build-readings.js"
+      ],
+      "skills": ["bible150-scripture-data-audit"]
+    },
+    {
+      "id": "progress-storage",
+      "name": "bible150-progress-storage",
+      "description": "Progress, profiles, backups, and storage migrations",
+      "instructions": ".agents/roles/progress-storage.md",
+      "recommendedPaths": ["src/plan/", "src/lib/", "src/streak/"],
+      "skills": ["bible150-verification-release"]
+    },
+    {
+      "id": "audio",
+      "name": "bible150-audio",
+      "description": "Audio playback, preparation, verification, and publication",
+      "instructions": ".agents/roles/audio.md",
+      "recommendedPaths": [
+        "src/audio/",
+        "data/audio/",
+        "hosting/",
+        "docs/audio.md",
+        "scripts/build-audio-index.js"
+      ],
+      "skills": ["bible150-audio-publication", "bible150-scripture-data-audit"]
+    },
+    {
+      "id": "ai-study",
+      "name": "bible150-ai-study",
+      "description": "Study panel and optional AI explanations",
+      "instructions": ".agents/roles/ai-study.md",
+      "recommendedPaths": [
+        "src/study/",
+        "src/ai/",
+        "scripts/build-study.js",
+        "scripts/check-ai-models.mjs"
+      ],
+      "skills": ["bible150-verification-release"]
+    },
+    {
+      "id": "deployment",
+      "name": "bible150-deployment",
+      "description": "Build, hosting, and CI configuration",
+      "instructions": ".agents/roles/deployment.md",
+      "recommendedPaths": [
+        "vercel.json",
+        "vite.config.ts",
+        "hosting/",
+        ".github/",
+        ".env.example"
+      ],
+      "skills": ["bible150-verification-release", "bible150-audio-publication"]
+    },
+    {
+      "id": "qa-performance",
+      "name": "bible150-qa-performance",
+      "description": "Tests, end-to-end checks, and performance measurement",
+      "instructions": ".agents/roles/qa-performance.md",
+      "recommendedPaths": [
+        "tests/",
+        "playwright.config.ts",
+        "scripts/audit-performance.mjs",
+        "scripts/capture-preview.mjs"
+      ],
+      "skills": [
+        "bible150-verification-release",
+        "bible150-arabic-reader-review"
+      ]
+    }
+  ]
+}
