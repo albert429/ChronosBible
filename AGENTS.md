@@ -29,9 +29,10 @@ tests) and avoid stale preview servers.
 
 Strict TypeScript, ES modules, two-space indentation, double quotes,
 semicolons; `npm run format` applies Prettier. Tests: `tests/*.test.ts` via
-`npm test`, Playwright in `tests/browser/`. Add regression coverage and keep
-exact Scripture-data checks. For UI, check 320–430px, both themes, large Arabic
-text, focus, and reduced motion. Use concise imperative commit subjects and
+`npm test`, Playwright in `tests/browser/`. Add regression coverage for behaviour and data changes,
+keeping exact Scripture-data checks; a tiny cosmetic UI tweak needs no new test.
+For visible UI, check 320–430px, both themes, large Arabic text, focus, and
+reduced motion. Use concise imperative commit subjects and
 follow `.github/pull_request_template.md`.
 
 ## Data & Configuration Safeguards
@@ -47,5 +48,7 @@ contributors' checkouts and staged work intact.
 
 Parallel agent work follows `.agents/README.md` (quickstart, roles, branches,
 isolation). Writers use assigned worktrees, share no `node_modules` or builds,
-and install with `npm ci --ignore-scripts`. Pushes, PRs, and deploys need
-explicit authorization for the task at hand.
+and install with `npm ci --ignore-scripts`. Honor the authorization the user has
+already given in this session for pushes, PRs, and deploys without asking again
+for each one, and do not go beyond it. Generated copies under `.claude/` and
+`.codex/` come from `.agents/`; edit the source, then run `npm run agents -- sync`.

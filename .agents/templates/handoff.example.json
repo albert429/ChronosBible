@@ -10,5 +10,5 @@
   "remainingWork": [
     "Mobile screenshots at 320px for the coordinator to review."
   ],
-  "artifacts": ["artifacts/plan-grid-390.png"]
+  "artifacts": [".agents/artifacts/plan-grid/plan-grid-390.png"]
 }
