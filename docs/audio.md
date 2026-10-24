@@ -242,23 +242,12 @@ never caches proxied media itself; the browser and Cloudflare do.
 
 ## Current deployment: Vercel + Cloudflare Pages
 
-The 150 daily recordings live in the `bible-reading-audio` Pages project.
-The complete release is 2,435 files in total (1,189 chapter recordings + 150
-daily + 1,095 clips + 1 superseded Job 36 file kept for rollback). All passed
-live byte-range verification and are recorded in `publication.json`. The earlier
-canonical-only release of 1,340 files was the 150 days, 1,189 chapters and that
-one rollback file. The all-audio build, with 553 playlists, 1,189 chapters and
-150 days enabled, is the [development preview](https://chrono-bible-git-dev-albert429s-projects.vercel.app/); the release is available on
-`dev`, and `main` (production) is unchanged. Chrome playback of Genesis 1,
-Job 36 and youth day 1 passed, and Genesis 1 passed WebKit. The user confirmed on
-physical Android Chrome that audio continues while locked and passages advance;
-a physical iPhone remains unverified, and the
-machine alignments are still not a listening review.
-Vercel proxies only `/audio/days/:file`, `/audio/chapters/assets/:file` and
-`/audio/clips/:file` (partial-chapter clips) to that host;
-timing manifests remain in the app build.
-Set `VITE_AUDIO_BASE_URL=/` to enable the same-origin media route in a Git-only
-build. The `dev` preview is configured this way. Production/main must be configured
+The 150 recordings live in the `bible-reading-audio` Pages project. Vercel proxies
+only `/audio/days/:file` to that host; timing manifests remain in the app build.
+The Cloudflare app worker (`hosting/cloudflare-app/`) proxies the same media
+paths for `chronosbible.com`. Set `VITE_AUDIO_BASE_URL=/` to enable the
+same-origin media route in a Git-only build. The `dev` preview is configured
+this way. Production/main must be configured
 separately when promoting the audio release. `vite.config.ts` validates the value
 and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`.
 Direct `pages.dev` URLs are not promoted automatically: they time out on some
