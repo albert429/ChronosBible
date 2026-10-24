@@ -21,6 +21,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - run: npm run agents -- check
       - run: npm run validate
       - run: python3 -I -m unittest discover -s scripts/tests
       - run: python3 -m py_compile scripts/*.py
