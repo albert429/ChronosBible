@@ -96,6 +96,7 @@ function fixture(
       findings: [],
       remainingWork: [],
       artifacts: [".agents/artifacts/x/shot.png"],
+      session: { tool: "claude", watchPath: ".agents/artifacts/x/log" },
     }),
   );
   write(
@@ -104,7 +105,7 @@ function fixture(
     JSON.stringify({
       maxImplementationAgents: 3,
       playwrightPortBase: 4400,
-      modelPreferences: { coordinator: "Opus" },
+      models: { default: "Sonnet", coordinator: "Opus" },
       mediaRoot: "/abs/media",
     }),
   );
@@ -629,5 +630,72 @@ test("check needs no tools or credentials and never writes", async () => {
       Object.assign(process.env, env);
     }
     assert.deepEqual(snapshot(root, [".agents", ".claude", ".codex"]), before);
+  });
+});
+
+test("a planted symlink at the old temp name is never written through", async () => {
+  await withFixture(async (root) => {
+    const outside = mkdtempSync(join(tmpdir(), "agents-outside-"));
+    try {
+      const external = join(outside, "victim.txt");
+      writeFileSync(external, "untouched\n");
+      mkdirSync(join(root, ".claude/agents"), { recursive: true });
+      for (const name of ["bible150-alpha.md", "bible150-beta.md"]) {
+        symlinkSync(
+          external,
+          join(root, ".claude/agents", `${name}.${process.pid}.tmp`),
+        );
+      }
+      await syncAdapters(root);
+      assert.equal(readFileSync(external, "utf8"), "untouched\n");
+      assert.match(read(root, ".claude/agents/bible150-alpha.md"), /Own alpha/);
+      const leftovers = readdirSync(join(root, ".claude/agents")).filter(
+        (name) => name.endsWith(".tmp") && !name.includes(`${process.pid}`),
+      );
+      assert.deepEqual(leftovers, []);
+      await checkConventions(root).catch((error: Error) => {
+        // The planted links are foreign files we must keep, not generated ones.
+        assert.fail(error.message);
+      });
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+});
+
+test("session metadata, dependencies, and profile models are validated", async () => {
+  await withFixture(async (root) => {
+    await syncAdapters(root);
+    write(
+      root,
+      ".agents/templates/handoff.example.json",
+      JSON.stringify({
+        tests: [],
+        findings: [],
+        remainingWork: [],
+        artifacts: [],
+        session: { apiToken: "x", tool: "claude" },
+      }),
+    );
+    write(
+      root,
+      ".agents/templates/assignment.example.json",
+      JSON.stringify({
+        goal: "g",
+        writablePaths: ["src/*.ts"],
+        dependencies: ["origin/dev"],
+        acceptanceChecks: ["x"],
+      }),
+    );
+    write(
+      root,
+      ".agents/templates/local-profile.example.json",
+      JSON.stringify({ models: { default: 3 } }),
+    );
+    const message = await checkLinks(root);
+    assert.match(message, /session: unsupported key "apiToken"/);
+    assert.match(message, /dependencies must be an array of task ids/);
+    assert.match(message, /writablePaths must be/);
+    assert.match(message, /models values must be strings/);
   });
 });

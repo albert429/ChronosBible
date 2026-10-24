@@ -19,12 +19,12 @@ Turn a goal into the smallest set of independent briefs. Resolve routine choices
 
 ## Order of work
 
-- Start work that others depend on first, and give dependents the base they must branch from (see `dependencies`).
+- `dependencies` lists task ids that must already be integrated before a dependent task can be created. Every task branches from the current `agents/integration` HEAD, so integrate a prerequisite first; there is no other base.
 - Give each writer its own worktree and port block (`PW_PORT`, three consecutive ports). Do not reuse a stale preview server.
 - Keep media, `.env*`, and generated output out of briefs' write scope.
 
 ## Integrating
 
-Review each handoff against its checks before merging. Integrate serially, re-running the affected checks after each merge, then report what merged, what was left, and what needs the user. If a handoff is incomplete or the agent is gone, use `bible150-handoff-recovery`.
+Review each handoff against its checks before merging. A handoff with `remainingWork` keeps the task assigned and blocks cleanup, so list only real unfinished work. Integrate serially, re-running the affected checks after each merge, then report what merged, what was left, and what needs the user. If a handoff is incomplete or the agent is gone, use `bible150-handoff-recovery`.
 
 Do not push, open a PR, or deploy beyond what the user has already authorized in this session.

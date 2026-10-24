@@ -5,17 +5,17 @@ description: Prepare, verify, and gate Bible150 audio for publication to the sta
 
 # Audio publication
 
-Prepared is not published. Audio is claimed as available only after the host has been verified.
+Prepared is not published. Audio counts as available only after the deployed host has been verified; `docs/audio.md` ("Prepared is not published", "Publishing a release") is the authority.
 
 ## Stages
 
-1. **Build and verify locally:** the build and verification scripts named in `docs/audio.md` produce chapter and reading audio. Binaries and reports stay outside Git; durable media lives in `mediaRoot` from the local profile, not in a worktree.
-2. **Prepare the host bundle:** `npm run audio:host:prepare` builds `artifacts/pages-audio`. Read the exact stage rules and evidence limits in [references/publication-gate.md](references/publication-gate.md) before touching publication state.
+1. **Build and verify locally:** use the build and verification scripts named in `docs/audio.md`. Binaries and reports stay out of Git. Keep the durable source recordings in a media root outside every worktree (`mediaRoot` in the local profile), passed as `AUDIO_MEDIA_ROOT` or `--media`.
+2. **Prepare the host bundle:** `npm run audio:host:prepare` builds `artifacts/pages-audio` and its inventory. The bundle is rebuildable only while its source media still exists elsewhere; see [references/publication-gate.md](references/publication-gate.md) before discarding anything.
 3. **Upload and deploy:** only with authorization the user gave for this task. Check recording rights in `data/audio/SOURCES.md` first.
-4. **Publish:** `scripts/verify-audio-host.py --publish` is the only thing that updates `data/audio/publication.json`, and only after full byte-range verification of the live host. Never edit that file by hand.
+4. **Verify, then publish:** `python3 scripts/verify-audio-host.py https://<app origin>` checks every prepared file; add `--publish` to merge the passing release into `data/audio/publication.json`. Do not hand-edit that file.
 
 ## Rules
 
 - Audio starts only when the reader presses Listen; nothing downloads earlier.
 - Do not describe unpublished or unverified audio as shipped in README, docs, or the UI.
-- A failed or partial verification leaves publication state unchanged; report which files failed.
+- A failed verification publishes nothing; report which files failed and why.

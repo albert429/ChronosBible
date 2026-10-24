@@ -1,13 +1,14 @@
 import {
   lstat,
   mkdir,
+  open,
   readdir,
   readFile,
   rename,
   rm,
-  writeFile,
   rmdir,
 } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
 import { dirname, join, posix } from "node:path";
 
 /**
@@ -23,6 +24,8 @@ const GENERATOR = "scripts/agents/adapters.mjs";
 const FIX = 'run "npm run agents -- sync" after fixing canonical files';
 const MAX_FILE_BYTES = 1024 * 1024;
 const MAX_SKILL_FILES = 200;
+const TASK_ID = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+const SESSION_KEYS = ["tool", "model", "sessionId", "watchPath", "startedAt"];
 const ID_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 const SKILL_PATTERN = /^bible150-[a-z0-9]+(-[a-z0-9]+)*$/;
 const RESOURCE_NAME = /^[A-Za-z0-9._-]+$/;
@@ -528,14 +531,23 @@ async function checkTemplates(root, problems) {
       if (
         !Array.isArray(a.writablePaths) ||
         a.writablePaths.length === 0 ||
-        !a.writablePaths.every(isSafeRel)
+        !a.writablePaths.every((p) => isSafeRel(p) && !/[*?[\]{}!]/.test(p))
       ) {
         problems.push(
           `${label}: writablePaths must be a non-empty array of repository-relative paths`,
         );
       }
-      if (!isTextList(a.dependencies))
-        problems.push(`${label}: dependencies must be an array of strings`);
+      if (
+        !Array.isArray(a.dependencies) ||
+        !a.dependencies.every(
+          (d) =>
+            typeof d === "string" && TASK_ID.test(d) && d !== "integration",
+        )
+      ) {
+        problems.push(
+          `${label}: dependencies must be an array of task ids integrated first`,
+        );
+      }
       if (
         !isTextList(a.acceptanceChecks) ||
         /** @type {unknown[]} */ (a.acceptanceChecks).length === 0
@@ -553,10 +565,29 @@ async function checkTemplates(root, problems) {
     if (h) {
       rejectUnknownKeys(
         h,
-        ["tests", "findings", "remainingWork", "artifacts"],
+        ["tests", "findings", "remainingWork", "artifacts", "session"],
         label,
         problems,
       );
+      if (h.session !== undefined) {
+        const session = expectObject(h.session, `${label} session`, problems);
+        if (session) {
+          rejectUnknownKeys(
+            session,
+            SESSION_KEYS,
+            `${label} session`,
+            problems,
+          );
+          if (
+            !Object.values(session).every(
+              (v) => isText(v) && /** @type {string} */ (v).length <= 500,
+            )
+          )
+            problems.push(
+              `${label}: session values must be non-empty strings of at most 500 characters`,
+            );
+        }
+      }
       const tests = h.tests;
       if (
         !Array.isArray(tests) ||
@@ -596,7 +627,7 @@ async function checkTemplates(root, problems) {
         [
           "maxImplementationAgents",
           "playwrightPortBase",
-          "modelPreferences",
+          "models",
           "mediaRoot",
         ],
         label,
@@ -631,14 +662,10 @@ async function checkTemplates(root, problems) {
           `${label}: mediaRoot, when present, must be an absolute path`,
         );
       }
-      if (p.modelPreferences !== undefined) {
-        const prefs = expectObject(
-          p.modelPreferences,
-          `${label} modelPreferences`,
-          problems,
-        );
-        if (prefs && !Object.values(prefs).every(isText))
-          problems.push(`${label}: modelPreferences values must be strings`);
+      if (p.models !== undefined) {
+        const models = expectObject(p.models, `${label} models`, problems);
+        if (models && !Object.values(models).every(isText))
+          problems.push(`${label}: models values must be strings (advisory)`);
       }
     }
   }
@@ -948,9 +975,7 @@ export async function syncAdapters(root) {
     const current = await readRegular(root, rel);
     if (current && sameBytes(current, output.data)) continue;
     await mkdirSafe(root, dirname(rel));
-    const temp = `${target}.${process.pid}.tmp`;
-    await writeFile(temp, output.data);
-    await rename(temp, target);
+    await writeAtomic(target, output.data);
     written.push(rel);
   }
   for (const rel of state.stale) await rm(join(root, rel));
@@ -974,6 +999,30 @@ export async function syncAdapters(root) {
     ...counts(source, outputs),
     changed: [...written, ...state.stale, ...state.staleDirs.map((d) => d.dir)],
   };
+}
+
+/**
+ * Write via an unpredictable sibling created exclusively (O_EXCL), so a
+ * pre-planted file or symlink at the temp name makes the write fail instead of
+ * being followed; the temp file is removed on any failure.
+ * @param {string} target
+ * @param {Buffer | string} data
+ */
+async function writeAtomic(target, data) {
+  const temp = `${target}.${randomBytes(8).toString("hex")}.tmp`;
+  /** @type {import("node:fs/promises").FileHandle | undefined} */
+  let handle;
+  try {
+    handle = await open(temp, "wx", 0o644);
+    await handle.writeFile(data);
+    await handle.close();
+    handle = undefined;
+    await rename(temp, target);
+  } catch (error) {
+    await handle?.close().catch(() => {});
+    await rm(temp, { force: true });
+    throw error;
+  }
 }
 
 /** @param {string} root @param {string} rel */
