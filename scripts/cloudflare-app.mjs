@@ -17,8 +17,29 @@ export const ROOT = realpathSync(
 const fail = (message) => {
   throw new Error(`Cloudflare app: ${message}`);
 };
+// Hooks export repository-local routing variables which `git -C` cannot
+// override. Drop that context before accessing this checkout or a fixture.
+const gitLocalVariables = new Set(
+  execFileSync("git", ["rev-parse", "--local-env-vars"], {
+    encoding: "utf8",
+  })
+    .trim()
+    .split(/\r?\n/),
+);
+export function gitEnvironment(source = process.env) {
+  return Object.fromEntries(
+    Object.entries(source).filter(
+      ([key]) =>
+        !gitLocalVariables.has(key) &&
+        !/^GIT_CONFIG_(?:KEY|VALUE)_\d+$/.test(key),
+    ),
+  );
+}
 const git = (root, ...args) =>
-  execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim();
+  execFileSync("git", ["-C", root, ...args], {
+    encoding: "utf8",
+    env: gitEnvironment(),
+  }).trim();
 
 export function deployment(target) {
   if (target === "production")
@@ -228,7 +249,7 @@ function deploy(target) {
     );
   execFileSync(cli, deployArguments(target), {
     cwd: ROOT,
-    env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
+    env: { ...gitEnvironment(), CI: "true", WRANGLER_SEND_METRICS: "false" },
     stdio: "inherit",
   });
 }
