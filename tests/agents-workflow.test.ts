@@ -573,7 +573,7 @@ test("cleanup previews by default, blocks unsafe state, and applies after integr
   assert.equal(dry.code, 1);
   assert.match(
     dry.stdout,
-    /dry run[\s\S]*blocked: branch is not merged into agents\/integration/,
+    /dry run[\s\S]*blocked: handoff head \w+ is not merged into agents\/integration/,
   );
   integrate(r, "t1");
 
@@ -765,6 +765,152 @@ test("cleanup protects integration, foreign paths, unfinished and unintegrated w
   const conflicted = cli(r.repo, ["cleanup", "t3"]).stdout;
   assert.match(conflicted, /operation in progress: MERGE_HEAD/);
   assert.match(conflicted, /unmerged: src\/c.ts/);
+});
+
+test("a drifted handoff keeps its claims until a fresh handoff", () => {
+  const r = readyTask("t1", ["src/"]);
+  const w = r.wt("t1");
+  integrate(r, "t1");
+  const claim = (id: string, path: string, deps: string[] = []) =>
+    cli(r.repo, [
+      "create",
+      id,
+      "--role",
+      "ui-ux",
+      "--brief",
+      brief([path], deps),
+    ]);
+  const commit = (rel: string) => {
+    write(w, rel);
+    git(w, "add", "-A");
+    git(w, "commit", "-qm", rel);
+  };
+
+  // Committed after the merged handoff: neither integrated nor released.
+  commit("src/late.ts");
+  assert.match(claim("t2", "src/plan/").stderr, /overlaps src\/ claimed by t1/);
+  assert.match(
+    claim("t2", "docs/", ["t1"]).stderr,
+    /dependency t1 is assigned/,
+  );
+  assert.equal(r.registry().tasks.t1.status, "ready");
+  assert.match(
+    ok(cli(r.repo, ["status"])).stdout,
+    /t1: ready.*now assigned.*stale handoff: branch moved since the handoff/,
+  );
+  git(w, "reset", "-q", "--hard", "HEAD~1");
+  ok(claim("t2", "src/plan/"));
+  assert.equal(r.registry().tasks.t1.status, "integrated");
+
+  // An integrated task that gets dirty or advances takes its claims back.
+  write(w, "src/dirty.ts");
+  assert.match(
+    claim("t3", "src/other/").stderr,
+    /overlaps src\/ claimed by t1/,
+  );
+  rmSync(join(w, "src/dirty.ts"));
+  commit("src/later.ts");
+  assert.match(
+    claim("t3", "src/other/").stderr,
+    /overlaps src\/ claimed by t1/,
+  );
+  assert.match(
+    cli(r.repo, ["cleanup", "t1"]).stdout,
+    /branch moved since the handoff/,
+  );
+  ok(cli(r.repo, ["handoff", "t1", "--report", report()]));
+  assert.equal(r.registry().tasks.t1.status, "ready");
+  assert.match(claim("t3", "src/other/").stderr, /claimed by t1/);
+  integrate(r, "t1");
+  ok(claim("t3", "src/other/"));
+});
+
+test("cleanup never archives work it cannot prove integrated", () => {
+  const r = readyTask();
+  git(r.repo, "worktree", "remove", r.wt("t1"));
+  git(r.repo, "branch", "-q", "-D", "agents/t1");
+  const res = cli(r.repo, ["cleanup", "t1", "--apply"]);
+  assert.equal(res.code, 1);
+  assert.match(
+    res.stderr,
+    /not merged into agents\/integration[\s\S]*branch agents\/t1 is missing; the registry entry is kept/,
+  );
+  assert.equal(r.registry().tasks.t1.status, "ready");
+  const t2 = brief(["src/plan/x.ts"]);
+  assert.match(
+    cli(r.repo, ["create", "t2", "--role", "ui-ux", "--brief", t2]).stderr,
+    /claimed by t1/,
+  );
+
+  // Without a handoff nothing can be proven either.
+  ok(
+    cli(r.repo, [
+      "create",
+      "t3",
+      "--role",
+      "ui-ux",
+      "--brief",
+      brief(["docs/"]),
+    ]),
+  );
+  git(r.repo, "worktree", "remove", r.wt("t3"));
+  git(r.repo, "branch", "-q", "-D", "agents/t3");
+  assert.match(
+    cli(r.repo, ["cleanup", "t3", "--apply"]).stderr,
+    /no handoff recorded, so integration cannot be proven/,
+  );
+  assert.equal(r.registry().tasks.t3.status, "assigned");
+
+  // A merged handoff whose branch is already gone is provably integrated.
+  const m = readyTask();
+  integrate(m, "t1");
+  git(m.repo, "worktree", "remove", m.wt("t1"));
+  git(m.wt("integration"), "branch", "-q", "-d", "agents/t1");
+  ok(cli(m.repo, ["cleanup", "t1", "--apply"]));
+  assert.equal(m.registry().tasks.t1.status, "archived");
+});
+
+test("a failed create keeps a checkout it cannot remove, and its branch", () => {
+  const r = makeRepo();
+  ok(cli(r.repo, ["init"]));
+  writeFileSync(
+    join(r.repo, ".git/hooks/post-checkout"),
+    "#!/bin/sh\necho hook output > hook-file.txt\n",
+    { mode: 0o755 },
+  );
+  const create = (id: string, extra: Record<string, string> = {}) =>
+    cli(
+      r.repo,
+      ["create", id, "--role", "ui-ux", "--brief", brief(["src/plan/"])],
+      extra,
+    );
+  const res = create("t1", { AGENTS_FAULT: "create:after-worktree" });
+  assert.equal(res.code, 1);
+  assert.match(
+    res.stderr,
+    /injected fault[\s\S]*kept .*t1[\s\S]*kept branch agents\/t1[\s\S]*recorded t1 for recovery/,
+  );
+  const w = r.wt("t1");
+  assert.equal(readFileSync(join(w, "hook-file.txt"), "utf8"), "hook output\n");
+  const tip = git(r.repo, "rev-parse", "refs/heads/agents/t1");
+  assert.equal(git(w, "rev-parse", "HEAD"), tip);
+  assert.equal(git(w, "branch", "--show-current"), "agents/t1");
+  assert.match(r.registry().tasks.t1.recovery.error, /injected fault/);
+  assert.match(
+    ok(cli(r.repo, ["status"])).stdout,
+    /t1: assigned.*needs recovery/,
+  );
+  assert.doesNotMatch(ok(cli(r.repo, ["doctor"])).stdout, /unmanaged worktree/);
+  assert.match(create("t2").stderr, /claimed by t1/);
+
+  assert.match(
+    cli(r.repo, ["cleanup", "t1"]).stdout,
+    /untracked: hook-file.txt/,
+  );
+  rmSync(join(w, "hook-file.txt"));
+  ok(cli(r.repo, ["cleanup", "t1", "--apply"]));
+  assert.equal(r.registry().tasks.t1.status, "archived");
+  assert.equal(git(r.repo, "branch", "--list", "agents/t1"), "");
 });
 
 test("doctor and status never create or modify files", () => {
