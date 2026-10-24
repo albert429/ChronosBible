@@ -3,7 +3,7 @@
   "main": "hosting/cloudflare-app/worker.js",
   "compatibility_date": "2026-10-01",
   "build": {
-    "command": "VITE_AUDIO_BASE_URL=/ npm run build && cp hosting/cloudflare-app/_headers dist/_headers"
+    "command": "node scripts/cloudflare-app.mjs build production"
   },
   "assets": {
     "directory": "./dist",
@@ -14,7 +14,37 @@
       "/audio/clips/*"
     ]
   },
-  "routes": [{ "pattern": "chronosbible.com", "custom_domain": true }],
+  "routes": [
+    {
+      "pattern": "chronosbible.com",
+      "custom_domain": true
+    }
+  ],
   "workers_dev": false,
-  "preview_urls": false
+  "preview_urls": false,
+  "env": {
+    "dev": {
+      "name": "chronosbible-dev",
+      "build": {
+        "command": "node scripts/cloudflare-app.mjs build dev"
+      },
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "run_worker_first": [
+          "/audio/days/*",
+          "/audio/chapters/assets/*",
+          "/audio/clips/*"
+        ]
+      },
+      "routes": [
+        {
+          "pattern": "dev.chronosbible.com",
+          "custom_domain": true
+        }
+      ],
+      "workers_dev": false,
+      "preview_urls": false
+    }
+  }
 }

@@ -31,12 +31,15 @@
     "typecheck": "tsc -b",
     "snapshot": "node scripts/snapshot.mjs",
     "audio:host:prepare": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/prepare-audio-host.mjs",
-    "app:host:deploy": "npx wrangler@4 deploy",
+    "app:host:deploy": "node scripts/cloudflare-app.mjs deploy production",
     "audio:host:deploy": "npm run audio:host:prepare && npx wrangler@4 pages deploy artifacts/pages-audio --project-name bible-reading-audio --branch main --commit-dirty=true",
     "validate": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
     "predev": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/build-data.js",
     "prebuild": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/build-data.js",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "app:host:build": "node scripts/cloudflare-app.mjs build production",
+    "app:host:build:dev": "node scripts/cloudflare-app.mjs build dev",
+    "app:host:deploy:dev": "node scripts/cloudflare-app.mjs deploy dev"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

@@ -181,13 +181,87 @@ On Vercel, import the repository, use the **Vite** preset, build with **`npm run
 
 ### Cloudflare
 
-`wrangler.json` hosts the same build on Cloudflare Workers static assets at `chronosbible.com`. Deploy with `npm run app:host:deploy`; wrangler runs `VITE_AUDIO_BASE_URL=/ npm run build`, copies `hosting/cloudflare-app/_headers` into `dist/` and uploads it. The build sets `VITE_AUDIO_BASE_URL=/` because the worker provides the same-origin media route; other `VITE_*` values (AI) come from the environment, or from Workers Builds build variables. Run `npm run app:host:deploy` from a clean checkout, because a local build reads `.env.local` and copies any media in `public/audio/`. `_headers` exists only in the Cloudflare build, so Vercel never serves it. It marks `/assets/*` immutable; assets are otherwise revalidated by default, as on Vercel.
+Cloudflare serves two independent Workers from the same explicit `wrangler.json`:
 
-Static files are served without running code. Only `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*` run `hosting/cloudflare-app/worker.js`, which forwards GET and HEAD (with `Range` and conditional headers) to the `bible-reading-audio` Pages project and returns its answer unchanged; other methods get 405. `tests/app-host.test.ts` keeps the routes and origin in step with `vercel.json` and `src/audio/contract.ts`. The Workers URL and preview URLs are off, so there is one origin.
+| Git branch | Worker             | Custom domain          | Deploy command                |
+| ---------- | ------------------ | ---------------------- | ----------------------------- |
+| `main`     | `chronosbible`     | `chronosbible.com`     | `npm run app:host:deploy`     |
+| `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
-Reader progress is stored per origin. To move a reader from the vercel.app address to `chronosbible.com`, use backup and restore.
+The production branch keeps its daily-audio snapshot. The development branch
+uses its own full-Bible content and audio publication inventory; its chapter-audio
+flag is enabled only when that branch's Vite configuration supports it. These
+hosting scripts do not copy content between branches. Vercel continues using
+`npm run build` and its existing configuration.
 
-For Git auto-deploys, connect the repository in Workers Builds with an empty build command and the deploy command `npx wrangler deploy`; wrangler then runs the build itself.
+Use Node 22 and install the locked app dependencies with `npm ci --ignore-scripts`.
+Run from the repository root of a clean checkout on the target branch. A detached
+checkout is accepted only at the exact `origin/main` or `origin/dev` commit for
+that environment. Task branches and dirty checkouts fail before building or
+uploading. Workers Builds branch and commit metadata must also match when set.
+For a local check, use `node scripts/cloudflare-app.mjs preflight production`
+(or `dev`); `npm run app:host:build` and `npm run app:host:build:dev` build and audit
+without uploading.
+
+Provision Wrangler separately without changing the app lockfile, for example:
+
+```sh
+CF_CLI_DIR="$(mktemp -d)"
+npm install --prefix "$CF_CLI_DIR" --no-save --package-lock=false --ignore-scripts wrangler@4.149.0
+export CLOUDFLARE_APP_WRANGLER="$CF_CLI_DIR/node_modules/.bin/wrangler"
+```
+
+The wrapper
+uses `node_modules/.bin/wrangler`, or the absolute executable path provided in
+`CLOUDFLARE_APP_WRANGLER`. It never installs a CLI. Every deploy supplies an absolute
+`--config` path and an explicit `--env` (empty for production, `dev` for development),
+so Wrangler cannot discover another project or generate hosting configuration.
+Do not replace these commands with a bare `wrangler deploy`.
+
+The safe build rejects local `.env*` files except the committed `.env.example`,
+and rejects `.dev.vars*` files, even when Git ignores them. Vite's configuration
+calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
+`.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
+`VITE_*` values take priority. Therefore the Cloudflare build also uses a small
+environment allowlist and supplies its public settings explicitly:
+`VITE_AUDIO_BASE_URL=/`, AI disabled, no API key, and the branch-specific audio
+flag. Do not add AI or other private `VITE_*` values to Cloudflare build settings.
+AI remains disabled on both Cloudflare domains regardless of shell AI values.
+
+Before building, the wrapper scans both `public/` and any existing `dist/` for
+media binaries, symlinks, environment files, private-key files and credentials.
+Only ordinary web asset extensions are accepted, and `audio/` accepts JSON
+manifests only. Budgets are 8 MiB per file, 64 MiB total and 10,000 files, allowing
+the full Bible while rejecting accidental bulk uploads.
+It removes only this checkout's `dist/`, runs the normal data-generation and Vite
+build, copies `hosting/cloudflare-app/_headers`, and audits the output again.
+Unexpected media or credentials fail with redacted messages; local recordings
+are never deleted. An existing contaminated `dist/` must be investigated and
+removed explicitly before retrying. The build environment excludes fixture
+switches and arbitrary inherited `VITE_*` values.
+
+For Git auto-deploys with [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/),
+connect **each Worker separately** to the repository. Set its production branch
+to the corresponding table entry (`main` for `chronosbible`, `dev` for
+`chronosbible-dev`), root directory to the repository root, and disable preview
+builds. Keep the build command empty and set the deploy command to the exact
+command in the table; Wrangler runs the environment's safe custom build before
+uploading. Provision Wrangler separately before that command if the runner does
+not provide it. This makes pushes to `dev` update only the development domain.
+See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)
+for dependency installation and build-variable settings. Connecting these builds
+and assigning the custom domains is a one-time Cloudflare account setup step.
+
+Static files are served without running code. Only `/audio/days/*`,
+`/audio/chapters/assets/*` and `/audio/clips/*` run
+`hosting/cloudflare-app/worker.js`, which forwards GET and HEAD (including `Range`
+and conditional headers) to the `bible-reading-audio` Pages project and returns
+its answer unchanged; other methods get 405. Both environments explicitly bind
+`ASSETS` and the same media routes. Workers URLs and preview URLs are off.
+`_headers` exists only in the Cloudflare build and makes `/assets/*` immutable.
+
+Reader progress is stored per origin, so the production, development and Vercel
+sites have independent progress. Use backup and restore when moving between them.
 
 Study data is generated the same way into `public/study/` and served with the same revalidating cache header. Nothing under `/study/` loads until a reader opens a verse.
 

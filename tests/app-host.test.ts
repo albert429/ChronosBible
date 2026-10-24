@@ -145,16 +145,38 @@ test("wrangler.json serves assets from dist and runs the worker for media only",
     PREFIXES.map((prefix) => `${prefix}*`),
   );
   assert.equal(config.main, "hosting/cloudflare-app/worker.js");
-  assert.match(config.build.command, /^VITE_AUDIO_BASE_URL=\/ npm run build /);
-  assert.match(
+  assert.equal(
     config.build.command,
-    /cp hosting\/cloudflare-app\/_headers dist\/_headers/,
+    "node scripts/cloudflare-app.mjs build production",
   );
   assert.equal(config.workers_dev, false);
   assert.equal(config.preview_urls, false);
   assert.equal(
     json("package.json").scripts["app:host:deploy"],
-    "npx wrangler@4 deploy",
+    "node scripts/cloudflare-app.mjs deploy production",
+  );
+});
+
+test("Dev has a separate Worker and domain with explicit assets and routing", () => {
+  const config = json("wrangler.json");
+  assert.equal(config.name, "chronosbible");
+  assert.deepEqual(config.routes, [
+    { pattern: "chronosbible.com", custom_domain: true },
+  ]);
+  assert.equal(config.env.dev.name, "chronosbible-dev");
+  assert.deepEqual(config.env.dev.routes, [
+    { pattern: "dev.chronosbible.com", custom_domain: true },
+  ]);
+  assert.deepEqual(config.env.dev.assets, config.assets);
+  assert.equal(config.env.dev.workers_dev, false);
+  assert.equal(config.env.dev.preview_urls, false);
+  assert.equal(
+    config.env.dev.build.command,
+    "node scripts/cloudflare-app.mjs build dev",
+  );
+  assert.equal(
+    json("package.json").scripts["app:host:deploy:dev"],
+    "node scripts/cloudflare-app.mjs deploy dev",
   );
 });
 
