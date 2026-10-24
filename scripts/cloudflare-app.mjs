@@ -235,6 +235,7 @@ function deploy(target) {
 
 if (
   process.argv[1] &&
+  existsSync(process.argv[1]) &&
   realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
   try {
