@@ -13,35 +13,11 @@ import { createHash } from "node:crypto";
 import { basename, delimiter, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { pathToFileURL } from "node:url";
-import {
-  AUDIO_CACHE_CONTROL,
-  AUDIO_CONTENT_TYPE,
-  AUDIO_MAX_BYTES,
-  AUDIO_MAX_FILES,
-  AUDIO_MEDIA_PATTERN,
-  AUDIO_MEDIA_PREFIXES,
-} from "../src/audio/contract.ts";
+import { AUDIO_MAX_BYTES, AUDIO_MEDIA_PATTERN } from "../src/audio/contract.ts";
 import { manifestMedia, publishedMedia } from "../src/audio/publication.ts";
 
-/** The Pages bundle's static files, keyed by their path in the bundle. */
-export function pagesConfig() {
-  return {
-    "_routes.json":
-      JSON.stringify({
-        version: 1,
-        include: AUDIO_MEDIA_PREFIXES.map((prefix) => `${prefix}*`),
-        exclude: [],
-      }) + "\n",
-    _headers: AUDIO_MEDIA_PREFIXES.map(
-      (prefix) =>
-        `${prefix}*\n  Content-Type: ${AUDIO_CONTENT_TYPE}\n  Cache-Control: ${AUDIO_CACHE_CONTROL}\n`,
-    ).join(""),
-    "index.html":
-      '<!doctype html><html lang="en"><meta charset="utf-8"><title>Bible reading audio</title><p>Audio assets for the chronological New Testament reader.</p></html>\n',
-    "404.html":
-      '<!doctype html><html lang="en"><meta charset="utf-8"><title>Not found</title><p>Audio file not found.</p></html>\n',
-  };
-}
+/** One wrangler process uploads this many objects at most (tokens can expire). */
+export const UPLOAD_BATCH_SIZE = 300;
 
 /** The first media root holding `src`, or undefined. */
 export function findMedia(src, roots) {
@@ -59,9 +35,9 @@ export function sha256File(path) {
 }
 
 /**
- * Place each recording in the bundle: a hard link when the bundle shares the
+ * Place each recording in the staging folder: a hard link when it shares the
  * media's file system (no 2.7GB copy), else a copy-on-write clone or copy.
- * Refuses, never truncates, files over the range handler's limit.
+ * Refuses, never truncates, files over the size sanity limit.
  */
 export function placeMedia(srcs, output, roots, { link = true } = {}) {
   /** @type {Record<string, { bytes: number; sha256: string }>} */
@@ -89,7 +65,7 @@ export function placeMedia(srcs, output, roots, { link = true } = {}) {
   return files;
 }
 
-/** Compatibility: copy each manifest's recording from `root` into the bundle. */
+/** Compatibility: copy each manifest's recording from `root` into the folder. */
 export function copyMedia(manifestPaths, output, root = "public") {
   const srcs = manifestPaths.flatMap((path) => {
     const media = manifestMedia(JSON.parse(readFileSync(path, "utf8")));
@@ -104,7 +80,7 @@ export function copyMedia(manifestPaths, output, root = "public") {
  * Media the current catalogs need, and media kept for rollback: every file
  * already in the verified upload inventory plus any extra `retain` lists.
  */
-export function bundleSources(root = ".", retainFiles = []) {
+export function releaseSources(root = ".", retainFiles = []) {
   const read = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
   const optional = (path) =>
     existsSync(resolve(root, path)) ? read(path) : undefined;
@@ -143,7 +119,7 @@ export function bundleSources(root = ".", retainFiles = []) {
  * @param {{ output: string; roots: string | string[]; retain?: string[];
  *   release?: string; link?: boolean; root?: string }} options
  */
-export function prepareBundle({
+export function prepareRelease({
   output,
   roots,
   retain = [],
@@ -151,27 +127,17 @@ export function prepareBundle({
   link = true,
   root = ".",
 }) {
-  const { manifests, required, retained } = bundleSources(root, retain);
+  const { manifests, required, retained } = releaseSources(root, retain);
   const srcs = [...required, ...retained].sort();
-  const config = pagesConfig();
-  const count = srcs.length + Object.keys(config).length + 1;
-  if (count > AUDIO_MAX_FILES)
-    throw new Error(`${count} files exceed the ${AUDIO_MAX_FILES}-file limit`);
-  if (!basename(output).startsWith("pages-audio"))
-    throw new Error(`Refusing to clean ${output}: not a pages-audio bundle`);
+  if (!basename(output).startsWith("r2-audio"))
+    throw new Error(`Refusing to clean ${output}: not an r2-audio folder`);
   for (const media of [roots].flat())
     if ((resolve(media) + "/").startsWith(resolve(output) + "/"))
-      throw new Error(`Media root ${media} lies inside the bundle ${output}`);
+      throw new Error(`Media root ${media} lies inside the folder ${output}`);
   // Rebuilt from scratch so a removed file can never linger by accident.
   rmSync(resolve(output, "audio"), { recursive: true, force: true });
   mkdirSync(output, { recursive: true });
   const files = placeMedia(srcs, output, roots, { link });
-  copyFileSync(
-    resolve(root, "hosting/cloudflare-audio/worker.js"),
-    resolve(output, "_worker.js"),
-  );
-  for (const [name, content] of Object.entries(config))
-    writeFileSync(resolve(output, name), content);
   const fingerprint = createHash("sha256")
     .update(JSON.stringify(srcs.map((src) => [src, files[src].sha256])))
     .digest("hex")
@@ -197,40 +163,96 @@ export function prepareBundle({
   };
 }
 
+/**
+ * Upload batches: only the files not yet verified on the host, as lists of
+ * `{ key, file }` for `wrangler r2 bulk put`. Objects are immutable, so a path
+ * whose bytes differ from its verified entry is refused, never overwritten.
+ * `all` lists every staged file, for a bucket that lost objects.
+ */
+export function planUploads(
+  prepared,
+  publication,
+  { all = false, size = UPLOAD_BATCH_SIZE } = {},
+) {
+  const verified = publication?.files ?? {};
+  const pending = [];
+  for (const [src, { bytes, sha256 }] of Object.entries(
+    prepared.files,
+  ).sort()) {
+    const old = verified[src];
+    if (old && (old.sha256 !== sha256 || old.bytes !== bytes))
+      throw new Error(`${src} changed bytes behind an immutable path`);
+    if (all || !old)
+      pending.push({ key: src.slice(1), file: prepared.output + src });
+  }
+  const batches = [];
+  for (let at = 0; at < pending.length; at += size)
+    batches.push(pending.slice(at, at + size));
+  return batches;
+}
+
+/** Rewrites `batch-NN.json` files from scratch so a stale batch never lingers. */
+export function writeUploadBatches(dir, batches) {
+  if (!basename(dir).startsWith("r2-audio-upload"))
+    throw new Error(`Refusing to clean ${dir}: not an r2-audio-upload folder`);
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  const width = Math.max(2, String(batches.length).length);
+  return batches.map((batch, index) => {
+    const path = resolve(
+      dir,
+      `batch-${String(index + 1).padStart(width, "0")}.json`,
+    );
+    writeFileSync(path, JSON.stringify(batch, null, 1) + "\n");
+    return path;
+  });
+}
+
 // Kept separate from the Vercel build: recordings never enter Git or its bundle.
 // Media roots (AUDIO_MEDIA_ROOT, a path-delimited list, or repeated --media)
 // may lie outside public/, so local builds do not copy recordings into dist/.
+// Nothing here talks to Cloudflare: `npm run audio:host:upload` uploads.
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { values } = parseArgs({
     options: {
       media: { type: "string", multiple: true },
-      output: { type: "string", default: "artifacts/pages-audio" },
+      output: { type: "string", default: "artifacts/r2-audio" },
       inventory: {
         type: "string",
-        default: "artifacts/pages-audio-inventory.json",
+        default: "artifacts/r2-audio-inventory.json",
       },
+      "upload-dir": { type: "string", default: "artifacts/r2-audio-upload" },
       retain: { type: "string", multiple: true, default: [] },
       release: { type: "string" },
       copy: { type: "boolean", default: false },
+      all: { type: "boolean", default: false },
     },
   });
   const roots = values.media?.length
     ? values.media
     : (process.env.AUDIO_MEDIA_ROOT || "public").split(delimiter);
-  const inventory = prepareBundle({
+  const inventory = prepareRelease({
     output: resolve(values.output),
     roots,
     retain: values.retain,
     release: values.release,
     link: !values.copy,
   });
+  mkdirSync(resolve(values.inventory, ".."), { recursive: true });
   writeFileSync(values.inventory, JSON.stringify(inventory, null, 1) + "\n");
+  const publication = existsSync("data/audio/publication.json")
+    ? JSON.parse(readFileSync("data/audio/publication.json", "utf8"))
+    : undefined;
+  const batches = planUploads(inventory, publication, { all: values.all });
+  writeUploadBatches(resolve(values["upload-dir"]), batches);
   const count = Object.keys(inventory.files).length;
+  const pending = batches.reduce((sum, batch) => sum + batch.length, 0);
   console.log(
     `Prepared release ${inventory.release}: ${count} recordings ` +
       `(${inventory.required} required, ${inventory.retained} kept for rollback), ` +
       `${(inventory.bytes / 1e9).toFixed(2)} GB, largest ${inventory.largest?.bytes} bytes, ` +
       `in ${inventory.output}; local inventory ${values.inventory}. ` +
-      `Prepared is not published: run scripts/verify-audio-host.py after deploying.`,
+      `${pending} to upload in ${batches.length} batches in ${values["upload-dir"]}. ` +
+      `Prepared is not published: upload, then run scripts/verify-audio-host.py.`,
   );
 }

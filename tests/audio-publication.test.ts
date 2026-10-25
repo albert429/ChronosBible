@@ -1,12 +1,13 @@
 // Verified publication: prepared media is not published media. Builds
 // advertise hosted chapters and playlists only from the verified inventory,
-// and the Pages bundle keeps every previously published file for rollback.
+// and the R2 staging folder keeps every previously published file for rollback.
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -23,9 +24,12 @@ import {
   publishedMedia,
 } from "../src/audio/publication.ts";
 import {
-  bundleSources,
-  prepareBundle,
-} from "../scripts/prepare-audio-host.mjs";
+  planUploads,
+  prepareRelease,
+  releaseSources,
+  writeUploadBatches,
+} from "../scripts/prepare-audio-r2.mjs";
+import { listBatches, runUploads } from "../scripts/upload-audio-r2.mjs";
 
 const DAY = "/audio/days/001-aa.m4a";
 const GEN = "/audio/chapters/assets/GEN-1-aa.m4a";
@@ -195,23 +199,22 @@ function repository(name: string) {
   write("data/audio/chapters/GEN/1.json", { src: GEN });
   write("data/audio/reading-catalog.json", { readings: ["chrono:OT:a"] });
   write("data/audio/readings/OT/a.json", playlist(GEN, CLIP));
-  write("hosting/cloudflare-audio/worker.js", "export default {};\n");
   const media = join(root, "media");
   for (const src of [DAY, GEN, CLIP, REV]) write(`media${src}`, src);
   return { root, write, media };
 }
 
-test("The bundle holds required media plus every published file, hard-linked", () => {
+test("The staging folder holds required media plus every published file, hard-linked", () => {
   const { root, write, media } = repository("bundle");
   // REV 22 was published by an earlier release and is no longer referenced.
   write("data/audio/publication.json", inventory([REV, GEN]));
-  const sources = bundleSources(root);
+  const sources = releaseSources(root);
   assert.deepEqual([...sources.required].sort(), [GEN, DAY, CLIP].sort());
   assert.deepEqual([...sources.retained], [REV]);
-  const output = join(root, "artifacts/pages-audio");
+  const output = join(root, "artifacts/r2-audio");
   // A stale file from an earlier preparation must not survive.
-  write("artifacts/pages-audio/audio/days/999-ff.m4a", "stale");
-  const prepared = prepareBundle({ output, roots: [media], root });
+  write("artifacts/r2-audio/audio/days/999-ff.m4a", "stale");
+  const prepared = prepareRelease({ output, roots: [media], root });
   assert.equal(prepared.kind, "prepared");
   assert.deepEqual(
     Object.keys(prepared.files).sort(),
@@ -223,20 +226,17 @@ test("The bundle holds required media plus every published file, hard-linked", (
     assert.equal(readFileSync(output + src, "utf8"), src);
     assert.equal(statSync(output + src).ino, statSync(media + src).ino);
   }
-  assert.ok(existsSync(join(output, "_worker.js")));
-  assert.match(
-    readFileSync(join(output, "_routes.json"), "utf8"),
-    /\/audio\/clips\/\*/,
-  );
+  // Only recordings are staged: no Pages worker, routes or headers.
+  assert.deepEqual(readdirSync(output), ["audio"]);
   // Copy mode for file systems without hard links.
-  const copied = prepareBundle({
-    output: join(root, "artifacts/pages-audio-copy"),
+  const copied = prepareRelease({
+    output: join(root, "artifacts/r2-audio-copy"),
     roots: [media],
     root,
     link: false,
   });
   assert.notEqual(
-    statSync(join(root, "artifacts/pages-audio-copy") + GEN).ino,
+    statSync(join(root, "artifacts/r2-audio-copy") + GEN).ino,
     statSync(media + GEN).ino,
   );
   assert.equal(copied.files[GEN].sha256, prepared.files[GEN].sha256);
@@ -247,8 +247,8 @@ test("Missing, oversized or misplaced media is refused, never dropped", () => {
   rmSync(media + CLIP);
   assert.throws(
     () =>
-      prepareBundle({
-        output: join(root, "artifacts/pages-audio"),
+      prepareRelease({
+        output: join(root, "artifacts/r2-audio"),
         roots: [media],
         root,
       }),
@@ -258,16 +258,16 @@ test("Missing, oversized or misplaced media is refused, never dropped", () => {
   const other = join(root, "other");
   mkdirSync(join(other, "audio/clips"), { recursive: true });
   writeFileSync(other + CLIP, "clip");
-  prepareBundle({
-    output: join(root, "artifacts/pages-audio"),
+  prepareRelease({
+    output: join(root, "artifacts/r2-audio"),
     roots: [media, other],
     root,
   });
   writeFileSync(media + GEN, Buffer.alloc(8 * 1024 * 1024 + 1));
   assert.throws(
     () =>
-      prepareBundle({
-        output: join(root, "artifacts/pages-audio"),
+      prepareRelease({
+        output: join(root, "artifacts/r2-audio"),
         roots: [media, other],
         root,
       }),
@@ -275,7 +275,7 @@ test("Missing, oversized or misplaced media is refused, never dropped", () => {
   );
   assert.throws(
     () =>
-      prepareBundle({
+      prepareRelease({
         output: join(root, "artifacts/other"),
         roots: [media],
         root,
@@ -284,13 +284,97 @@ test("Missing, oversized or misplaced media is refused, never dropped", () => {
   );
   assert.throws(
     () =>
-      prepareBundle({
-        output: join(root, "pages-audio"),
-        roots: [join(root, "pages-audio/media")],
+      prepareRelease({
+        output: join(root, "r2-audio"),
+        roots: [join(root, "r2-audio/media")],
         root,
       }),
-    /inside the bundle/,
+    /inside the folder/,
   );
+});
+
+test("Upload batches hold only unverified files, at most 300 each", () => {
+  const files = Object.fromEntries(
+    Array.from({ length: 650 }, (_, index) => [
+      `/audio/days/${String(index + 1).padStart(3, "0")}-aa.m4a`,
+      { bytes: 10, sha256: "a".repeat(64) },
+    ]),
+  );
+  const prepared = { output: "/stage", files };
+  const sizes = (batches: unknown[][]) => batches.map((b) => b.length);
+  assert.deepEqual(sizes(planUploads(prepared, undefined)), [300, 300, 50]);
+  const [first] = planUploads(prepared, undefined);
+  assert.deepEqual(first[0], {
+    key: "audio/days/001-aa.m4a",
+    file: "/stage/audio/days/001-aa.m4a",
+  });
+  // Verified with the same bytes: skipped unless --all asks for everything.
+  const verified = inventory(Object.keys(files).slice(0, 400));
+  assert.deepEqual(sizes(planUploads(prepared, verified)), [250]);
+  assert.deepEqual(
+    sizes(planUploads(prepared, verified, { all: true })),
+    [300, 300, 50],
+  );
+  assert.deepEqual(
+    sizes(planUploads(prepared, inventory(Object.keys(files)))),
+    [],
+  );
+  // Objects are immutable: changed bytes behind a verified path stop the run.
+  const changed = { output: "/stage", files: { ...files } };
+  changed.files["/audio/days/001-aa.m4a"] = {
+    bytes: 11,
+    sha256: "b".repeat(64),
+  };
+  assert.throws(
+    () => planUploads(changed, verified),
+    /changed bytes behind an immutable path/,
+  );
+});
+
+test("Batches are written fresh as numbered key/file lists", () => {
+  const dir = join(scratch, "batches/r2-audio-upload");
+  const entry = (n: number) => ({ key: `audio/days/${n}`, file: `/s/${n}` });
+  const [one, two] = writeUploadBatches(dir, [
+    [entry(1), entry(2)],
+    [entry(3)],
+  ]);
+  assert.deepEqual(JSON.parse(readFileSync(one, "utf8")), [entry(1), entry(2)]);
+  assert.match(two, /batch-02\.json$/);
+  assert.deepEqual(listBatches(dir), [one, two]);
+  // A smaller release leaves no stale batch behind.
+  writeUploadBatches(dir, [[entry(1)]]);
+  assert.deepEqual(readdirSync(dir), ["batch-01.json"]);
+  assert.throws(
+    () => writeUploadBatches(join(scratch, "batches/other"), []),
+    /Refusing to clean/,
+  );
+});
+
+test("Each batch runs in its own wrangler process, retried then stopped", () => {
+  const log: string[] = [];
+  const calls: string[] = [];
+  const failures = new Map([
+    ["b2", 2],
+    ["b4", 99],
+  ]);
+  const run = (args: string[]) => {
+    const batch = args[args.indexOf("--filename") + 1];
+    calls.push(batch);
+    const left = failures.get(batch) ?? 0;
+    failures.set(batch, left - 1);
+    return left > 0 ? 1 : 0;
+  };
+  const result = runUploads(["b1", "b2", "b3"], {
+    run,
+    log: (l) => log.push(l),
+  });
+  assert.deepEqual(calls, ["b1", "b2", "b2", "b2", "b3"]);
+  assert.deepEqual(result, { uploaded: ["b1", "b2", "b3"], failed: undefined });
+  calls.length = 0;
+  const stopped = runUploads(["b4", "b5"], { run, log: (l) => log.push(l) });
+  assert.deepEqual(calls, ["b4", "b4", "b4", "b4"]);
+  assert.deepEqual(stopped, { uploaded: [], failed: "b4" });
+  assert.match(log.at(-1)!, /Upload stopped: b4 failed after 3 retries/);
 });
 
 test("The build removes manifests it does not advertise", async () => {

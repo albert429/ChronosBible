@@ -25,7 +25,7 @@ CHAPTER = "/audio/chapters/assets/GEN-1-abc.m4a"
 
 
 class Host(BaseHTTPRequestHandler):
-    """Pages + range handler stand-in. `faults` alters chosen responses."""
+    """R2 host stand-in. `faults` alters chosen responses."""
 
     files = {}
     faults = set()
@@ -73,17 +73,17 @@ class VerifyAudioHost(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.dir = Path(self.temp.name)
-        self.bundle = self.dir / "pages-audio"
+        self.staged = self.dir / "r2-audio"
         files = {DAY: bytes(range(256)) * 20, CHAPTER: bytes(reversed(range(256))) * 9 + b"tail"}
         records = {}
         for src, data in files.items():
-            path = self.bundle / src.lstrip("/")
+            path = self.staged / src.lstrip("/")
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
             records[src] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
         self.inventory = self.dir / "inventory.json"
         self.inventory.write_text(json.dumps({"version": 1, "kind": "prepared", "release": "r-test",
-                                              "output": str(self.bundle), "files": records}))
+                                              "output": str(self.staged), "files": records}))
         self.publication = self.dir / "publication.json"
         Host.files, Host.faults, Host.requests = files, set(), 0
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), Host)
@@ -141,8 +141,8 @@ class VerifyAudioHost(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("immutable", output)
 
-    def test_local_bundle_must_match_the_prepared_inventory(self):
-        (self.bundle / DAY.lstrip("/")).write_bytes(b"other")
+    def test_staged_files_must_match_the_prepared_inventory(self):
+        (self.staged / DAY.lstrip("/")).write_bytes(b"other")
         code, output = self.run_verify()
         self.assertEqual(code, 1)
         self.assertIn("local", json.loads((self.dir / "report.json").read_text())["problems"][DAY])

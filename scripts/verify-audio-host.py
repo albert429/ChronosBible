@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Verify a deployed audio release byte for byte, then record it as published.
 
-Reads the local prepared inventory written by scripts/prepare-audio-host.mjs
-(artifacts/pages-audio-inventory.json) and checks every recording on the
-deployed host, normally the app origin whose /audio/... routes proxy to Pages:
+Reads the local prepared inventory written by scripts/prepare-audio-r2.mjs
+(artifacts/r2-audio-inventory.json) and checks every recording on the
+deployed host, normally https://audio.chronosbible.com (the R2 bucket):
 
 - three ranges per file (start, middle, suffix): status 206, exact
   Content-Range/Content-Length, audio/mp4, immutable caching, byte equality
-  with the local bundle file whose SHA-256 the inventory records;
+  with the staged file whose SHA-256 the inventory records;
 - with --full, one complete download per file whose SHA-256 must match;
 - one past-the-end range must answer 416.
 
@@ -17,8 +17,8 @@ advertise chapters and chronological playlists. Prepared-but-unverified files
 are never written there. Existing entries are kept (rollback); a path whose
 bytes changed is refused, because media URLs are immutable.
 
-Standard library only. Each range is one Pages Functions request: about
-3 x files requests (or 4 x with --full), well inside 100,000 per day.
+Standard library only. Each range is one R2 read (a Class B operation): about
+3 x files requests (or 4 x with --full), far inside the monthly allowance.
 """
 import argparse
 import hashlib
@@ -84,7 +84,7 @@ def ranges(size):
 
 def check_file(src, record, bundle, base, open_url, full, timeout):
     path = bundle / src.lstrip("/")
-    expect(path.is_file(), "missing from the local bundle")
+    expect(path.is_file(), "missing from the staged folder")
     data = path.read_bytes()
     expect(len(data) == record["bytes"], "local size differs from the prepared inventory")
     expect(hashlib.sha256(data).hexdigest() == record["sha256"], "local hash differs from the prepared inventory")
@@ -101,7 +101,7 @@ def check_file(src, record, bundle, base, open_url, full, timeout):
         expect((headers.get("content-type") or "").startswith("audio/mp4"), f"{header}: Content-Type")
         expect("immutable" in (headers.get("cache-control") or ""), f"{header}: Cache-Control")
         expect(body == data[start:end + 1], f"{header}: bytes differ")
-        seen[header] = {"cache": headers.get("x-audio-cache"), "proxy": headers.get("x-vercel-cache")}
+        seen[header] = {"cache": headers.get("cf-cache-status")}
     if full:
         status, headers, body = fetch(open_url, url, {}, timeout * 3)
         expect(status == 200, f"full: status {status}")
@@ -137,10 +137,10 @@ def write_json(path, value, indent=2):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("base_url", help="Deployed origin, for example https://example.vercel.app")
-    parser.add_argument("--inventory", type=Path, default=ROOT / "artifacts/pages-audio-inventory.json",
-                        help="Prepared inventory from prepare-audio-host.mjs")
-    parser.add_argument("--root", type=Path, help="Local bundle (default: the inventory's output)")
+    parser.add_argument("base_url", help="Deployed audio origin, for example https://audio.chronosbible.com")
+    parser.add_argument("--inventory", type=Path, default=ROOT / "artifacts/r2-audio-inventory.json",
+                        help="Prepared inventory from prepare-audio-r2.mjs")
+    parser.add_argument("--root", type=Path, help="Staged folder (default: the inventory's output)")
     parser.add_argument("--cookie", type=Path, help="Optional Netscape cookie file for protected previews")
     parser.add_argument("--full", action="store_true", help="Also download each file whole and compare SHA-256")
     parser.add_argument("--only", help="Comma-separated prefixes to check, e.g. /audio/chapters/ (no --publish)")

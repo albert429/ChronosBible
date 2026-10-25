@@ -4,8 +4,8 @@ The plan reader plays a single audio file for each day; the Bible reader plays o
 file per chapter; a chronological reading plays a playlist of chapters and clips.
 The recordings keep their own native introductions; no spoken labels are generated. All source selection, verse alignment, trimming, and encoding
 happen offline. The reader is a static frontend
-with no audio API, runtime secret, or speech model. The current Cloudflare Pages
-audio host uses a small byte-range handler for native seeking.
+with no audio API, runtime secret, or speech model. Cloudflare R2 serves the
+recordings with native byte ranges.
 
 ## Source and preparation
 
@@ -221,10 +221,10 @@ audio event; only the active verse marker and small player update.
 The delivery rules live in `src/audio/contract.ts`: the media path patterns
 `/audio/days/NNN-<hash>.m4a` and `/audio/chapters/assets/<USFM>-<n>-<hash>.m4a`,
 the 8 MiB size cap, the content type, the cache
-value and the Pages origin. The app validates every manifest `src` against that
-pattern, and the Pages bundle script imports it. `vercel.json` and the Cloudflare
-worker (deployed verbatim, so it cannot import) repeat the values; tests keep
-them equal to the contract.
+value, the R2 bucket and its origin. The app validates every manifest `src`
+against that pattern, and the staging and upload scripts import it.
+`vercel.json`, `_redirects` and the Cloudflare build repeat the origin; tests
+keep them equal to the contract.
 
 Each media filename contains a content fingerprint. Serve media with:
 
@@ -235,46 +235,54 @@ Cache-Control: public, max-age=31536000, immutable
 
 The host must support byte ranges and return correct `Content-Length` and
 `Content-Range` headers. Never reuse an immutable media URL for changed audio.
-Day, chapter and chronological playlist JSON remain on Vercel with revalidation,
-so timing fixes take effect. `vercel.json` sets `Vercel-CDN-Cache-Control: no-store`
-on `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*`, so Vercel
-never caches proxied media itself; the browser and Cloudflare do.
+Day, chapter and chronological playlist JSON stay with the app build and
+revalidate, so timing fixes take effect.
 
-## Current deployment: Vercel + Cloudflare Pages
+## Current deployment: Cloudflare R2
 
-The 150 recordings live in the `bible-reading-audio` Pages project. Vercel proxies
-only `/audio/days/:file` to that host; timing manifests remain in the app build.
-The Cloudflare app worker (`hosting/cloudflare-app/`) proxies the same media
-paths for `chronosbible.com`. Set `VITE_AUDIO_BASE_URL=/` to enable the
-same-origin media route in a Git-only build. The `dev` preview is configured
-this way. Production/main must be configured
-separately when promoting the audio release. `vite.config.ts` validates the value
-and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`.
-Direct `pages.dev` URLs are not promoted automatically: they time out on some
-local DNS answers, so the same-origin route stays the default.
-
-### R2 (current for Cloudflare)
-
-Cloudflare builds load every verified recording from the R2 bucket
+R2 is the only audio host. Every verified recording lives in the R2 bucket
 `chronosbible-audio`, served read-only at `https://audio.chronosbible.com` with
 the same paths (`/audio/days/…`, `/audio/chapters/assets/…`, `/audio/clips/…`).
 Objects carry `Content-Type: audio/mp4` and
 `Cache-Control: public, max-age=31536000, immutable`; R2 answers byte ranges
-natively. A new release is uploaded with `npx wrangler@4 r2 bulk put
-chronosbible-audio --filename <key/file JSON> --content-type audio/mp4
---cache-control "public, max-age=31536000, immutable" --remote`, then verified
-with `scripts/verify-audio-host.py https://audio.chronosbible.com --inventory
-<prepared inventory>`. Objects are never overwritten or deleted: names are
-immutable hashes, and a rollback keeps the old files. Vercel still uses the
-Pages host until its `VITE_AUDIO_BASE_URL` is changed.
+natively, so no range handler, proxy or Worker is involved. The origin and bucket
+name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/audio/contract.ts`.
+
+Both app hosts load audio from that origin. The Cloudflare builds set
+`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com` themselves
+(`AUDIO_BASE_URL` in `scripts/cloudflare-app.mjs`; a test pins it to the
+contract); Vercel takes the same **public** value from its environment.
+`vite.config.ts` validates it and inlines it as `__AUDIO_BASE_URL__`, so the app
+never reads `import.meta.env`. Day, chapter and chronological playlist JSON stay
+with each app build and revalidate, so timing fixes take effect.
+
+The earlier `bible-reading-audio` Cloudflare Pages project, its range handler
+and the app-side media proxies are retired. Old app URLs under `/audio/days/*`,
+`/audio/chapters/assets/*` and `/audio/clips/*` (cached `index.html`, saved
+positions) answer a permanent `301` to the same path on the R2 origin:
+`hosting/cloudflare-app/_redirects` on Cloudflare and `redirects` in
+`vercel.json` on Vercel. The JSON manifests (`/audio/<day>.json`,
+`/audio/chapters/<BOOK>/<n>.json`, `/audio/chrono/…`) match no redirect.
+
+No R2 access key belongs in a `VITE_` variable or in the frontend. Native
+playback does not need a JavaScript-readable cross-origin response. If adding
+waveform or Web Audio features later, configure CORS for the exact website
+origins first.
+
+R2 Standard includes 10 GB-month of storage, 1 million Class A operations and 10
+million Class B operations monthly, with no egress charge (as of 10 October
+2026). This is a usage allowance, not unlimited hosting. Uploads are Class A
+operations, verification reads are Class B. See
+[current pricing](https://developers.cloudflare.com/r2/pricing/) and
+[public bucket configuration](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 
 ### Prepared is not published
 
 Two inventories are kept apart:
 
-- **Prepared** — `artifacts/pages-audio-inventory.json`, written by
-  `npm run audio:host:prepare`: every file in the local bundle with its size and
-  SHA-256. Ignored by Git; it proves nothing about the host.
+- **Prepared** — `artifacts/r2-audio-inventory.json`, written by
+  `npm run audio:host:prepare`: every staged file with its size and SHA-256.
+  Ignored by Git; it proves nothing about the host.
 - **Verified** — `data/audio/publication.json`, written only by
   `scripts/verify-audio-host.py --publish` after **every** file of a prepared
   release passed byte-exact range checks on the deployed host. It lists each
@@ -296,125 +304,48 @@ unpublished manifest is never uploaded.
 
 ### Publishing a release
 
-The bundle holds what the catalogs need **plus every file already in the
-verified inventory**, so an older app build (rollback) keeps its media after a
-new Pages deployment replaces the previous one. A missing file stops
-preparation; nothing is dropped silently. `--retain <inventory.json>` keeps
-extra files (for example an older prepared inventory). Media roots are a
-`:`-separated `AUDIO_MEDIA_ROOT` or repeated `--media`; recordings are
-hard-linked into the bundle when on the same disk (no 2.7 GB copy; `--copy`
-forces copies). Limits are checked: at most 8 MiB per file and 20,000 files per
-deployment. The earlier release was 1,339 files (150 days + 1,189 chapters); the
-2,435-file release supersedes it.
+Preparation stages what the catalogs need **plus every file already in the
+verified inventory**, so an older app build (rollback) keeps its media. A
+missing file stops preparation; nothing is dropped silently. `--retain
+<inventory.json>` keeps extra files (for example an older prepared inventory).
+Media roots are a `:`-separated `AUDIO_MEDIA_ROOT` or repeated `--media`;
+recordings are hard-linked into `artifacts/r2-audio/` when on the same disk (no
+2.7 GB copy; `--copy` forces copies). Each file is checked at no more than 8 MiB.
+R2 has no file-count limit that matters here: the current release is 2,435
+files (150 days, 1,189 chapters and the chronological clips).
 
 1. `AUDIO_MEDIA_ROOT=<daily root>:<chapter root> npm run audio:host:prepare`
-2. Deploy `artifacts/pages-audio` with
-   `wrangler pages deploy artifacts/pages-audio --project-name bible-reading-audio --branch main --commit-dirty=true`.
-3. `python3 scripts/verify-audio-host.py https://<app origin>` checks every file
-   in the prepared inventory through the app's media route: three ranges per
-   file (start, middle, suffix) against the local bytes, exact `Content-Range`
-   and `Content-Length`, `audio/mp4`, immutable caching, and one `416` past the
-   end. `--full` also downloads each file and compares its SHA-256. Network
-   failures and `5xx` are retried; any failure publishes nothing.
+   stages the recordings in `artifacts/r2-audio/`, writes the prepared
+   inventory, and writes upload batches of at most 300 entries
+   (`artifacts/r2-audio-upload/batch-NN.json`, each `[{key, file}]`) holding only
+   files **not already verified** with the same SHA-256. `--all` lists every file.
+   A path whose bytes differ from its verified entry stops preparation.
+2. `npm run audio:host:upload` runs
+   `npx wrangler@4 r2 bulk put chronosbible-audio --filename <batch> --content-type audio/mp4 --cache-control "public, max-age=31536000, immutable" --remote --concurrency 20`
+   once per batch, each in its own process so an expired OAuth token costs one
+   batch. A failed batch is retried up to three times; a persistent failure stops
+   the run (`--from <n>` resumes at batch n, `--dry-run` prints the commands).
+   Objects are immutable: nothing is deleted or overwritten with other bytes.
+3. `python3 scripts/verify-audio-host.py https://audio.chronosbible.com` checks
+   every file in the prepared inventory on the host: three ranges per file
+   (start, middle, suffix) against the staged bytes, exact `Content-Range` and
+   `Content-Length`, `audio/mp4`, immutable caching, and one `416` past the end.
+   `--full` also downloads each file and compares its SHA-256. Network failures
+   and `5xx` are retried; any failure publishes nothing.
 4. Re-run with `--publish` to merge the release into `data/audio/publication.json`.
    A path whose bytes differ from an earlier verified entry is refused.
 5. Commit the inventory, then set `VITE_AUDIO_CHAPTERS_ENABLED=true` for the
-   Vercel environment and rebuild.
+   environment and rebuild.
 
 #### Staged release
 
 1. Upload and verify the corrected canonical chapters, publish them.
 2. Upload and verify the clips and chronological assets, publish them.
 3. Only then rebuild the app with the flags on. Each stage can be rolled back
-   alone because superseded files stay in the bundle (`supersedes`), and because
-   a reading is advertised only when everything it references is verified, an
-   interrupted upload leaves the app consistent: readings simply stay without
-   Listen.
-
-Here `--branch main` selects the **audio host's** production deployment; it does
-not push or modify the application's Git branch. The bundle includes the range
-handler and `_routes.json`, so only media paths invoke it. Unchanged uploads are
-deduplicated. Do not deploy the raw media folder without the handler.
-`npm run audio:host:deploy` still prepares and deploys in one step.
-
-This route avoids a connection timeout observed with the local DNS answers for
-the Pages domain. Downloads through it count toward Vercel's transfer allowance.
-It uses an external rewrite, without a Vercel server function.
-Browser caching stays immutable, while `Vercel-CDN-Cache-Control: no-store`
-prevents the proxy from caching a partial response and reusing it for a different
-range. Cloudflare still caches the underlying complete static asset.
-
-### The range handler
-
-Pages returns complete `200` responses to range requests. That caused seeking to
-jump back to the beginning on a cold Vercel cache. The narrow Pages handler in
-`hosting/cloudflare-audio/worker.js` returns correct `206` responses, including
-Safari's two-byte probe, open-ended ranges and suffix ranges; invalid offsets
-return `416`, malformed or multipart ranges the whole file. Only paths matching
-the media pattern are handled; anything else passes through untouched.
-
-- **Warm ranges** come from the colo's Cache API:
-  `caches.default.match(new Request(url, { headers: { Range } }))` answers a
-  `206`/`416` from a cached complete file without the handler reading it.
-- **A cold miss** fetches the Pages asset once without `Range` or conditional
-  headers, refuses to buffer more than 8 MiB (a larger file streams through
-  whole), checks the body against `Content-Length`, slices the range, and stores
-  the complete `200` (with `Content-Length`, immutable caching, ETag) in the
-  background. A `206`, a response carrying `Content-Range`, an error or a
-  truncated body is never stored. The cache key is the path without its query
-  string, so cache-busting parameters cannot multiply entries.
-- **Preconditions come first** (RFC 9110 order), checked against the file's own
-  ETag and `Last-Modified`, on cache hits, cold fills and whole-file/`HEAD`
-  answers alike: a failed `If-Match` or `If-Unmodified-Since` returns `412`; a
-  matching `If-None-Match` (weak comparison, `*`) or an unchanged
-  `If-Modified-Since` returns `304` with validators and no body. Pages is always
-  asked for the plain file, so its own `304` can never be sliced or cached.
-- `If-Range` keeps the range only for the same strong ETag or exact
-  `Last-Modified`; anything else, including a weak ETag, gets the whole file.
-- `HEAD` and whole-file answers keep Pages' `Content-Length` and add
-  `Accept-Ranges: bytes`. Every media answer carries the immutable
-  `Cache-Control` and `Vercel-CDN-Cache-Control: no-store`; `X-Audio-Cache:
-HIT|MISS` on ranges shows which path answered.
-
-Whether the Cache API persists entries on the `pages.dev` hostname must be
-confirmed after deployment (repeat a range and look for `X-Audio-Cache: HIT`);
-if it does not, every range behaves as a cold miss, which is still correct. Daily
-files are under 5 MB; the largest chapter, Psalm 119, is 7,664,871 bytes
-(723,737 bytes of headroom).
-
-Pages Functions share the Workers Free daily allowance of 100,000 requests; every
-media range request counts, cached or not. Verification costs about three
-requests per file (about 4,000 for the current release). This setup is not
-unlimited hosting. Check the account's usage as listening grows. See
-[Pages serving behavior](https://developers.cloudflare.com/pages/configuration/serving-pages/),
-[Pages Functions pricing](https://developers.cloudflare.com/pages/functions/pricing/),
-[Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/)
-and [Vercel external rewrites](https://vercel.com/docs/routing/rewrites).
-
-## Alternative: Vercel + Cloudflare R2
-
-1. Create an R2 bucket using **Standard** storage.
-2. Upload the contents of `public/audio/days/` under the key prefix `audio/days/`.
-3. Set the media metadata above when uploading.
-4. Attach a public custom domain such as `audio.example.org` to the bucket and
-   add a Cache Rule for that hostname and paths starting with `/audio/days/`:
-   make them eligible for caching and respect the object Cache-Control header.
-   The `r2.dev` development URL is rate-limited and does not support this cache.
-   See [R2 cache setup](https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/).
-5. In Vercel, set the **public** variable
-   `VITE_AUDIO_BASE_URL=https://audio.example.org` and rebuild.
-6. Verify a real media URL responds to `Range: bytes=0-1023` with a `206` response,
-   and test seeking on Safari and Chrome. Verify cache headers on repeat requests.
-
-No R2 access key belongs in a `VITE_` variable or in the frontend. Native playback
-does not need a JavaScript-readable cross-origin response. If adding waveform or
-Web Audio features later, configure CORS for the exact website origins first.
-
-As of 10 October 2026, R2 Standard includes 10 GB-month of storage, 1 million
-Class A operations, and 10 million Class B operations monthly, with no egress
-charge. This is a usage allowance, not an unlimited free service. A custom domain
-has its own registration cost. See [current pricing](https://developers.cloudflare.com/r2/pricing/)
-and [public bucket configuration](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+   alone because superseded files stay in R2 and in the staged folder
+   (`supersedes`), and because a reading is advertised only when everything it
+   references is verified, an interrupted upload leaves the app consistent:
+   readings simply stay without Listen.
 
 ## Vercel-only alternative
 
@@ -504,7 +435,7 @@ is configured. Machine timing review remains separate from functional tests.
 - `verify-canonical-audio.py` passed for all 1,189 chapters, including every
   original recording's SHA-256 and the exact source coverage: 260 verse-timed NT,
   929 chapter-timed OT, AAC mono 24 kHz, fast start, durations within 0.05 s.
-- The range handler returned byte-exact `206` responses from the prepared bundle
+- The (since retired) Pages range handler returned byte-exact `206` responses from the prepared bundle
   for Psalm 119, 1 Kings 8 and Ezekiel 16 (two-byte probe, middle, suffix,
   open-ended and over-long ranges) and `416` past the end.
 - Pilot days 1, 32 and 150 were assembled from the original NT recordings with

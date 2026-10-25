@@ -4,9 +4,9 @@ import { AUDIO_MAX_BYTES, AUDIO_MEDIA_PATTERN } from "./contract.ts";
  * The verified upload inventory, `data/audio/publication.json`. Written only
  * by scripts/verify-audio-host.py after every file of a prepared release was
  * range-checked byte for byte on the deployed host. A file that is merely
- * prepared locally (`artifacts/pages-audio-inventory.json`) is not here.
+ * prepared locally (`artifacts/r2-audio-inventory.json`) is not here.
  * Entries are never removed by verification, so an older release's media stay
- * in later bundles for rollback.
+ * in later staged releases for rollback; R2 objects are never deleted.
  */
 export type PublishedFile = { bytes: number; sha256: string; release: string };
 export type PublicationRelease = {

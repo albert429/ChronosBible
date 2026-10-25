@@ -1,6 +1,6 @@
 // The audio delivery contract (src/audio/contract.ts) against everything that
-// restates it: committed manifests, the Pages bundle, vercel.json and the
-// range worker, which is deployed verbatim and so cannot import the contract.
+// restates it: committed manifests, the R2 staging folder and the upload
+// command.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -15,7 +15,6 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import worker from "../hosting/cloudflare-audio/worker.js";
 import {
   AUDIO_CACHE_CONTROL,
   AUDIO_CONTENT_TYPE,
@@ -25,10 +24,11 @@ import {
   AUDIO_MEDIA_PATTERN,
   AUDIO_MEDIA_PREFIX,
   AUDIO_MEDIA_PREFIXES,
-  AUDIO_PAGES_ORIGIN,
-  AUDIO_PAGES_PROJECT,
+  AUDIO_HOST_ORIGIN,
+  AUDIO_R2_BUCKET,
 } from "../src/audio/contract.ts";
-import { copyMedia, pagesConfig } from "../scripts/prepare-audio-host.mjs";
+import { copyMedia } from "../scripts/prepare-audio-r2.mjs";
+import { bulkPutArguments } from "../scripts/upload-audio-r2.mjs";
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
@@ -108,94 +108,33 @@ test("Every committed chapter manifest matches the chapter media contract", () =
   }
 });
 
-test("vercel.json proxies and caches media as the contract says", () => {
-  const { rewrites, headers } = json("vercel.json");
-  assert.deepEqual(
-    rewrites,
-    AUDIO_MEDIA_PREFIXES.map((prefix) => ({
-      source: `${prefix}:file`,
-      destination: `${AUDIO_PAGES_ORIGIN}${prefix}:file`,
-    })),
-  );
-  for (const prefix of AUDIO_MEDIA_PREFIXES) {
-    const media = headers.find(
-      (rule: { source: string }) => rule.source === `${prefix}(.*)`,
-    );
-    const value = (key: string) =>
-      media.headers.find((h: { key: string }) => h.key === key)?.value;
-    assert.equal(value("Cache-Control"), AUDIO_CACHE_CONTROL, prefix);
-    // One cached partial response must never answer a different Range.
-    assert.equal(value("Vercel-CDN-Cache-Control"), "no-store", prefix);
-  }
-});
-
-test("The deploy script targets the contract's Pages project", () => {
-  const { scripts } = json("package.json");
-  assert.match(
-    scripts["audio:host:deploy"],
-    new RegExp(`--project-name ${AUDIO_PAGES_PROJECT}( |$)`),
-  );
-  assert.equal(AUDIO_PAGES_ORIGIN, `https://${AUDIO_PAGES_PROJECT}.pages.dev`);
-});
-
-test("The range worker's 206 headers equal the contract", async () => {
-  const response = await worker.fetch(
-    new Request(`${AUDIO_PAGES_ORIGIN}${AUDIO_MEDIA_PREFIX}001-abc.m4a`, {
-      headers: { Range: "bytes=0-1" },
-    }),
-    { ASSETS: { fetch: async () => new Response(new Uint8Array(16)) } },
-  );
-  assert.equal(response.status, 206);
-  assert.equal(response.headers.get("Content-Type"), AUDIO_CONTENT_TYPE);
-  assert.equal(response.headers.get("Cache-Control"), AUDIO_CACHE_CONTROL);
-});
-
-test("The worker restates the contract's pattern, cap, type and cache value", () => {
-  const source = readFileSync(
-    new URL("../hosting/cloudflare-audio/worker.js", import.meta.url),
-    "utf8",
-  );
-  const constant = (name: string) =>
-    new RegExp(`const ${name} =\\s*([^;]+);`).exec(source)?.[1].trim();
-  assert.equal(constant("AUDIO_MEDIA_PATTERN"), String(AUDIO_MEDIA_PATTERN));
-  assert.equal(constant("AUDIO_MAX_BYTES"), "8 * 1024 * 1024");
-  assert.equal(
-    constant("AUDIO_CONTENT_TYPE"),
-    JSON.stringify(AUDIO_CONTENT_TYPE),
-  );
-  assert.equal(
-    constant("AUDIO_CACHE_CONTROL"),
-    JSON.stringify(AUDIO_CACHE_CONTROL),
-  );
-  // Pages treats every module export as an entrypoint: default only.
-  assert.deepEqual(source.match(/^export .*/gm), ["export default {"]);
-});
-
-test("pagesConfig routes only media paths through the worker, with the contract's headers", () => {
-  const config = pagesConfig();
-  assert.deepEqual(Object.keys(config).sort(), [
-    "404.html",
-    "_headers",
-    "_routes.json",
-    "index.html",
+test("The upload command targets the contract's bucket with its headers", () => {
+  assert.equal(AUDIO_HOST_ORIGIN, "https://audio.chronosbible.com");
+  assert.deepEqual(bulkPutArguments("batch-01.json"), [
+    "wrangler@4",
+    "r2",
+    "bulk",
+    "put",
+    AUDIO_R2_BUCKET,
+    "--filename",
+    "batch-01.json",
+    "--content-type",
+    AUDIO_CONTENT_TYPE,
+    "--cache-control",
+    AUDIO_CACHE_CONTROL,
+    "--remote",
+    "--concurrency",
+    "20",
   ]);
-  assert.deepEqual(JSON.parse(config["_routes.json"]), {
-    version: 1,
-    include: AUDIO_MEDIA_PREFIXES.map((prefix) => `${prefix}*`),
-    exclude: [],
-  });
-  assert.equal(
-    config._headers,
-    AUDIO_MEDIA_PREFIXES.map(
-      (prefix) =>
-        `${prefix}*\n  Content-Type: ${AUDIO_CONTENT_TYPE}\n  Cache-Control: ${AUDIO_CACHE_CONTROL}\n`,
-    ).join(""),
-  );
-  for (const page of ["index.html", "404.html"] as const)
-    assert.match(config[page], /^<!doctype html>.*\n$/);
+  assert.equal(AUDIO_R2_BUCKET, "chronosbible-audio");
+  assert.equal(AUDIO_CONTENT_TYPE, "audio/mp4");
+  assert.equal(AUDIO_CACHE_CONTROL, "public, max-age=31536000, immutable");
+  const { scripts } = json("package.json");
+  assert.equal(scripts["audio:host:deploy"], undefined);
+  assert.match(scripts["audio:host:upload"], /scripts\/upload-audio-r2\.mjs$/);
 });
 
-test("copyMedia bundles both namespaces from any media root and refuses unsafe files", () => {
+test("copyMedia stages both namespaces from any media root and refuses unsafe files", () => {
   const root = mkdtempSync(join(tmpdir(), "audio-bundle-"));
   try {
     const media = join(root, "media");
@@ -217,7 +156,7 @@ test("copyMedia bundles both namespaces from any media root and refuses unsafe f
     );
     for (const src of [day, chapter])
       assert.equal(readFileSync(output + src, "utf8"), src);
-    // Over the range handler's limit: never truncated, refused instead.
+    // Over the size sanity limit: never truncated, refused instead.
     truncateSync(join(media, chapter), AUDIO_MAX_BYTES + 1);
     assert.throws(() => copyMedia([join(root, "psa.json")], output, media));
     assert.throws(() =>

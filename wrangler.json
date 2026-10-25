@@ -1,18 +1,11 @@
 {
   "name": "chronosbible",
-  "main": "hosting/cloudflare-app/worker.js",
   "compatibility_date": "2026-10-01",
   "build": {
     "command": "node scripts/cloudflare-app.mjs build production"
   },
   "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS",
-    "run_worker_first": [
-      "/audio/days/*",
-      "/audio/chapters/assets/*",
-      "/audio/clips/*"
-    ]
+    "directory": "./dist"
   },
   "routes": [
     {
@@ -29,13 +22,7 @@
         "command": "node scripts/cloudflare-app.mjs build dev"
       },
       "assets": {
-        "directory": "./dist",
-        "binding": "ASSETS",
-        "run_worker_first": [
-          "/audio/days/*",
-          "/audio/chapters/assets/*",
-          "/audio/clips/*"
-        ]
+        "directory": "./dist"
       },
       "routes": [
         {
