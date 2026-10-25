@@ -1,13 +1,14 @@
 import {
   lstat,
   mkdir,
+  open,
   readdir,
   readFile,
   rename,
   rm,
-  writeFile,
   rmdir,
 } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
 import { dirname, join, posix } from "node:path";
 
 /**
@@ -23,8 +24,18 @@ const GENERATOR = "scripts/agents/adapters.mjs";
 const FIX = 'run "npm run agents -- sync" after fixing canonical files';
 const MAX_FILE_BYTES = 1024 * 1024;
 const MAX_SKILL_FILES = 200;
+const TASK_ID = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+const SESSION_KEYS = ["tool", "model", "sessionId", "watchPath", "startedAt"];
 const ID_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-const SKILL_PATTERN = /^bible150-[a-z0-9]+(-[a-z0-9]+)*$/;
+/**
+ * Generated names start with the first prefix. The legacy prefix is scanned
+ * only so that files this generator wrote under the old name are removed on
+ * upgrade; unmarked files under either prefix are foreign and left alone.
+ */
+const MANAGED_PREFIXES = ["chronos-bible-", "bible150-"];
+const isManagedName = (/** @type {string} */ name) =>
+  MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
+const SKILL_PATTERN = /^chronos-bible-[a-z0-9]+(-[a-z0-9]+)*$/;
 const RESOURCE_NAME = /^[A-Za-z0-9._-]+$/;
 const ROOT_WORDS = { min: 300, max: 400 };
 
@@ -368,8 +379,8 @@ async function loadCatalog(root, problems) {
       problems.push(`${label}: duplicate id "${id}"`);
       valid = false;
     } else ids.add(id);
-    if (typeof id === "string" && name !== `bible150-${id}`) {
-      problems.push(`${label}: name must be "bible150-${id}"`);
+    if (typeof id === "string" && name !== `chronos-bible-${id}`) {
+      problems.push(`${label}: name must be "chronos-bible-${id}"`);
       valid = false;
     } else if (typeof name === "string" && names.has(name)) {
       problems.push(`${label}: duplicate name "${name}"`);
@@ -404,7 +415,7 @@ async function loadCatalog(root, problems) {
       !skills.every((s) => typeof s === "string" && SKILL_PATTERN.test(s))
     ) {
       problems.push(
-        `${label}: skills must be an array of bible150-* skill names`,
+        `${label}: skills must be an array of chronos-bible-* skill names`,
       );
       valid = false;
     }
@@ -443,7 +454,7 @@ async function loadSkills(root, problems) {
     const before = problems.length;
     if (!SKILL_PATTERN.test(name) || name.length > 64) {
       problems.push(
-        `${dir}: skill directory must be a lowercase hyphenated bible150-* name of at most 64 characters`,
+        `${dir}: skill directory must be a lowercase hyphenated chronos-bible-* name of at most 64 characters`,
       );
     }
     const files = await walkFiles(root, dir, problems);
@@ -528,14 +539,23 @@ async function checkTemplates(root, problems) {
       if (
         !Array.isArray(a.writablePaths) ||
         a.writablePaths.length === 0 ||
-        !a.writablePaths.every(isSafeRel)
+        !a.writablePaths.every((p) => isSafeRel(p) && !/[*?[\]{}!]/.test(p))
       ) {
         problems.push(
           `${label}: writablePaths must be a non-empty array of repository-relative paths`,
         );
       }
-      if (!isTextList(a.dependencies))
-        problems.push(`${label}: dependencies must be an array of strings`);
+      if (
+        !Array.isArray(a.dependencies) ||
+        !a.dependencies.every(
+          (d) =>
+            typeof d === "string" && TASK_ID.test(d) && d !== "integration",
+        )
+      ) {
+        problems.push(
+          `${label}: dependencies must be an array of task ids integrated first`,
+        );
+      }
       if (
         !isTextList(a.acceptanceChecks) ||
         /** @type {unknown[]} */ (a.acceptanceChecks).length === 0
@@ -553,10 +573,29 @@ async function checkTemplates(root, problems) {
     if (h) {
       rejectUnknownKeys(
         h,
-        ["tests", "findings", "remainingWork", "artifacts"],
+        ["tests", "findings", "remainingWork", "artifacts", "session"],
         label,
         problems,
       );
+      if (h.session !== undefined) {
+        const session = expectObject(h.session, `${label} session`, problems);
+        if (session) {
+          rejectUnknownKeys(
+            session,
+            SESSION_KEYS,
+            `${label} session`,
+            problems,
+          );
+          if (
+            !Object.values(session).every(
+              (v) => isText(v) && /** @type {string} */ (v).length <= 500,
+            )
+          )
+            problems.push(
+              `${label}: session values must be non-empty strings of at most 500 characters`,
+            );
+        }
+      }
       const tests = h.tests;
       if (
         !Array.isArray(tests) ||
@@ -596,7 +635,7 @@ async function checkTemplates(root, problems) {
         [
           "maxImplementationAgents",
           "playwrightPortBase",
-          "modelPreferences",
+          "models",
           "mediaRoot",
         ],
         label,
@@ -631,14 +670,10 @@ async function checkTemplates(root, problems) {
           `${label}: mediaRoot, when present, must be an absolute path`,
         );
       }
-      if (p.modelPreferences !== undefined) {
-        const prefs = expectObject(
-          p.modelPreferences,
-          `${label} modelPreferences`,
-          problems,
-        );
-        if (prefs && !Object.values(prefs).every(isText))
-          problems.push(`${label}: modelPreferences values must be strings`);
+      if (p.models !== undefined) {
+        const models = expectObject(p.models, `${label} models`, problems);
+        if (models && !Object.values(models).every(isText))
+          problems.push(`${label}: models values must be strings (advisory)`);
       }
     }
   }
@@ -836,7 +871,7 @@ async function inspectDisk(root, outputs, source) {
     [CODEX_AGENTS, ".toml"],
   ]) {
     for (const entry of await listDir(root, dir)) {
-      if (!entry.startsWith("bible150-") || !entry.endsWith(ext)) continue;
+      if (!isManagedName(entry) || !entry.endsWith(ext)) continue;
       const rel = `${dir}/${entry}`;
       if (wanted.has(rel)) continue;
       const stats = await lstat(join(root, rel));
@@ -848,7 +883,7 @@ async function inspectDisk(root, outputs, source) {
 
   // Skill directories
   for (const entry of await listDir(root, CLAUDE_SKILLS)) {
-    if (!entry.startsWith("bible150-")) continue;
+    if (!isManagedName(entry)) continue;
     if (source.skills.has(entry)) continue;
     const dir = `${CLAUDE_SKILLS}/${entry}`;
     const stats = await lstat(join(root, dir));
@@ -948,9 +983,7 @@ export async function syncAdapters(root) {
     const current = await readRegular(root, rel);
     if (current && sameBytes(current, output.data)) continue;
     await mkdirSafe(root, dirname(rel));
-    const temp = `${target}.${process.pid}.tmp`;
-    await writeFile(temp, output.data);
-    await rename(temp, target);
+    await writeAtomic(target, output.data);
     written.push(rel);
   }
   for (const rel of state.stale) await rm(join(root, rel));
@@ -974,6 +1007,30 @@ export async function syncAdapters(root) {
     ...counts(source, outputs),
     changed: [...written, ...state.stale, ...state.staleDirs.map((d) => d.dir)],
   };
+}
+
+/**
+ * Write via an unpredictable sibling created exclusively (O_EXCL), so a
+ * pre-planted file or symlink at the temp name makes the write fail instead of
+ * being followed; the temp file is removed on any failure.
+ * @param {string} target
+ * @param {Buffer | string} data
+ */
+async function writeAtomic(target, data) {
+  const temp = `${target}.${randomBytes(8).toString("hex")}.tmp`;
+  /** @type {import("node:fs/promises").FileHandle | undefined} */
+  let handle;
+  try {
+    handle = await open(temp, "wx", 0o644);
+    await handle.writeFile(data);
+    await handle.close();
+    handle = undefined;
+    await rename(temp, target);
+  } catch (error) {
+    await handle?.close().catch(() => {});
+    await rm(temp, { force: true });
+    throw error;
+  }
 }
 
 /** @param {string} root @param {string} rel */

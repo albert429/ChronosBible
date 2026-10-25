@@ -1,4 +1,4 @@
-# bible150-ai-study
+# chronos-bible-ai-study
 
 Own the study panel and optional AI. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `src/study/`, `src/ai/`, `scripts/import-study.py`, `scripts/build-study.js`, `scripts/check-ai-models.mjs`.
 

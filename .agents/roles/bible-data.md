@@ -1,4 +1,4 @@
-# bible150-bible-data
+# chronos-bible-bible-data
 
 Own Scripture, plan, and chronology data. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `data/`, `src/bible/`, `src/chronology/`, `scripts/build-*.js`, `scripts/import*`, `scripts/usfm.py`, `scripts/lib/`, `docs/chronology.md`.
 

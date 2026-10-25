@@ -1,4 +1,4 @@
-# bible150-ui-ux
+# chronos-bible-ui-ux
 
 Own reader and navigation presentation. Default scope (recommended, not authority; the assignment's `writablePaths` decide): `src/components/`, `src/styles/`, `src/navigation/`, `src/reader/`, `src/streak/`.
 
