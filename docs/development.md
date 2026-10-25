@@ -199,6 +199,9 @@ Run from the repository root of a clean checkout on the target branch. A detache
 checkout is accepted only at the exact `origin/main` or `origin/dev` commit for
 that environment. Task branches and dirty checkouts fail before building or
 uploading. Workers Builds branch and commit metadata must also match when set.
+Workers Builds checks out the pushed commit detached without remote branches, so
+the wrapper also accepts it when `WORKERS_CI_BRANCH` and `WORKERS_CI_COMMIT_SHA`
+name the environment's branch and that exact commit.
 For a local check, use `node scripts/cloudflare-app.mjs preflight production`
 (or `dev`); `npm run app:host:build` and `npm run app:host:build:dev` build and audit
 without uploading.
