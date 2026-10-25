@@ -80,6 +80,16 @@ export async function doctor(cwd, out, { json = false } = {}) {
   // Runtime state must be ignored; shared definitions must stay tracked.
   // `source:line:pattern` of the rule ignoring `p`, or null.
   const ignoredBy = (p) => {
+    // Quiet mode distinguishes ignored paths from matching negations; verbose
+    // mode exits successfully for both and is only used to explain a real ignore.
+    const ignored = git(
+      ctx.sourceRoot,
+      ["check-ignore", "-q", "--no-index", p],
+      {
+        allowFail: true,
+      },
+    );
+    if (ignored.status !== 0) return null;
     const r = git(ctx.sourceRoot, ["check-ignore", "-v", "--no-index", p], {
       allowFail: true,
     });
