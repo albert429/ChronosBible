@@ -59,7 +59,7 @@ export async function ask(
     createOpenRouter({
       ...config,
       referer: location.origin + "/",
-      title: "Bible150",
+      title: "ChronosBible",
     }),
   );
   if (signal.aborted) throw new AiError("aborted");
