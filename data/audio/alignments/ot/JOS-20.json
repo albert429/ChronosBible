@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOS",
+  "chapter": 20,
+  "file": "A06___20_Joshua______ARZVDVO1DA.mp3",
+  "audioHash": "9089a47d3872498fc5756d31a2c8d939014b69e008fc2c352f56eedb41dc15f2",
+  "textHash": "745d138e2617d2e0e8efe9581f0bc3fbd6e4dd028cd7d86613a9387fbd7bb9ae",
+  "duration": 124.16,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.6,
+      "end": 7.46,
+      "score": 0.6458
+    },
+    {
+      "verse": 2,
+      "start": 8.68,
+      "end": 17.34,
+      "score": 0.6214
+    },
+    {
+      "verse": 3,
+      "start": 17.34,
+      "end": 25.04,
+      "score": 0.6377
+    },
+    {
+      "verse": 4,
+      "start": 26.22,
+      "end": 43.48,
+      "score": 0.5925
+    },
+    {
+      "verse": 5,
+      "start": 44.28,
+      "end": 55.16,
+      "score": 0.5569
+    },
+    {
+      "verse": 6,
+      "start": 56.26,
+      "end": 74.66,
+      "score": 0.605
+    },
+    {
+      "verse": 7,
+      "start": 74.76,
+      "end": 86.84,
+      "score": 0.5727
+    },
+    {
+      "verse": 8,
+      "start": 86.84,
+      "end": 103.34,
+      "score": 0.5912
+    },
+    {
+      "verse": 9,
+      "start": 103.4,
+      "end": 122.38,
+      "score": 0.5733
+    }
+  ]
+}

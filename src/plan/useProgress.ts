@@ -1,17 +1,31 @@
 import { useSyncExternalStore } from "react";
+import type { AnyReadingLocation } from "../bible/types";
 import {
   PROGRESS_KEY,
+  STATE_KEY,
   createReader,
   importBackup,
   loadProgress,
+  migrateProgress,
   selectReader,
   setCompletion,
-  type Reader,
+  emptyCompletion,
+  setReadingCompletion,
+  type GuestState,
+  type ReadOn,
+  type ReaderProfile,
+  type TrackCompletion,
 } from "./progress";
 
 type Snapshot = {
-  profiles: Reader[];
-  member: Reader | null;
+  profiles: ReaderProfile[];
+  member: ReaderProfile | null;
+  /** Reading without a profile: its own places and completion. */
+  guest: GuestState;
+  /** The active reader's completion: the member's, else the guest's. */
+  completion: TrackCompletion;
+  /** When the active reader's completed readings were marked done. */
+  readOn: ReadOn;
   error: string;
   switches: number;
 };
@@ -21,18 +35,27 @@ let snapshot: Snapshot | undefined;
 
 function read() {
   const state = loadProgress(localStorage);
+  const member = state.profiles.find((p) => p.id === state.activeId) || null;
   return {
     profiles: state.profiles,
-    member: state.profiles.find((p) => p.id === state.activeId) || null,
+    member,
+    guest: state.guest,
+    completion: (member ?? state.guest).completion,
+    readOn: (member ?? state.guest).readOn ?? {},
   };
 }
 function load(): Snapshot {
   try {
+    // Commit a pending v1 migration; on failure it is retried next time.
+    migrateProgress(localStorage);
     return { ...read(), error: "", switches: 0 };
   } catch (err) {
     return {
       profiles: [],
       member: null,
+      guest: { track: "bible", places: {}, completion: emptyCompletion() },
+      completion: emptyCompletion(),
+      readOn: {},
       error: (err as Error).message,
       switches: 0,
     };
@@ -63,7 +86,8 @@ function act(run: () => unknown, switched = 0) {
   }
 }
 function onStorage(event: StorageEvent) {
-  if (event.key !== PROGRESS_KEY && event.key !== null) return;
+  if (event.key !== STATE_KEY && event.key !== PROGRESS_KEY && event.key)
+    return;
   try {
     const next = read();
     update({
@@ -90,13 +114,19 @@ const actions = {
   restore: (text: string) => act(() => importBackup(localStorage, text), 1),
   complete: (id: string, day: number, done: boolean) =>
     act(() => setCompletion(localStorage, id, day, done)),
+  /** Explicitly mark any track's reading done or not done ("" = guest). */
+  completeReading: (id: string, location: AnyReadingLocation, done: boolean) =>
+    act(() => setReadingCompletion(localStorage, id, location, done)),
   fail,
   clearError() {
     if (get().error) update({ error: "" });
   },
 };
 
-/** `switches` counts changes of the active reader, including re-selecting the same one. */
+/**
+ * Readers and their completion. Places come from `useReadingLocation`;
+ * `member.places` is only as fresh as the last progress change.
+ * `switches` counts changes of the active reader, including re-selecting the same one. */
 export function useProgress() {
   return { ...useSyncExternalStore(subscribe, get), ...actions };
 }

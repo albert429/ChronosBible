@@ -7,10 +7,13 @@ type AudioControlsProps = {
   children: ReactNode;
   label: string;
   reference?: { book: string; location: string };
+  /** Shown instead of the verse reference: a spoken passage reference or a timing note. */
+  detail?: string;
   /** False until the manifest has loaded. */
   ready: boolean;
   cueIndex: number;
   cueCount: number;
+  canPrevious?: boolean;
   active: boolean;
   rate: number;
   time: number;
@@ -29,9 +32,11 @@ export default function AudioControls({
   children,
   label,
   reference,
+  detail,
   ready,
   cueIndex,
   cueCount,
+  canPrevious,
   active,
   rate,
   time,
@@ -51,26 +56,32 @@ export default function AudioControls({
       <div className="audio-player-inner">
         <div className="audio-current">
           <span>{label}</span>
-          {reference && (
-            <span className="audio-reference">
-              {reference.book} <bdi dir="ltr">{reference.location}</bdi>
-            </span>
+          {detail ? (
+            <span className="audio-reference">{detail}</span>
+          ) : (
+            reference && (
+              <span className="audio-reference">
+                {reference.book} <bdi dir="ltr">{reference.location}</bdi>
+              </span>
+            )
           )}
         </div>
         {/* The skip icons are mirrored on purpose: the player reads right to left. */}
         <button
           className="icon-button"
           aria-label="الآية السابقة"
-          disabled={!ready || cueIndex === 0}
+          disabled={!ready || cueCount === 0 || !(canPrevious ?? cueIndex > 0)}
           onClick={onPrevious}
         >
           <SkipForward size={18} aria-hidden="true" />
         </button>
+        {/* Stays focusable while the next recording loads, as in continuous
+            listening; a disabled button would drop keyboard focus. */}
         <button
           className="icon-button audio-play"
           aria-label={active ? "إيقاف مؤقت" : "تشغيل التسجيل"}
-          disabled={!ready}
-          onClick={onToggle}
+          aria-disabled={!ready}
+          onClick={ready ? onToggle : undefined}
         >
           {active ? (
             <Pause size={21} aria-hidden="true" />
@@ -81,7 +92,7 @@ export default function AudioControls({
         <button
           className="icon-button"
           aria-label="الآية التالية"
-          disabled={!ready || cueIndex === cueCount - 1}
+          disabled={!ready || cueCount === 0 || cueIndex === cueCount - 1}
           onClick={onNext}
         >
           <SkipBack size={18} aria-hidden="true" />

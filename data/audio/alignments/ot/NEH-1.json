@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "NEH",
+  "chapter": 1,
+  "file": "A16___01_Nehemiah____ARZVDVO1DA.mp3",
+  "audioHash": "418f5071cb8a5c755de06b910dd21eb606afe855822d5aff36769e5168725bc6",
+  "textHash": "653270e42882aa1a3a3d8759ac71d3a173fc01062656009bf5067afb2022be36",
+  "duration": 199.0530625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 8.02,
+      "end": 20.02,
+      "score": 0.6318
+    },
+    {
+      "verse": 2,
+      "start": 20.06,
+      "end": 36.12,
+      "score": 0.6159
+    },
+    {
+      "verse": 3,
+      "start": 36.12,
+      "end": 50.84,
+      "score": 0.6126
+    },
+    {
+      "verse": 4,
+      "start": 52.02,
+      "end": 65.44,
+      "score": 0.5762
+    },
+    {
+      "verse": 5,
+      "start": 66.5,
+      "end": 81.74,
+      "score": 0.6119
+    },
+    {
+      "verse": 6,
+      "start": 83.04,
+      "end": 114.32,
+      "score": 0.6207
+    },
+    {
+      "verse": 7,
+      "start": 114.32,
+      "end": 125.6,
+      "score": 0.6109
+    },
+    {
+      "verse": 8,
+      "start": 125.62,
+      "end": 137.66,
+      "score": 0.6432
+    },
+    {
+      "verse": 9,
+      "start": 137.66,
+      "end": 159.1,
+      "score": 0.6264
+    },
+    {
+      "verse": 10,
+      "start": 160.56,
+      "end": 171.08,
+      "score": 0.5656
+    },
+    {
+      "verse": 11,
+      "start": 171.08,
+      "end": 197.02,
+      "score": 0.5715
+    }
+  ]
+}

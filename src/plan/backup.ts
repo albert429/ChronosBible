@@ -1,9 +1,24 @@
 import { today } from "../lib/format";
-import { exportBackup, type Reader } from "./progress";
+import {
+  MAX_BACKUP_BYTES,
+  exportBackup,
+  loadProgress,
+  type Reader,
+  type ReaderProfile,
+} from "./progress";
 
-export function downloadBackup(reader: Reader) {
+/** Downloads a v2 backup with the reader's latest stored places. */
+export function downloadBackup(reader: Reader | ReaderProfile) {
+  let latest: Reader | ReaderProfile = reader;
+  try {
+    latest =
+      loadProgress(localStorage).profiles.find((p) => p.id === reader.id) ??
+      reader;
+  } catch {
+    /* the reader as shown */
+  }
   const url = URL.createObjectURL(
-    new Blob([exportBackup(reader)], { type: "application/json" }),
+    new Blob([exportBackup(latest)], { type: "application/json" }),
   );
   const anchor = document.createElement("a");
   anchor.href = url;
@@ -13,7 +28,7 @@ export function downloadBackup(reader: Reader) {
 }
 
 export async function readBackupFile(file: File) {
-  if (file.size > 65536)
+  if (file.size > MAX_BACKUP_BYTES)
     throw Error("اختر ملف نسخة احتياطية صغيرًا بصيغة JSON.");
   return file.text();
 }

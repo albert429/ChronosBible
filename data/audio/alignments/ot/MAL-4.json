@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "MAL",
+  "chapter": 4,
+  "file": "A39___04_Malachi_____ARZVDVO1DA.mp3",
+  "audioHash": "7ae1719abfe3e7515dcd300c0f9bc2b5c021926b0342759a3096877679abea38",
+  "textHash": "e273f1a6baa44799ae530c1c9263b3ef1d1b70346a28892512fe1923fbf007de",
+  "duration": 88.0849375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.14,
+      "end": 25.16,
+      "score": 0.6211
+    },
+    {
+      "verse": 2,
+      "start": 26.62,
+      "end": 40.56,
+      "score": 0.6097
+    },
+    {
+      "verse": 3,
+      "start": 40.56,
+      "end": 51.36,
+      "score": 0.6199
+    },
+    {
+      "verse": 4,
+      "start": 51.54,
+      "end": 61.76,
+      "score": 0.6319
+    },
+    {
+      "verse": 5,
+      "start": 61.76,
+      "end": 71.08,
+      "score": 0.5954
+    },
+    {
+      "verse": 6,
+      "start": 71.08,
+      "end": 82.84,
+      "score": 0.5897
+    }
+  ]
+}

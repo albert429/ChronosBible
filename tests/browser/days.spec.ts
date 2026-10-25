@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import {
-  chooseFromMenu,
   closeSheet,
+  openPlanCalendar,
   nextDay,
   openDayDetails,
   planDay,
@@ -46,7 +46,7 @@ test.describe("day details", () => {
 
 test.describe("calendar and plan boundaries", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?day=1");
     await ready(page);
   });
 
@@ -54,7 +54,7 @@ test.describe("calendar and plan boundaries", () => {
     page,
   }) => {
     await expect(previousDay(page)).toBeDisabled();
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await expect(page.locator(".calendar-day")).toHaveCount(30);
     for (let i = 0; i < 4; i++)
       await page
@@ -65,7 +65,7 @@ test.describe("calendar and plan boundaries", () => {
     await expect(page.getByRole("article")).toHaveAttribute("data-day", "143");
     await expect(page.locator(".verse")).toHaveCount(planDay(143).verseCount);
     await expect(page.locator(".passage h2 bdi").first()).toBeVisible();
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await page.locator(".calendar-day").last().click();
     await ready(page);
     await expect(page.getByRole("article")).toHaveAttribute("data-day", "150");

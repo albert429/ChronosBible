@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "1SA",
+  "chapter": 27,
+  "file": "A09___27_1Samuel_____ARZVDVO1DA.mp3",
+  "audioHash": "80292ecbfa3b4cb95381d6a8f5284a2974f52c638dfd93499114dcb7a41ccb58",
+  "textHash": "53fe1f9f676f9742adf04a9a1f3b18a7d3a4fe2272c7867c8dbff1e04cade9fb",
+  "duration": 168.7249375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.72,
+      "end": 28.4,
+      "score": 0.5936
+    },
+    {
+      "verse": 2,
+      "start": 29.52,
+      "end": 37.48,
+      "score": 0.5707
+    },
+    {
+      "verse": 3,
+      "start": 38.26,
+      "end": 53.68,
+      "score": 0.5646
+    },
+    {
+      "verse": 4,
+      "start": 54.38,
+      "end": 62.06,
+      "score": 0.5687
+    },
+    {
+      "verse": 5,
+      "start": 62.96,
+      "end": 79.1,
+      "score": 0.6091
+    },
+    {
+      "verse": 6,
+      "start": 79.1,
+      "end": 88.56,
+      "score": 0.6196
+    },
+    {
+      "verse": 7,
+      "start": 88.56,
+      "end": 96.94,
+      "score": 0.5994
+    },
+    {
+      "verse": 8,
+      "start": 97.92,
+      "end": 111.64,
+      "score": 0.5868
+    },
+    {
+      "verse": 9,
+      "start": 111.66,
+      "end": 124.42,
+      "score": 0.6193
+    },
+    {
+      "verse": 10,
+      "start": 125.58,
+      "end": 139.54,
+      "score": 0.5531
+    },
+    {
+      "verse": 11,
+      "start": 139.62,
+      "end": 157.1,
+      "score": 0.5644
+    },
+    {
+      "verse": 12,
+      "start": 157.2,
+      "end": 166.82,
+      "score": 0.641
+    }
+  ]
+}

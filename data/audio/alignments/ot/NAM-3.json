@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "NAM",
+  "chapter": 3,
+  "file": "A34___03_Nahum_______ARZVDVO1DA.mp3",
+  "audioHash": "fee5acdbb5a645e1e32140d5e7eaf3df2334098f00536dd2cbe07e7d891cfecd",
+  "textHash": "6133edd9fde99075c8235c484eb2d952e3aa593277d5bec587bf29ecf711ea68",
+  "duration": 245.1853125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.06,
+      "end": 14.4,
+      "score": 0.6228
+    },
+    {
+      "verse": 2,
+      "start": 15.28,
+      "end": 25.18,
+      "score": 0.6169
+    },
+    {
+      "verse": 3,
+      "start": 25.36,
+      "end": 39.86,
+      "score": 0.5474
+    },
+    {
+      "verse": 4,
+      "start": 41.06,
+      "end": 53.82,
+      "score": 0.5666
+    },
+    {
+      "verse": 5,
+      "start": 54.16,
+      "end": 68.78,
+      "score": 0.5742
+    },
+    {
+      "verse": 6,
+      "start": 68.78,
+      "end": 74.28,
+      "score": 0.5859
+    },
+    {
+      "verse": 7,
+      "start": 75.16,
+      "end": 87.76,
+      "score": 0.5578
+    },
+    {
+      "verse": 8,
+      "start": 87.76,
+      "end": 100.06,
+      "score": 0.6054
+    },
+    {
+      "verse": 9,
+      "start": 100.06,
+      "end": 109.26,
+      "score": 0.6109
+    },
+    {
+      "verse": 10,
+      "start": 109.28,
+      "end": 126.44,
+      "score": 0.5891
+    },
+    {
+      "verse": 11,
+      "start": 126.44,
+      "end": 136.42,
+      "score": 0.644
+    },
+    {
+      "verse": 12,
+      "start": 136.42,
+      "end": 144.42,
+      "score": 0.5871
+    },
+    {
+      "verse": 13,
+      "start": 145.5,
+      "end": 157.4,
+      "score": 0.5468
+    },
+    {
+      "verse": 14,
+      "start": 157.4,
+      "end": 169.4,
+      "score": 0.5821
+    },
+    {
+      "verse": 15,
+      "start": 170.24,
+      "end": 183.06,
+      "score": 0.5906
+    },
+    {
+      "verse": 16,
+      "start": 183.06,
+      "end": 191.18,
+      "score": 0.6274
+    },
+    {
+      "verse": 17,
+      "start": 192.16,
+      "end": 208.18,
+      "score": 0.5999
+    },
+    {
+      "verse": 18,
+      "start": 208.98,
+      "end": 219.5,
+      "score": 0.5547
+    },
+    {
+      "verse": 19,
+      "start": 220.08,
+      "end": 244.96,
+      "score": 0.5839
+    }
+  ]
+}

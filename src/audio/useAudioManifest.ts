@@ -1,17 +1,39 @@
 import { useEffect, useState } from "react";
-import type { Day } from "../plan/readings";
+import {
+  isBibleChapter,
+  isChronologicalReading,
+  type AnyScriptureReading,
+} from "../bible/types";
 import { useResource } from "../lib/useResource";
 import { audioManifests } from "./client";
-import { matchesReading, type AudioManifest } from "./manifest";
+import {
+  audioReadingKey,
+  matchesReading,
+  toTimeline,
+  type AudioManifest,
+  type Timeline,
+} from "./manifest";
 
-const mismatch = "يحتاج التسجيل إلى تحديث ليتطابق مع قراءة هذا اليوم.";
+const mismatch = (reading: AnyScriptureReading) =>
+  `يحتاج التسجيل إلى تحديث ليتطابق مع ${
+    isChronologicalReading(reading)
+      ? "نص هذه القراءة"
+      : isBibleChapter(reading)
+        ? "نص هذا الإصحاح"
+        : "قراءة هذا اليوم"
+  }.`;
 
-/** Load a day's manifest and accept it only if it matches the reading on screen. */
-export function useAudioManifest(reading: Day) {
-  const key = String(reading.day);
+/**
+ * Load a reading's manifest and accept it only if it matches the text on
+ * screen (identity, passages and transcript hash), as one playable timeline.
+ */
+export function useAudioManifest(reading: AnyScriptureReading) {
+  const key = audioReadingKey(reading);
   const { data, error, retry } = useResource(audioManifests, key);
   const [checked, setChecked] = useState<{
     data: AudioManifest;
+    key: string;
+    timeline?: Timeline;
     error?: string;
   }>();
   useEffect(() => {
@@ -21,19 +43,25 @@ export function useAudioManifest(reading: Day) {
       (matches) => {
         if (!active) return;
         if (!matches) audioManifests.invalidate(key);
-        setChecked({ data, error: matches ? undefined : mismatch });
+        setChecked({
+          data,
+          key,
+          timeline: matches ? toTimeline(data, key) : undefined,
+          error: matches ? undefined : mismatch(reading),
+        });
       },
       (err: Error) => {
-        if (active) setChecked({ data, error: err.message });
+        if (active) setChecked({ data, key, error: err.message });
       },
     );
     return () => {
       active = false;
     };
   }, [data, reading, key]);
-  const current = checked?.data === data ? checked : undefined;
+  const current =
+    checked?.data === data && checked?.key === key ? checked : undefined;
   return {
-    manifest: current && !current.error ? data : undefined,
+    timeline: current?.timeline,
     error: error || current?.error,
     retry,
   };

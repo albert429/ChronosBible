@@ -10,7 +10,7 @@ import {
 
 test.describe("sheets and focus", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?day=1");
     await ready(page);
   });
 
@@ -18,7 +18,10 @@ test.describe("sheets and focus", () => {
     page,
   }) => {
     const scripture = await page.locator(".scripture").textContent();
-    for (const name of ["تفاصيل اليوم ١", "إعدادات القراءة"]) {
+    for (const name of [
+      "تفاصيل اليوم ١ · العهد الجديد في ١٥٠ يومًا",
+      "إعدادات القراءة",
+    ]) {
       const trigger = page.getByRole("button", { name, exact: true });
       await trigger.click();
       await expect(page.getByRole("dialog")).toBeVisible();

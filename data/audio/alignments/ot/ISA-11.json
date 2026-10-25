@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ISA",
+  "chapter": 11,
+  "file": "A23___11_Isaiah______ARZVDVO1DA.mp3",
+  "audioHash": "e10797bd6c25ea8a410611f2a50a12844fe9ab33f083e5bc0d2c430b88eac482",
+  "textHash": "61a9afc6aba2cd286b74324df5faedfcbd7de1784573458e2c3872d7ac093f33",
+  "duration": 213.786125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.92,
+      "end": 11.62,
+      "score": 0.5873
+    },
+    {
+      "verse": 2,
+      "start": 12.54,
+      "end": 22.6,
+      "score": 0.6189
+    },
+    {
+      "verse": 3,
+      "start": 23.3,
+      "end": 34.0,
+      "score": 0.5604
+    },
+    {
+      "verse": 4,
+      "start": 34.78,
+      "end": 48.38,
+      "score": 0.6033
+    },
+    {
+      "verse": 5,
+      "start": 49.7,
+      "end": 56.56,
+      "score": 0.5741
+    },
+    {
+      "verse": 6,
+      "start": 57.2,
+      "end": 70.8,
+      "score": 0.5843
+    },
+    {
+      "verse": 7,
+      "start": 71.88,
+      "end": 81.86,
+      "score": 0.5915
+    },
+    {
+      "verse": 8,
+      "start": 82.8,
+      "end": 90.66,
+      "score": 0.5694
+    },
+    {
+      "verse": 9,
+      "start": 91.48,
+      "end": 104.7,
+      "score": 0.5741
+    },
+    {
+      "verse": 10,
+      "start": 104.7,
+      "end": 116.92,
+      "score": 0.5765
+    },
+    {
+      "verse": 11,
+      "start": 118.02,
+      "end": 139.46,
+      "score": 0.585
+    },
+    {
+      "verse": 12,
+      "start": 139.46,
+      "end": 150.84,
+      "score": 0.5804
+    },
+    {
+      "verse": 13,
+      "start": 151.92,
+      "end": 165.58,
+      "score": 0.5678
+    },
+    {
+      "verse": 14,
+      "start": 165.58,
+      "end": 182.86,
+      "score": 0.5935
+    },
+    {
+      "verse": 15,
+      "start": 184.14,
+      "end": 199.38,
+      "score": 0.5511
+    },
+    {
+      "verse": 16,
+      "start": 199.38,
+      "end": 211.6,
+      "score": 0.5998
+    }
+  ]
+}

@@ -14,3 +14,10 @@ data/audio/manifests/
 dist-ai/
 data/audio/catalog.json
 data/audio/alignments/
+data/audio/chapters/
+
+data/bible/catalog.json
+public/bible/
+data/audio/readings/
+data/audio/review/
+data/audio/reading-catalog.json

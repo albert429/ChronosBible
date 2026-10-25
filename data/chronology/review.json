@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "sourceSha256": "5d99356d6a54b2724c4cd9db8ca113a4a6741a0c09035cbf44930a8e8c234ea4",
+  "reviewed": "2026-10-16: all 22 rendered pages compared visually with the parsed groups. 2026-10-17: parent reviewed the audit and kept every source repetition, including the possible source errors (kept with suggestions for a future source revision).",
+  "corrections": [
+    {
+      "occurrence": "g349-1",
+      "original": "تيموثاوس الأولى 6:11-21",
+      "to": 22,
+      "status": "applied",
+      "reason": "The PDF ends at 1 Timothy 6:21; the Van Dyck text and the existing church 150-day plan include the closing blessing as 6:22. Documented exception so the self-paced New Testament shares the church plan's sequence."
+    }
+  ],
+  "omissions": [
+    {
+      "verses": "1TI 6:22",
+      "disposition": "corrected",
+      "note": "Covered by the documented g349-1 exception (closing blessing 6:22)."
+    }
+  ],
+  "duplicates": [
+    {
+      "occurrences": ["g032-3", "g245-2"],
+      "verses": "1CH 6:3",
+      "disposition": "keep",
+      "note": "The source repeats 6:3 (Aaron, Moses, Miriam and Aaron's sons) to head the priestly line 6:49, 6:4-15."
+    },
+    {
+      "occurrences": ["g045-3", "g060-4"],
+      "verses": "NUM 9:15-23",
+      "disposition": "keep",
+      "note": "Numbers 7-9 are read with Exodus 40 (groups 45-47) and again in order in group 60. Known source repetition."
+    },
+    {
+      "occurrences": ["g046-1", "g060-2"],
+      "verses": "NUM 7:1-89",
+      "disposition": "keep",
+      "note": "Numbers 7 in group 46 and again in group 60. Known source repetition."
+    },
+    {
+      "occurrences": ["g047-1", "g060-3"],
+      "verses": "NUM 8:1-26",
+      "disposition": "keep",
+      "note": "Numbers 8 in group 47 and again in group 60. Known source repetition."
+    },
+    {
+      "occurrences": ["g047-2", "g060-4"],
+      "verses": "NUM 9:1-14",
+      "disposition": "keep",
+      "note": "Numbers 9:1-14 in group 47 and again in group 60. Known source repetition."
+    },
+    {
+      "occurrences": ["g109-6", "g111-2"],
+      "verses": "2SA 4:4",
+      "disposition": "keep",
+      "note": "The source moves 2 Samuel 4:4 (Mephibosheth) beside Saul's death, then lists the whole of 2 Samuel 4. Parent reviewed: source sequence retained; the suggestion is kept for a future source revision.",
+      "suggestion": "g111-2: 2 Samuel 4:1-3 and 4:5-12."
+    },
+    {
+      "occurrences": ["g113-5", "g113-7"],
+      "verses": "2SA 6:19",
+      "disposition": "keep",
+      "note": "Shared half-verse: 6:17-19 and 6:19-23 (the people go home, David returns)."
+    },
+    {
+      "occurrences": ["g160-2", "g160-14"],
+      "verses": "1KI 14:19-20",
+      "disposition": "keep",
+      "note": "1 Kings 14:1-24 already contains Jeroboam's death notice, which the source places again after 1 Kings 15:9-15. Parent reviewed: source sequence retained; the suggestion is kept for a future source revision.",
+      "suggestion": "g160-2: 1 Kings 14:1-18 and 14:21-24."
+    },
+    {
+      "occurrences": ["g160-3", "g160-7"],
+      "verses": "2CH 12:13-14",
+      "disposition": "keep",
+      "note": "2 Chronicles 12:13-14 is listed beside 1 Kings 14:21-24 and again inside 12:13-16. Parent reviewed: source sequence retained; the suggestion is kept for a future source revision.",
+      "suggestion": "g160-7: 2 Chronicles 12:15-16."
+    },
+    {
+      "occurrences": ["g165-7", "g167-4"],
+      "verses": "2KI 8:16-22",
+      "disposition": "keep",
+      "note": "Group 167 lists the whole of 2 Kings 8, but 8:16-22 is read in group 165 and 8:23-29 in group 168. Parent reviewed: source sequence retained; the suggestion is kept for a future source revision.",
+      "suggestion": "g167-4: 2 Kings 8:1-15."
+    },
+    {
+      "occurrences": ["g167-4", "g168-2"],
+      "verses": "2KI 8:23-29",
+      "disposition": "keep",
+      "note": "Same source entry as 2 Kings 8:16-22. Parent reviewed: source sequence retained; the suggestion is kept for a future source revision.",
+      "suggestion": "g167-4: 2 Kings 8:1-15."
+    },
+    {
+      "occurrences": ["g226-6", "g234-5"],
+      "verses": "JER 52:3",
+      "disposition": "keep",
+      "note": "Shared half-verse: Jeremiah 52:1-3 and 52:3-5 (Zedekiah rebels; the siege begins)."
+    },
+    {
+      "occurrences": ["g226-7", "g234-3"],
+      "verses": "2KI 24:20",
+      "disposition": "keep",
+      "note": "Shared half-verse: 2 Kings 24:18-20 and 24:20 before 25:1-2 (the siege)."
+    },
+    {
+      "occurrences": ["g246-2", "g264-3"],
+      "verses": "1CH 9:1",
+      "disposition": "keep",
+      "note": "1 Chronicles 9:1 closes the genealogies (group 246) and opens the list of returnees 9:1-34 (group 264)."
+    },
+    {
+      "occurrences": ["g251-5", "g252-4"],
+      "verses": "1CH 3:19",
+      "disposition": "keep",
+      "note": "Shared verse in Zerubbabel's line: 3:17-19 and 3:19-24."
+    },
+    {
+      "occurrences": ["g255-3", "g257-1"],
+      "verses": "EZR 6:14",
+      "disposition": "keep",
+      "note": "Shared half-verse: Ezra 6:1-14 and 6:14-22 (the temple finished)."
+    },
+    {
+      "occurrences": ["g286-3", "g286-6"],
+      "verses": "LUK 9:43",
+      "disposition": "keep",
+      "note": "Shared half-verse 43a/43b. Also in the youth plan."
+    },
+    {
+      "occurrences": ["g302-10", "g302-14"],
+      "verses": "JHN 13:18-20",
+      "disposition": "keep",
+      "note": "John 13:1-20 and 13:18-30 overlap to frame the betrayal. Also in the youth plan."
+    },
+    {
+      "occurrences": ["g309-9", "g310-2"],
+      "verses": "MRK 16:12-13",
+      "disposition": "keep",
+      "note": "Mark 16:9-13 and 16:12-13 (Emmaus beside Luke 24). Also in the youth plan."
+    },
+    {
+      "occurrences": ["g313-3", "g314-1"],
+      "verses": "ACT 8:1",
+      "disposition": "keep",
+      "note": "Shared half-verse: 8:1a ends Stephen's death, 8:1b begins the persecution. Also in the youth plan."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ECC",
+  "chapter": 4,
+  "file": "A21___04_EcclesiastesARZVDVO1DA.mp3",
+  "audioHash": "6b4cc6fad5a0013de5a9cb52d10ea2777295e9c0f5317cce9906addad73cac4b",
+  "textHash": "cdd8606417469bf34996d305a7ceb03e0ae6432456ef53c029ea16962ba43ee4",
+  "duration": 200.25475,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.04,
+      "end": 24.12,
+      "score": 0.6038
+    },
+    {
+      "verse": 2,
+      "start": 25.36,
+      "end": 37.18,
+      "score": 0.635
+    },
+    {
+      "verse": 3,
+      "start": 37.28,
+      "end": 47.36,
+      "score": 0.6507
+    },
+    {
+      "verse": 4,
+      "start": 48.76,
+      "end": 62.24,
+      "score": 0.6017
+    },
+    {
+      "verse": 5,
+      "start": 63.36,
+      "end": 67.66,
+      "score": 0.594
+    },
+    {
+      "verse": 6,
+      "start": 69.42,
+      "end": 77.48,
+      "score": 0.6354
+    },
+    {
+      "verse": 7,
+      "start": 77.48,
+      "end": 81.42,
+      "score": 0.6356
+    },
+    {
+      "verse": 8,
+      "start": 82.96,
+      "end": 106.58,
+      "score": 0.5768
+    },
+    {
+      "verse": 9,
+      "start": 108.16,
+      "end": 116.5,
+      "score": 0.5896
+    },
+    {
+      "verse": 10,
+      "start": 116.5,
+      "end": 128.26,
+      "score": 0.539
+    },
+    {
+      "verse": 11,
+      "start": 128.26,
+      "end": 138.8,
+      "score": 0.6013
+    },
+    {
+      "verse": 12,
+      "start": 138.92,
+      "end": 149.78,
+      "score": 0.6097
+    },
+    {
+      "verse": 13,
+      "start": 150.96,
+      "end": 162.14,
+      "score": 0.649
+    },
+    {
+      "verse": 14,
+      "start": 162.32,
+      "end": 170.66,
+      "score": 0.6311
+    },
+    {
+      "verse": 15,
+      "start": 171.46,
+      "end": 181.4,
+      "score": 0.6472
+    },
+    {
+      "verse": 16,
+      "start": 182.6,
+      "end": 200.2,
+      "score": 0.6284
+    }
+  ]
+}

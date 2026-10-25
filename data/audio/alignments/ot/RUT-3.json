@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "RUT",
+  "chapter": 3,
+  "file": "A08___03_Ruth________ARZVDVO1DA.mp3",
+  "audioHash": "9e3f24fed956eb39aee7bd8fca0e387cc584c3d36b7269bdd1120f53a06e6b9a",
+  "textHash": "5ca43686badc9b1177393e71183c1da3d9eed68542ed9ad1077ff064a38892cb",
+  "duration": 219.9771875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.1,
+      "end": 12.46,
+      "score": 0.5827
+    },
+    {
+      "verse": 2,
+      "start": 12.98,
+      "end": 22.0,
+      "score": 0.5535
+    },
+    {
+      "verse": 3,
+      "start": 22.58,
+      "end": 35.2,
+      "score": 0.6331
+    },
+    {
+      "verse": 4,
+      "start": 35.22,
+      "end": 48.28,
+      "score": 0.5782
+    },
+    {
+      "verse": 5,
+      "start": 48.44,
+      "end": 52.36,
+      "score": 0.5698
+    },
+    {
+      "verse": 6,
+      "start": 52.5,
+      "end": 58.94,
+      "score": 0.5849
+    },
+    {
+      "verse": 7,
+      "start": 59.08,
+      "end": 72.02,
+      "score": 0.5602
+    },
+    {
+      "verse": 8,
+      "start": 72.96,
+      "end": 80.58,
+      "score": 0.5817
+    },
+    {
+      "verse": 9,
+      "start": 80.58,
+      "end": 93.02,
+      "score": 0.5489
+    },
+    {
+      "verse": 10,
+      "start": 93.7,
+      "end": 114.78,
+      "score": 0.592
+    },
+    {
+      "verse": 11,
+      "start": 114.78,
+      "end": 128.06,
+      "score": 0.59
+    },
+    {
+      "verse": 12,
+      "start": 129.58,
+      "end": 136.7,
+      "score": 0.5909
+    },
+    {
+      "verse": 13,
+      "start": 138.34,
+      "end": 160.32,
+      "score": 0.5591
+    },
+    {
+      "verse": 14,
+      "start": 160.32,
+      "end": 173.76,
+      "score": 0.5926
+    },
+    {
+      "verse": 15,
+      "start": 173.76,
+      "end": 187.04,
+      "score": 0.5872
+    },
+    {
+      "verse": 16,
+      "start": 187.64,
+      "end": 196.1,
+      "score": 0.602
+    },
+    {
+      "verse": 17,
+      "start": 196.7,
+      "end": 206.24,
+      "score": 0.5769
+    },
+    {
+      "verse": 18,
+      "start": 206.24,
+      "end": 219.94,
+      "score": 0.5971
+    }
+  ]
+}

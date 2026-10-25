@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "LEV",
+  "chapter": 17,
+  "file": "A03___17_Leviticus___ARZVDVO1DA.mp3",
+  "audioHash": "75819edfb0e13ef728bf1a8e539797121432de5b295d9ce2c0136a16369083d8",
+  "textHash": "56edcb15343f353e6054af6fc33f2050ed86907a85a89ae1473c49139721ee9a",
+  "duration": 195.89225,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.42,
+      "end": 7.52,
+      "score": 0.6477
+    },
+    {
+      "verse": 2,
+      "start": 8.6,
+      "end": 18.68,
+      "score": 0.6352
+    },
+    {
+      "verse": 3,
+      "start": 19.7,
+      "end": 28.42,
+      "score": 0.6309
+    },
+    {
+      "verse": 4,
+      "start": 29.18,
+      "end": 43.92,
+      "score": 0.6182
+    },
+    {
+      "verse": 5,
+      "start": 44.68,
+      "end": 59.64,
+      "score": 0.5811
+    },
+    {
+      "verse": 6,
+      "start": 59.64,
+      "end": 68.34,
+      "score": 0.6241
+    },
+    {
+      "verse": 7,
+      "start": 69.18,
+      "end": 81.16,
+      "score": 0.6144
+    },
+    {
+      "verse": 8,
+      "start": 82.08,
+      "end": 93.66,
+      "score": 0.6402
+    },
+    {
+      "verse": 9,
+      "start": 94.78,
+      "end": 103.48,
+      "score": 0.6171
+    },
+    {
+      "verse": 10,
+      "start": 104.24,
+      "end": 116.7,
+      "score": 0.6297
+    },
+    {
+      "verse": 11,
+      "start": 117.58,
+      "end": 129.68,
+      "score": 0.5914
+    },
+    {
+      "verse": 12,
+      "start": 129.68,
+      "end": 139.88,
+      "score": 0.6373
+    },
+    {
+      "verse": 13,
+      "start": 140.88,
+      "end": 155.84,
+      "score": 0.6365
+    },
+    {
+      "verse": 14,
+      "start": 155.84,
+      "end": 174.16,
+      "score": 0.555
+    },
+    {
+      "verse": 15,
+      "start": 174.24,
+      "end": 188.24,
+      "score": 0.6115
+    },
+    {
+      "verse": 16,
+      "start": 189.26,
+      "end": 193.86,
+      "score": 0.6147
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 91,
+  "file": "A19__091_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "b50c29fc9387c950a4774459ce57a5b1c55d0115b2c265217d91c9ceca396a8d",
+  "textHash": "51f8b185cd0dab69189fa8b939f91f21fc9f76255257e6f2f3f403efcb692964",
+  "duration": 133.955875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 1.56,
+      "end": 13.44,
+      "score": 0.5886
+    },
+    {
+      "verse": 2,
+      "start": 13.44,
+      "end": 21.3,
+      "score": 0.5039
+    },
+    {
+      "verse": 3,
+      "start": 21.3,
+      "end": 28.58,
+      "score": 0.5899
+    },
+    {
+      "verse": 4,
+      "start": 28.58,
+      "end": 37.98,
+      "score": 0.5529
+    },
+    {
+      "verse": 5,
+      "start": 39.44,
+      "end": 44.96,
+      "score": 0.6309
+    },
+    {
+      "verse": 6,
+      "start": 45.9,
+      "end": 54.58,
+      "score": 0.5903
+    },
+    {
+      "verse": 7,
+      "start": 54.58,
+      "end": 62.18,
+      "score": 0.5789
+    },
+    {
+      "verse": 8,
+      "start": 62.58,
+      "end": 70.76,
+      "score": 0.6048
+    },
+    {
+      "verse": 9,
+      "start": 70.76,
+      "end": 79.44,
+      "score": 0.5646
+    },
+    {
+      "verse": 10,
+      "start": 79.74,
+      "end": 87.18,
+      "score": 0.6247
+    },
+    {
+      "verse": 11,
+      "start": 87.18,
+      "end": 95.7,
+      "score": 0.5291
+    },
+    {
+      "verse": 12,
+      "start": 95.7,
+      "end": 103.14,
+      "score": 0.5835
+    },
+    {
+      "verse": 13,
+      "start": 103.22,
+      "end": 110.8,
+      "score": 0.6248
+    },
+    {
+      "verse": 14,
+      "start": 110.94,
+      "end": 117.44,
+      "score": 0.4866
+    },
+    {
+      "verse": 15,
+      "start": 118.62,
+      "end": 125.72,
+      "score": 0.5124
+    },
+    {
+      "verse": 16,
+      "start": 126.84,
+      "end": 130.78,
+      "score": 0.5746
+    }
+  ]
+}

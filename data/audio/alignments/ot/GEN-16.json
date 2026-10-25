@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "GEN",
+  "chapter": 16,
+  "file": "A01___16_Genesis_____ARZVDVO1DA.mp3",
+  "audioHash": "199012bcbc8eca397740315a296b261099bc944866c0826600f1d6a432d2b3d9",
+  "textHash": "d35195bd3b105238c8fa1750b3ec5f85997ca588c4c5276426b40b07593f8f18",
+  "duration": 192.9404375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.9,
+      "end": 15.28,
+      "score": 0.6043
+    },
+    {
+      "verse": 2,
+      "start": 15.68,
+      "end": 29.22,
+      "score": 0.5799
+    },
+    {
+      "verse": 3,
+      "start": 30.38,
+      "end": 46.34,
+      "score": 0.5889
+    },
+    {
+      "verse": 4,
+      "start": 46.44,
+      "end": 55.66,
+      "score": 0.5797
+    },
+    {
+      "verse": 5,
+      "start": 55.66,
+      "end": 72.72,
+      "score": 0.5604
+    },
+    {
+      "verse": 6,
+      "start": 72.72,
+      "end": 85.3,
+      "score": 0.5742
+    },
+    {
+      "verse": 7,
+      "start": 86.32,
+      "end": 92.92,
+      "score": 0.6176
+    },
+    {
+      "verse": 8,
+      "start": 93.42,
+      "end": 107.82,
+      "score": 0.5762
+    },
+    {
+      "verse": 9,
+      "start": 108.72,
+      "end": 115.32,
+      "score": 0.5914
+    },
+    {
+      "verse": 10,
+      "start": 115.96,
+      "end": 122.84,
+      "score": 0.6041
+    },
+    {
+      "verse": 11,
+      "start": 123.44,
+      "end": 138.14,
+      "score": 0.5644
+    },
+    {
+      "verse": 12,
+      "start": 138.18,
+      "end": 152.2,
+      "score": 0.5955
+    },
+    {
+      "verse": 13,
+      "start": 152.92,
+      "end": 165.68,
+      "score": 0.5678
+    },
+    {
+      "verse": 14,
+      "start": 165.68,
+      "end": 172.54,
+      "score": 0.5473
+    },
+    {
+      "verse": 15,
+      "start": 173.52,
+      "end": 182.28,
+      "score": 0.5918
+    },
+    {
+      "verse": 16,
+      "start": 183.32,
+      "end": 190.54,
+      "score": 0.5846
+    }
+  ]
+}

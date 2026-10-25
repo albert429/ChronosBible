@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOB",
+  "chapter": 17,
+  "file": "A18___17_Job_________ARZVDVO1DA.mp3",
+  "audioHash": "f1b48da850323861c25f90c5f03806e4ced52a87231c3c2e11e6b51f13a4786b",
+  "textHash": "d6cf8636ccd535b38babf767bc6f2ebd68940d470713e666dc8ffb817734bd0a",
+  "duration": 146.8081875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.68,
+      "end": 12.4,
+      "score": 0.5366
+    },
+    {
+      "verse": 2,
+      "start": 14.2,
+      "end": 20.76,
+      "score": 0.617
+    },
+    {
+      "verse": 3,
+      "start": 22.68,
+      "end": 29.6,
+      "score": 0.5908
+    },
+    {
+      "verse": 4,
+      "start": 31.32,
+      "end": 41.02,
+      "score": 0.5329
+    },
+    {
+      "verse": 5,
+      "start": 41.62,
+      "end": 48.32,
+      "score": 0.6017
+    },
+    {
+      "verse": 6,
+      "start": 48.32,
+      "end": 57.66,
+      "score": 0.6272
+    },
+    {
+      "verse": 7,
+      "start": 57.66,
+      "end": 64.38,
+      "score": 0.536
+    },
+    {
+      "verse": 8,
+      "start": 66.44,
+      "end": 74.98,
+      "score": 0.5664
+    },
+    {
+      "verse": 9,
+      "start": 75.06,
+      "end": 84.66,
+      "score": 0.5641
+    },
+    {
+      "verse": 10,
+      "start": 84.66,
+      "end": 90.88,
+      "score": 0.579
+    },
+    {
+      "verse": 11,
+      "start": 92.56,
+      "end": 100.32,
+      "score": 0.5575
+    },
+    {
+      "verse": 12,
+      "start": 101.5,
+      "end": 107.1,
+      "score": 0.6212
+    },
+    {
+      "verse": 13,
+      "start": 107.94,
+      "end": 114.88,
+      "score": 0.5952
+    },
+    {
+      "verse": 14,
+      "start": 117.54,
+      "end": 126.9,
+      "score": 0.5792
+    },
+    {
+      "verse": 15,
+      "start": 129.0,
+      "end": 136.6,
+      "score": 0.5824
+    },
+    {
+      "verse": 16,
+      "start": 137.94,
+      "end": 144.68,
+      "score": 0.6061
+    }
+  ]
+}

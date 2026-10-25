@@ -6,7 +6,7 @@ type Client<T> = {
 };
 
 /** Load one keyed resource, ignoring responses for a key that is no longer current. */
-export function useResource<T>(client: Client<T>, key: string) {
+export function useResource<T>(client: Client<T>, key: string, enabled = true) {
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
     key: string;
@@ -17,6 +17,7 @@ export function useResource<T>(client: Client<T>, key: string) {
   });
   const cached = client.peek(key);
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
     setResult({ key });
     client.load(key).then(
@@ -30,10 +31,12 @@ export function useResource<T>(client: Client<T>, key: string) {
     return () => {
       active = false;
     };
-  }, [client, key, attempt]);
+  }, [client, key, attempt, enabled]);
   return {
-    data: cached || (result.key === key ? result.data : undefined),
-    error: result.key === key ? result.error : undefined,
+    data: enabled
+      ? cached || (result.key === key ? result.data : undefined)
+      : undefined,
+    error: enabled && result.key === key ? result.error : undefined,
     retry: () => {
       setResult({ key });
       setAttempt((n) => n + 1);

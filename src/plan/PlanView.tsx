@@ -7,6 +7,8 @@ const Calendar = lazy(() => import("./Calendar"));
 
 type Props = {
   member: Reader | null;
+  /** Completed plan days: the named reader's, else this device's guest's. */
+  completed: readonly number[];
   start: string;
   currentDate: string;
   current: number;
@@ -17,6 +19,7 @@ type Props = {
 };
 export default function PlanView({
   member,
+  completed,
   start,
   currentDate,
   current,
@@ -29,16 +32,11 @@ export default function PlanView({
     <>
       <section className="page-heading">
         <div>
-          <span className="eyebrow">١٥٠ يومًا · بالترتيب الزمني</span>
-          <h1>رحلتك، يومًا بيوم</h1>
+          <span className="eyebrow">خطة شباب كنيسة الإخوة بخلوصي</span>
+          <h1>العهد الجديد في ١٥٠ يومًا</h1>
           <p>تابع الأيام المكتملة، وعُد إلى أي قراءة.</p>
         </div>
-        {!member ? (
-          <button className="primary" onClick={join}>
-            ابدأ رحلتك
-            <ArrowLeft size={18} />
-          </button>
-        ) : (
+        <div className="page-heading-actions">
           <button
             className="quiet-button"
             onClick={() => go(scheduledDay(start, currentDate))}
@@ -46,12 +44,18 @@ export default function PlanView({
             قراءة اليوم
             <ArrowLeft size={18} />
           </button>
-        )}
+          {!member && (
+            <button className="text-button" onClick={join}>
+              اختيار تاريخ البداية
+            </button>
+          )}
+        </div>
       </section>
       <ChunkBoundary>
         <Suspense fallback={<Loading label="جارٍ فتح خطة القراءة…" />}>
           <Calendar
             member={member}
+            completed={completed}
             start={start}
             current={current}
             page={page}

@@ -16,7 +16,8 @@ import torch
 import uroman
 from torchaudio.pipelines import MMS_FA
 
-from audio_text import chapter_text_hash, chapter_verses, digest
+from audio_text import chapter_text_hash, chapter_verses
+from audio_sources import bible_chapters, file_hash
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -25,20 +26,32 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path, default=ROOT / "data/audio/alignments")
-    parser.add_argument("--books", help="Comma-separated USFM codes; default all NT books")
+    parser.add_argument("--books", help="Comma-separated USFM codes; default selected testament")
+    parser.add_argument("--testament", choices=["OT", "NT", "all"], default="NT")
+    parser.add_argument("--bible", type=Path, default=ROOT / "data/bible/source.json.gz")
     parser.add_argument("--chapters", help="Comma-separated USFM:chapter keys for a pilot")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     args = parser.parse_args()
-    books = json.loads((ROOT / "data/books.json").read_text())[39:]
-    plan = json.loads((ROOT / "data/plan.json").read_text())
-    chapters = chapter_verses(plan)
+    books = json.loads((ROOT / "data/books.json").read_text())
+    if args.bible.exists():
+        readings = [reading for _, reading in bible_chapters(args.bible)]
+        chapters = chapter_verses(readings)
+    elif args.testament == "NT":
+        chapters = chapter_verses(json.loads((ROOT / "data/plan.json").read_text()))
+    else:
+        raise ValueError("Old Testament alignment requires the normalized full-Bible source (--bible)")
     args.output.mkdir(parents=True, exist_ok=True)
     romanizer = uroman.Uroman()
     print("Loading MMS alignment model…", flush=True)
     model = MMS_FA.get_model().to(args.device).eval()
     tokenizer, aligner = MMS_FA.get_tokenizer(), MMS_FA.get_aligner()
     torch.set_num_threads(4)
-    for book_index, (code, _, _, name) in enumerate(books, 1):
+    for canonical_index, (code, _, _, name) in enumerate(books):
+        testament = "OT" if canonical_index < 39 else "NT"
+        if args.testament != "all" and args.testament != testament:
+            continue
+        prefix = "A" if testament == "OT" else "B"
+        book_index = canonical_index + 1 if testament == "OT" else canonical_index - 38
         if args.books and code not in args.books.split(","):
             continue
         for (book, chapter), verse_map in sorted(chapters.items()):
@@ -46,14 +59,15 @@ def main():
                 continue
             if args.chapters and f"{code}:{chapter}" not in args.chapters.split(","):
                 continue
-            candidates = list(args.source.glob(f"B{book_index:02d}___{chapter:02d}_*.mp3"))
+            candidates = [path for path in args.source.rglob(f"{prefix}{book_index:02d}_*.mp3")
+                          if (match := re.match(r"[AB]\d{2}_{2,3}(\d{2,3})_", path.name)) and int(match[1]) == chapter]
             if len(candidates) != 1:
                 raise ValueError(f"Expected one source for {code} {chapter}, found {len(candidates)}")
             source = candidates[0]
             verses = sorted(verse_map.items())
             if [n for n, _ in verses] != list(range(1, len(verses) + 1)):
                 raise ValueError(f"Incomplete transcript: {code} {chapter}")
-            audio_hash = digest(source.read_bytes())
+            audio_hash = file_hash(source)
             text_hash = chapter_text_hash(verse_map)
             output = args.output / f"{code}-{chapter}.json"
             if output.exists():

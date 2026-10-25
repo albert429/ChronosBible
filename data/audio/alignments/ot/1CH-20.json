@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "1CH",
+  "chapter": 20,
+  "file": "A13___20_1Chronicles_ARZVDVO1DA.mp3",
+  "audioHash": "969a08a874a3499b83f39e5803a627d803e395947b0fd86b002ab91cf1777e85",
+  "textHash": "ab0e71992e36b57b2b2ada4aeb55e98b5bb80e19519feaf1351e1d384de3601b",
+  "duration": 122.5665625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.76,
+      "end": 27.32,
+      "score": 0.5799
+    },
+    {
+      "verse": 2,
+      "start": 27.32,
+      "end": 45.0,
+      "score": 0.5874
+    },
+    {
+      "verse": 3,
+      "start": 46.1,
+      "end": 64.24,
+      "score": 0.5892
+    },
+    {
+      "verse": 4,
+      "start": 64.28,
+      "end": 77.68,
+      "score": 0.6046
+    },
+    {
+      "verse": 5,
+      "start": 78.5,
+      "end": 91.72,
+      "score": 0.5741
+    },
+    {
+      "verse": 6,
+      "start": 92.8,
+      "end": 105.58,
+      "score": 0.6119
+    },
+    {
+      "verse": 7,
+      "start": 106.64,
+      "end": 113.76,
+      "score": 0.6105
+    },
+    {
+      "verse": 8,
+      "start": 113.76,
+      "end": 120.48,
+      "score": 0.4522
+    }
+  ]
+}

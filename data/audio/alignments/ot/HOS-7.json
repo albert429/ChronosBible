@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "HOS",
+  "chapter": 7,
+  "file": "A28___07_Hosea_______ARZVDVO1DA.mp3",
+  "audioHash": "83c1f39fc9da36a453e7fbe5084d88f2471c6028617e016d713c034d4a64a3be",
+  "textHash": "19c98b1f819d50522aabf5878fe6284fdfa1c7db1e16a32572c4cc5a1612a3a0",
+  "duration": 185.7045,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 4.76,
+      "end": 20.68,
+      "score": 0.6238
+    },
+    {
+      "verse": 2,
+      "start": 20.68,
+      "end": 32.04,
+      "score": 0.5943
+    },
+    {
+      "verse": 3,
+      "start": 33.48,
+      "end": 39.94,
+      "score": 0.5239
+    },
+    {
+      "verse": 4,
+      "start": 39.94,
+      "end": 51.94,
+      "score": 0.6114
+    },
+    {
+      "verse": 5,
+      "start": 51.98,
+      "end": 60.9,
+      "score": 0.6001
+    },
+    {
+      "verse": 6,
+      "start": 60.9,
+      "end": 73.86,
+      "score": 0.5932
+    },
+    {
+      "verse": 7,
+      "start": 75.04,
+      "end": 86.34,
+      "score": 0.5929
+    },
+    {
+      "verse": 8,
+      "start": 86.44,
+      "end": 92.92,
+      "score": 0.6233
+    },
+    {
+      "verse": 9,
+      "start": 94.08,
+      "end": 102.54,
+      "score": 0.5999
+    },
+    {
+      "verse": 10,
+      "start": 103.18,
+      "end": 113.34,
+      "score": 0.5992
+    },
+    {
+      "verse": 11,
+      "start": 114.66,
+      "end": 124.48,
+      "score": 0.5755
+    },
+    {
+      "verse": 12,
+      "start": 124.56,
+      "end": 134.98,
+      "score": 0.5805
+    },
+    {
+      "verse": 13,
+      "start": 136.4,
+      "end": 147.34,
+      "score": 0.5823
+    },
+    {
+      "verse": 14,
+      "start": 148.48,
+      "end": 159.34,
+      "score": 0.5778
+    },
+    {
+      "verse": 15,
+      "start": 160.16,
+      "end": 166.82,
+      "score": 0.5586
+    },
+    {
+      "verse": 16,
+      "start": 168.28,
+      "end": 183.44,
+      "score": 0.586
+    }
+  ]
+}

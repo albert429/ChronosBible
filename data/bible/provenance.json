@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "sourceUrl": "https://ebible.org/Scriptures/arb-vd_usfm.zip",
+  "detailsUrl": "https://ebible.org/bible/details.php?id=arb-vd",
+  "license": "Public domain",
+  "archiveSha256": "21097759376591c9d1c4b07440e36cd870e44ec5f44e4a84b215b35f17c7b150",
+  "sourceSha256": "bcf1960798f4c74c184246023088d8a0e493ff722d8742622aac826e2b875f5b",
+  "gzipSha256": "447ce83f0a6d9ca6599fc3d9210af75b829248ce5366f95797d50e2953ed7d9b",
+  "catalogSha256": "66fa504eae09ae367cffce3923dae4970d7dcb45cc49c466c26d746ee5eaa4b9",
+  "books": 66,
+  "chapters": 1189,
+  "verses": 31104,
+  "ntVerses": 7959,
+  "structure": {
+    "acrostic": 22,
+    "heading": 1998,
+    "paragraph": 4637,
+    "poetry": 1,
+    "superscription": 120
+  }
+}

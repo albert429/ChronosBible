@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "MIC",
+  "chapter": 4,
+  "file": "A33___04_Micah_______ARZVDVO1DA.mp3",
+  "audioHash": "8bfa1d55a3dbfb83e6fb8c946718a5ecc6021416468ac2a31fb83af4db740aea",
+  "textHash": "ef2f14e89265b98423f3468039ea5797f358eb364d7804675f1ae760879ae1b7",
+  "duration": 218.096375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 4.9,
+      "end": 19.22,
+      "score": 0.6117
+    },
+    {
+      "verse": 2,
+      "start": 20.22,
+      "end": 44.6,
+      "score": 0.5919
+    },
+    {
+      "verse": 3,
+      "start": 44.6,
+      "end": 65.04,
+      "score": 0.5824
+    },
+    {
+      "verse": 4,
+      "start": 66.22,
+      "end": 78.52,
+      "score": 0.5603
+    },
+    {
+      "verse": 5,
+      "start": 78.8,
+      "end": 91.18,
+      "score": 0.6014
+    },
+    {
+      "verse": 6,
+      "start": 91.18,
+      "end": 104.1,
+      "score": 0.5783
+    },
+    {
+      "verse": 7,
+      "start": 104.2,
+      "end": 115.94,
+      "score": 0.5856
+    },
+    {
+      "verse": 8,
+      "start": 116.72,
+      "end": 128.32,
+      "score": 0.5765
+    },
+    {
+      "verse": 9,
+      "start": 128.5,
+      "end": 142.7,
+      "score": 0.5865
+    },
+    {
+      "verse": 10,
+      "start": 142.7,
+      "end": 166.36,
+      "score": 0.5454
+    },
+    {
+      "verse": 11,
+      "start": 166.36,
+      "end": 179.98,
+      "score": 0.6177
+    },
+    {
+      "verse": 12,
+      "start": 180.34,
+      "end": 192.1,
+      "score": 0.5942
+    },
+    {
+      "verse": 13,
+      "start": 192.1,
+      "end": 216.04,
+      "score": 0.5791
+    }
+  ]
+}

@@ -16,5 +16,8 @@ test("Share data is the app title and description with the page address, never i
   assert.deepEqual(Object.keys(data).sort(), ["text", "title", "url"]);
   assert.equal(data.title, APP_INFO.title);
   assert.equal(data.url, "https://app.example/reader/");
-  assert.match(data.text ?? "", /١٥٠ يومًا/);
+  assert.match(
+    data.text ?? "",
+    /بالترتيب المعتاد.*بالترتيب الزمني.*تسجيل صوتي/,
+  );
 });

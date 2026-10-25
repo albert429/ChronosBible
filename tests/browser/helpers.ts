@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
-import { PROGRESS_KEY } from "../../src/plan/progress.ts";
+import { PROGRESS_KEY, STATE_KEY } from "../../src/plan/progress.ts";
 
 export const profile = {
   id: "reader-one",
@@ -19,6 +19,11 @@ const plan: PlanDay[] = JSON.parse(readFileSync("data/plan.json", "utf8"));
 /** Facts about a plan day, so tests don't hard-code them. */
 export const planDay = (day: number) => plan[day - 1];
 
+/**
+ * A device with the legacy (v1) progress of one reader; the app migrates it
+ * and that reader opens the youth plan on their scheduled day (day 10 on
+ * 2026-10-01). Without `selected`, the guest reads (fresh: Genesis 1).
+ */
 export async function seed(
   page: Page,
   selected = true,
@@ -91,6 +96,29 @@ export async function openDayDetails(page: Page) {
   await page.getByRole("button", { name: /^تفاصيل اليوم / }).click();
   return page.getByRole("dialog", { name: /^قراءة اليوم / });
 }
+/** The youth plan calendar, reached from the day selector. */
+export async function openPlanCalendar(page: Page) {
+  const details = await openDayDetails(page);
+  await details
+    .getByRole("button", { name: "أيام الخطة والتقدم", exact: true })
+    .click();
+  await expect(page.locator("dialog[open]")).toHaveCount(0);
+}
+/** The four reading modes' menu names. */
+export const MODES = {
+  bible: "الكتاب المقدس",
+  ot: "العهد القديم بالترتيب الزمني",
+  nt: "العهد الجديد بالترتيب الزمني",
+  plan: "العهد الجديد في ١٥٠ يومًا",
+} as const;
+/** The stored v2 state: readers, the guest, places and completion. */
+export const storedState = (page: Page) =>
+  page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), STATE_KEY);
+export const article = (page: Page) => page.getByRole("article");
+export const completeButton = (page: Page) =>
+  page.getByRole("button", { name: "تمت القراءة", exact: true });
+export const undoButton = (page: Page) =>
+  page.getByRole("button", { name: "تراجع", exact: true });
 export const nextDay = (page: Page) =>
   page.getByRole("button", { name: "اليوم التالي", exact: true });
 export const previousDay = (page: Page) =>
@@ -180,3 +208,7 @@ export const section = (page: Page, title: string) =>
 export async function openSection(page: Page, title: string) {
   await section(page, title).click();
 }
+
+/** Tab to the next control; Safari's Tab skips buttons unless Alt is held. */
+export const tabKey = (browserName: string) =>
+  browserName === "webkit" ? "Alt+Tab" : "Tab";

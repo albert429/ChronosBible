@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "DEU",
+  "chapter": 31,
+  "file": "A05___31_Deuteronomy_ARZVDVO1DA.mp3",
+  "audioHash": "1146f545ff8faab3355b9a88a3adf91cbf01ab0c4624c699ddc4034e0f25ce7c",
+  "textHash": "541d2204638c0eda2895442868ff5f5edd4afd5efcc9fbca889990f33320182c",
+  "duration": 423.810625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.8,
+      "end": 11.78,
+      "score": 0.6173
+    },
+    {
+      "verse": 2,
+      "start": 12.46,
+      "end": 26.5,
+      "score": 0.6174
+    },
+    {
+      "verse": 3,
+      "start": 27.48,
+      "end": 41.2,
+      "score": 0.594
+    },
+    {
+      "verse": 4,
+      "start": 41.2,
+      "end": 50.58,
+      "score": 0.5809
+    },
+    {
+      "verse": 5,
+      "start": 51.64,
+      "end": 59.82,
+      "score": 0.5899
+    },
+    {
+      "verse": 6,
+      "start": 60.16,
+      "end": 73.2,
+      "score": 0.5832
+    },
+    {
+      "verse": 7,
+      "start": 73.2,
+      "end": 94.04,
+      "score": 0.6096
+    },
+    {
+      "verse": 8,
+      "start": 95.06,
+      "end": 105.44,
+      "score": 0.5875
+    },
+    {
+      "verse": 9,
+      "start": 106.46,
+      "end": 116.1,
+      "score": 0.5863
+    },
+    {
+      "verse": 10,
+      "start": 116.98,
+      "end": 126.7,
+      "score": 0.6021
+    },
+    {
+      "verse": 11,
+      "start": 127.6,
+      "end": 142.06,
+      "score": 0.5968
+    },
+    {
+      "verse": 12,
+      "start": 143.08,
+      "end": 162.54,
+      "score": 0.6034
+    },
+    {
+      "verse": 13,
+      "start": 162.54,
+      "end": 181.9,
+      "score": 0.6055
+    },
+    {
+      "verse": 14,
+      "start": 182.92,
+      "end": 201.18,
+      "score": 0.5877
+    },
+    {
+      "verse": 15,
+      "start": 201.18,
+      "end": 209.9,
+      "score": 0.6029
+    },
+    {
+      "verse": 16,
+      "start": 209.9,
+      "end": 229.52,
+      "score": 0.6075
+    },
+    {
+      "verse": 17,
+      "start": 230.36,
+      "end": 252.24,
+      "score": 0.5968
+    },
+    {
+      "verse": 18,
+      "start": 252.7,
+      "end": 262.64,
+      "score": 0.617
+    },
+    {
+      "verse": 19,
+      "start": 263.7,
+      "end": 276.84,
+      "score": 0.6269
+    },
+    {
+      "verse": 20,
+      "start": 276.84,
+      "end": 294.32,
+      "score": 0.5987
+    },
+    {
+      "verse": 21,
+      "start": 295.3,
+      "end": 314.62,
+      "score": 0.6191
+    },
+    {
+      "verse": 22,
+      "start": 314.74,
+      "end": 322.96,
+      "score": 0.5001
+    },
+    {
+      "verse": 23,
+      "start": 323.04,
+      "end": 336.36,
+      "score": 0.6171
+    },
+    {
+      "verse": 24,
+      "start": 337.38,
+      "end": 344.94,
+      "score": 0.5932
+    },
+    {
+      "verse": 25,
+      "start": 345.02,
+      "end": 349.32,
+      "score": 0.6166
+    },
+    {
+      "verse": 26,
+      "start": 350.62,
+      "end": 361.42,
+      "score": 0.5917
+    },
+    {
+      "verse": 27,
+      "start": 362.1,
+      "end": 376.84,
+      "score": 0.6078
+    },
+    {
+      "verse": 28,
+      "start": 377.86,
+      "end": 392.22,
+      "score": 0.5933
+    },
+    {
+      "verse": 29,
+      "start": 392.22,
+      "end": 412.36,
+      "score": 0.6235
+    },
+    {
+      "verse": 30,
+      "start": 413.4,
+      "end": 421.68,
+      "score": 0.6121
+    }
+  ]
+}

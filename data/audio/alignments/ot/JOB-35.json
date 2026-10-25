@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOB",
+  "chapter": 35,
+  "file": "A18___35_Job_________ARZVDVO1DA.mp3",
+  "audioHash": "5540cb27fa529db7ee5050d2015011d9403657b18a0b9510ed444ce66aca2254",
+  "textHash": "b79333fbaf61d665a12d545a14402ca4b6c93a495bb0ee81911bdceca1073bed",
+  "duration": 127.268625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.4,
+      "end": 9.02,
+      "score": 0.5366
+    },
+    {
+      "verse": 2,
+      "start": 9.08,
+      "end": 17.9,
+      "score": 0.603
+    },
+    {
+      "verse": 3,
+      "start": 17.92,
+      "end": 24.82,
+      "score": 0.6049
+    },
+    {
+      "verse": 4,
+      "start": 24.84,
+      "end": 31.64,
+      "score": 0.581
+    },
+    {
+      "verse": 5,
+      "start": 31.66,
+      "end": 41.44,
+      "score": 0.5922
+    },
+    {
+      "verse": 6,
+      "start": 41.48,
+      "end": 50.44,
+      "score": 0.6278
+    },
+    {
+      "verse": 7,
+      "start": 50.56,
+      "end": 57.78,
+      "score": 0.6378
+    },
+    {
+      "verse": 8,
+      "start": 57.78,
+      "end": 62.4,
+      "score": 0.5822
+    },
+    {
+      "verse": 9,
+      "start": 62.4,
+      "end": 69.26,
+      "score": 0.5967
+    },
+    {
+      "verse": 10,
+      "start": 70.02,
+      "end": 78.52,
+      "score": 0.6287
+    },
+    {
+      "verse": 11,
+      "start": 78.54,
+      "end": 88.24,
+      "score": 0.6015
+    },
+    {
+      "verse": 12,
+      "start": 88.24,
+      "end": 94.66,
+      "score": 0.6274
+    },
+    {
+      "verse": 13,
+      "start": 94.86,
+      "end": 99.96,
+      "score": 0.6144
+    },
+    {
+      "verse": 14,
+      "start": 101.42,
+      "end": 109.42,
+      "score": 0.5599
+    },
+    {
+      "verse": 15,
+      "start": 109.78,
+      "end": 116.12,
+      "score": 0.5953
+    },
+    {
+      "verse": 16,
+      "start": 117.36,
+      "end": 125.06,
+      "score": 0.5902
+    }
+  ]
+}

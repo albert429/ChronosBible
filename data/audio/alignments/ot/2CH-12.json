@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "2CH",
+  "chapter": 12,
+  "file": "A14___12_2Chronicles_ARZVDVO1DA.mp3",
+  "audioHash": "fd58f46cefb903a4522c2f65e362e7b492ff753f956e5e519e2581c808df7e79",
+  "textHash": "14a3803a6e6b564fd2ae6fd9f37b50000d0ff3e42775585dbf564568176b1e49",
+  "duration": 207.2816875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.5,
+      "end": 16.08,
+      "score": 0.5929
+    },
+    {
+      "verse": 2,
+      "start": 16.82,
+      "end": 25.32,
+      "score": 0.6136
+    },
+    {
+      "verse": 3,
+      "start": 26.0,
+      "end": 39.48,
+      "score": 0.5699
+    },
+    {
+      "verse": 4,
+      "start": 39.58,
+      "end": 46.24,
+      "score": 0.6122
+    },
+    {
+      "verse": 5,
+      "start": 46.24,
+      "end": 68.54,
+      "score": 0.5982
+    },
+    {
+      "verse": 6,
+      "start": 68.68,
+      "end": 76.46,
+      "score": 0.636
+    },
+    {
+      "verse": 7,
+      "start": 76.74,
+      "end": 94.66,
+      "score": 0.5775
+    },
+    {
+      "verse": 8,
+      "start": 94.66,
+      "end": 101.28,
+      "score": 0.5875
+    },
+    {
+      "verse": 9,
+      "start": 102.62,
+      "end": 117.52,
+      "score": 0.6174
+    },
+    {
+      "verse": 10,
+      "start": 117.6,
+      "end": 128.5,
+      "score": 0.587
+    },
+    {
+      "verse": 11,
+      "start": 128.52,
+      "end": 137.56,
+      "score": 0.5941
+    },
+    {
+      "verse": 12,
+      "start": 138.4,
+      "end": 148.1,
+      "score": 0.5849
+    },
+    {
+      "verse": 13,
+      "start": 148.94,
+      "end": 174.36,
+      "score": 0.5823
+    },
+    {
+      "verse": 14,
+      "start": 174.36,
+      "end": 178.86,
+      "score": 0.5488
+    },
+    {
+      "verse": 15,
+      "start": 178.86,
+      "end": 196.14,
+      "score": 0.627
+    },
+    {
+      "verse": 16,
+      "start": 196.14,
+      "end": 205.3,
+      "score": 0.5314
+    }
+  ]
+}

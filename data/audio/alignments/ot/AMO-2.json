@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "AMO",
+  "chapter": 2,
+  "file": "A30___02_Amos________ARZVDVO1DA.mp3",
+  "audioHash": "c14beba3d200655082dfac72f64fe26d12c7a2eab918accc7aa75eeff7565088",
+  "textHash": "5f0638b759251ab83377a3e455c2c95ba4499a3492721cacf1fec0dcf373f61f",
+  "duration": 206.0016875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.62,
+      "end": 18.7,
+      "score": 0.6066
+    },
+    {
+      "verse": 2,
+      "start": 20.16,
+      "end": 32.58,
+      "score": 0.567
+    },
+    {
+      "verse": 3,
+      "start": 32.58,
+      "end": 40.0,
+      "score": 0.5555
+    },
+    {
+      "verse": 4,
+      "start": 41.62,
+      "end": 62.6,
+      "score": 0.6
+    },
+    {
+      "verse": 5,
+      "start": 63.74,
+      "end": 70.14,
+      "score": 0.5996
+    },
+    {
+      "verse": 6,
+      "start": 70.14,
+      "end": 90.72,
+      "score": 0.6176
+    },
+    {
+      "verse": 7,
+      "start": 90.74,
+      "end": 107.84,
+      "score": 0.5829
+    },
+    {
+      "verse": 8,
+      "start": 109.18,
+      "end": 118.94,
+      "score": 0.6345
+    },
+    {
+      "verse": 9,
+      "start": 120.72,
+      "end": 137.14,
+      "score": 0.5915
+    },
+    {
+      "verse": 10,
+      "start": 137.22,
+      "end": 148.42,
+      "score": 0.5908
+    },
+    {
+      "verse": 11,
+      "start": 148.44,
+      "end": 160.0,
+      "score": 0.6328
+    },
+    {
+      "verse": 12,
+      "start": 160.56,
+      "end": 169.58,
+      "score": 0.6005
+    },
+    {
+      "verse": 13,
+      "start": 170.76,
+      "end": 177.36,
+      "score": 0.6373
+    },
+    {
+      "verse": 14,
+      "start": 178.72,
+      "end": 186.82,
+      "score": 0.589
+    },
+    {
+      "verse": 15,
+      "start": 187.8,
+      "end": 195.54,
+      "score": 0.6098
+    },
+    {
+      "verse": 16,
+      "start": 196.48,
+      "end": 205.96,
+      "score": 0.6428
+    }
+  ]
+}

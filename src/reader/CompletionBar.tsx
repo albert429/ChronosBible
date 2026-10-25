@@ -1,26 +1,36 @@
+import { Suspense, useState } from "react";
 import { Check, RotateCcw } from "lucide-react";
+import { Streak } from "../streak/lazy";
 import "./CompletionBar.css";
 
 export default function CompletionBar({
   done,
-  disabled,
+  doneLabel,
+  plan,
   onComplete,
 }: {
   done: boolean;
-  disabled: boolean;
+  /** A youth plan reading (plan milestones apply). */
+  plan?: boolean;
+  /** What was read, e.g. «تمت قراءة هذا اليوم». */
+  doneLabel: string;
   onComplete: () => void;
 }) {
+  // Celebrate only a reading marked done here, not one opened already done.
+  const [cheer, setCheer] = useState(false);
   return (
     <div className={`reading-completion ${done ? "is-complete" : ""}`}>
       {done && (
         <p className="completion-state">
-          <Check size={18} aria-hidden="true" /> تمت قراءة هذا اليوم
+          <Check size={18} aria-hidden="true" /> {doneLabel}
         </p>
       )}
       <button
         className={done ? "quiet-button" : "primary"}
-        disabled={disabled}
-        onClick={onComplete}
+        onClick={() => {
+          setCheer(!done);
+          onComplete();
+        }}
       >
         {done ? (
           <RotateCcw size={18} aria-hidden="true" />
@@ -29,6 +39,11 @@ export default function CompletionBar({
         )}
         {done ? "تراجع" : "تمت القراءة"}
       </button>
+      {done && (
+        <Suspense fallback={null}>
+          <Streak moment cheer={cheer} plan={plan} />
+        </Suspense>
+      )}
     </div>
   );
 }

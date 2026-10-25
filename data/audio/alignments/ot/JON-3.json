@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JON",
+  "chapter": 3,
+  "file": "A32___03_Jonah_______ARZVDVO1DA.mp3",
+  "audioHash": "fb07a73a085caff81b3577e04a54d95472f5c13ec6cf24799b9a87bb4f718018",
+  "textHash": "ee9b51eec44913a3a4ddce61ac4dd9443184202cdbaf3fe7275c920324e6d7d1",
+  "duration": 125.3878125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.1,
+      "end": 9.12,
+      "score": 0.656
+    },
+    {
+      "verse": 2,
+      "start": 11.12,
+      "end": 18.5,
+      "score": 0.5971
+    },
+    {
+      "verse": 3,
+      "start": 19.94,
+      "end": 34.46,
+      "score": 0.5761
+    },
+    {
+      "verse": 4,
+      "start": 35.58,
+      "end": 47.96,
+      "score": 0.5851
+    },
+    {
+      "verse": 5,
+      "start": 48.6,
+      "end": 57.38,
+      "score": 0.5902
+    },
+    {
+      "verse": 6,
+      "start": 58.52,
+      "end": 71.86,
+      "score": 0.5632
+    },
+    {
+      "verse": 7,
+      "start": 71.86,
+      "end": 87.44,
+      "score": 0.6111
+    },
+    {
+      "verse": 8,
+      "start": 88.12,
+      "end": 102.1,
+      "score": 0.6158
+    },
+    {
+      "verse": 9,
+      "start": 102.9,
+      "end": 110.24,
+      "score": 0.5525
+    },
+    {
+      "verse": 10,
+      "start": 110.4,
+      "end": 123.06,
+      "score": 0.6006
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "AMO",
+  "chapter": 7,
+  "file": "A30___07_Amos________ARZVDVO1DA.mp3",
+  "audioHash": "2df7351441dc595a958e6b289e4f3f586b084cea73d06ca71e2bb4e31e12ebab",
+  "textHash": "33df6254cfd87abd95e7c769462baf109723cd8b97b6e6876a0fc64608596d1b",
+  "duration": 225.85475,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.32,
+      "end": 19.66,
+      "score": 0.636
+    },
+    {
+      "verse": 2,
+      "start": 19.66,
+      "end": 33.36,
+      "score": 0.6067
+    },
+    {
+      "verse": 3,
+      "start": 34.2,
+      "end": 41.8,
+      "score": 0.6198
+    },
+    {
+      "verse": 4,
+      "start": 42.72,
+      "end": 55.32,
+      "score": 0.5926
+    },
+    {
+      "verse": 5,
+      "start": 56.46,
+      "end": 65.24,
+      "score": 0.5835
+    },
+    {
+      "verse": 6,
+      "start": 66.38,
+      "end": 76.64,
+      "score": 0.6186
+    },
+    {
+      "verse": 7,
+      "start": 76.92,
+      "end": 85.86,
+      "score": 0.6215
+    },
+    {
+      "verse": 8,
+      "start": 87.26,
+      "end": 106.18,
+      "score": 0.6033
+    },
+    {
+      "verse": 9,
+      "start": 107.16,
+      "end": 118.2,
+      "score": 0.6075
+    },
+    {
+      "verse": 10,
+      "start": 118.2,
+      "end": 136.5,
+      "score": 0.5859
+    },
+    {
+      "verse": 11,
+      "start": 136.5,
+      "end": 147.94,
+      "score": 0.6188
+    },
+    {
+      "verse": 12,
+      "start": 147.94,
+      "end": 159.14,
+      "score": 0.565
+    },
+    {
+      "verse": 13,
+      "start": 160.06,
+      "end": 169.46,
+      "score": 0.5663
+    },
+    {
+      "verse": 14,
+      "start": 170.78,
+      "end": 181.48,
+      "score": 0.5545
+    },
+    {
+      "verse": 15,
+      "start": 182.9,
+      "end": 190.96,
+      "score": 0.5865
+    },
+    {
+      "verse": 16,
+      "start": 190.96,
+      "end": 201.9,
+      "score": 0.6041
+    },
+    {
+      "verse": 17,
+      "start": 201.9,
+      "end": 223.68,
+      "score": 0.5959
+    }
+  ]
+}

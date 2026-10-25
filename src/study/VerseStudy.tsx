@@ -1,12 +1,13 @@
 import { lazy, Suspense } from "react";
 import { chapterVerse, isolate } from "../bible/reference";
-import type { Day } from "../plan/readings";
+import { isBibleChapter, type ScriptureReading } from "../bible/types";
 import { ChunkBoundary, Loading } from "../components/Feedback";
 import Sheet from "../components/Sheet";
 import { verseNumberButton } from "../reader/scriptureDom";
 
 export const loadStudyPanel = () => import("./StudyPanel");
 const StudyPanel = lazy(loadStudyPanel);
+const CanonicalStudy = lazy(() => import("./CanonicalStudy"));
 
 export type StudyTarget = { passage: number; verse: number; el: HTMLElement };
 
@@ -18,7 +19,7 @@ export default function VerseStudy({
   onAfterClose,
 }: {
   open: boolean;
-  reading: Day;
+  reading: ScriptureReading;
   target: StudyTarget;
   onClose: () => void;
   onAfterClose: () => void;
@@ -38,12 +39,16 @@ export default function VerseStudy({
       <p className="study-verse">{verse.text}</p>
       <ChunkBoundary>
         <Suspense fallback={<Loading label="جارٍ تحميل دراسة الآية…" />}>
-          <StudyPanel
-            day={reading.day}
-            passageIndex={target.passage}
-            passage={passage}
-            verse={verse}
-          />
+          {isBibleChapter(reading) ? (
+            <CanonicalStudy reading={reading} verse={verse} />
+          ) : (
+            <StudyPanel
+              day={reading.day}
+              passageIndex={target.passage}
+              passage={passage}
+              verse={verse}
+            />
+          )}
         </Suspense>
       </ChunkBoundary>
     </Sheet>

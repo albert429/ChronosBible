@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "AMO",
+  "chapter": 6,
+  "file": "A30___06_Amos________ARZVDVO1DA.mp3",
+  "audioHash": "dfd3935c2068f448be65f818bcb5d0a63db37564c35f24084fecc09875fa938e",
+  "textHash": "a56a32f018b16bbc8c01dcc66e4f563cc83207fdfafcad6a82ba4ad88f85e3b5",
+  "duration": 200.3591875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.46,
+      "end": 21.64,
+      "score": 0.6136
+    },
+    {
+      "verse": 2,
+      "start": 21.66,
+      "end": 40.74,
+      "score": 0.581
+    },
+    {
+      "verse": 3,
+      "start": 42.18,
+      "end": 48.48,
+      "score": 0.6167
+    },
+    {
+      "verse": 4,
+      "start": 49.96,
+      "end": 64.28,
+      "score": 0.5967
+    },
+    {
+      "verse": 5,
+      "start": 65.32,
+      "end": 74.52,
+      "score": 0.6223
+    },
+    {
+      "verse": 6,
+      "start": 75.46,
+      "end": 88.64,
+      "score": 0.6126
+    },
+    {
+      "verse": 7,
+      "start": 88.66,
+      "end": 96.66,
+      "score": 0.5996
+    },
+    {
+      "verse": 8,
+      "start": 96.72,
+      "end": 111.34,
+      "score": 0.5828
+    },
+    {
+      "verse": 9,
+      "start": 112.64,
+      "end": 120.94,
+      "score": 0.603
+    },
+    {
+      "verse": 10,
+      "start": 120.94,
+      "end": 143.96,
+      "score": 0.5921
+    },
+    {
+      "verse": 11,
+      "start": 143.96,
+      "end": 152.32,
+      "score": 0.6393
+    },
+    {
+      "verse": 12,
+      "start": 154.3,
+      "end": 168.2,
+      "score": 0.6321
+    },
+    {
+      "verse": 13,
+      "start": 168.22,
+      "end": 180.2,
+      "score": 0.5761
+    },
+    {
+      "verse": 14,
+      "start": 181.9,
+      "end": 200.04,
+      "score": 0.5919
+    }
+  ]
+}

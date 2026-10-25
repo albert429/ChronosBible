@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOS",
+  "chapter": 7,
+  "file": "A06___07_Joshua______ARZVDVO1DA.mp3",
+  "audioHash": "12c957df46d6e8a9c710625aaacb6df7f8c8f35872ce42c9c3e2c38ec3f750b7",
+  "textHash": "87b6caa403c43a4d7afb3149349a501ba69a8da1dc2ff04613f2867df24222a9",
+  "duration": 397.087375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.26,
+      "end": 20.12,
+      "score": 0.6237
+    },
+    {
+      "verse": 2,
+      "start": 21.06,
+      "end": 36.72,
+      "score": 0.5837
+    },
+    {
+      "verse": 3,
+      "start": 37.6,
+      "end": 55.96,
+      "score": 0.581
+    },
+    {
+      "verse": 4,
+      "start": 56.04,
+      "end": 65.36,
+      "score": 0.5774
+    },
+    {
+      "verse": 5,
+      "start": 65.52,
+      "end": 80.78,
+      "score": 0.6232
+    },
+    {
+      "verse": 6,
+      "start": 80.78,
+      "end": 94.44,
+      "score": 0.6046
+    },
+    {
+      "verse": 7,
+      "start": 95.06,
+      "end": 112.74,
+      "score": 0.5822
+    },
+    {
+      "verse": 8,
+      "start": 112.76,
+      "end": 121.0,
+      "score": 0.5955
+    },
+    {
+      "verse": 9,
+      "start": 122.12,
+      "end": 135.3,
+      "score": 0.6197
+    },
+    {
+      "verse": 10,
+      "start": 135.4,
+      "end": 141.78,
+      "score": 0.6008
+    },
+    {
+      "verse": 11,
+      "start": 142.48,
+      "end": 154.98,
+      "score": 0.615
+    },
+    {
+      "verse": 12,
+      "start": 155.9,
+      "end": 171.06,
+      "score": 0.5976
+    },
+    {
+      "verse": 13,
+      "start": 171.68,
+      "end": 190.16,
+      "score": 0.6102
+    },
+    {
+      "verse": 14,
+      "start": 191.16,
+      "end": 210.38,
+      "score": 0.607
+    },
+    {
+      "verse": 15,
+      "start": 211.42,
+      "end": 223.72,
+      "score": 0.6022
+    },
+    {
+      "verse": 16,
+      "start": 223.8,
+      "end": 230.74,
+      "score": 0.5965
+    },
+    {
+      "verse": 17,
+      "start": 231.68,
+      "end": 242.44,
+      "score": 0.5785
+    },
+    {
+      "verse": 18,
+      "start": 243.62,
+      "end": 251.14,
+      "score": 0.5803
+    },
+    {
+      "verse": 19,
+      "start": 252.08,
+      "end": 264.46,
+      "score": 0.6155
+    },
+    {
+      "verse": 20,
+      "start": 265.54,
+      "end": 281.46,
+      "score": 0.577
+    },
+    {
+      "verse": 21,
+      "start": 286.06,
+      "end": 313.56,
+      "score": 0.5884
+    },
+    {
+      "verse": 22,
+      "start": 317.3,
+      "end": 327.14,
+      "score": 0.609
+    },
+    {
+      "verse": 23,
+      "start": 328.42,
+      "end": 339.04,
+      "score": 0.6056
+    },
+    {
+      "verse": 24,
+      "start": 339.04,
+      "end": 360.78,
+      "score": 0.565
+    },
+    {
+      "verse": 25,
+      "start": 360.92,
+      "end": 376.8,
+      "score": 0.6101
+    },
+    {
+      "verse": 26,
+      "start": 377.48,
+      "end": 395.4,
+      "score": 0.5861
+    }
+  ]
+}

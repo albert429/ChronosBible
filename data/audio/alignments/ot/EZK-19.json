@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EZK",
+  "chapter": 19,
+  "file": "A26___19_Ezekiel_____ARZVDVO1DA.mp3",
+  "audioHash": "50aa8c82b5b5bd8ffaa9930d281170cb70c160f4d61a77f8f9b6ca6bdfd2f5dc",
+  "textHash": "2ee1e25a965b77f00592d75e9f5d29b9bf4f33a1007d42c819b9ee6588980fbf",
+  "duration": 183.09225,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.4,
+      "end": 10.02,
+      "score": 0.6378
+    },
+    {
+      "verse": 2,
+      "start": 10.1,
+      "end": 23.76,
+      "score": 0.5473
+    },
+    {
+      "verse": 3,
+      "start": 24.8,
+      "end": 35.3,
+      "score": 0.6004
+    },
+    {
+      "verse": 4,
+      "start": 36.18,
+      "end": 47.0,
+      "score": 0.571
+    },
+    {
+      "verse": 5,
+      "start": 47.18,
+      "end": 58.16,
+      "score": 0.5854
+    },
+    {
+      "verse": 6,
+      "start": 59.72,
+      "end": 70.7,
+      "score": 0.6115
+    },
+    {
+      "verse": 7,
+      "start": 70.72,
+      "end": 81.04,
+      "score": 0.562
+    },
+    {
+      "verse": 8,
+      "start": 82.28,
+      "end": 92.5,
+      "score": 0.5861
+    },
+    {
+      "verse": 9,
+      "start": 94.04,
+      "end": 109.88,
+      "score": 0.594
+    },
+    {
+      "verse": 10,
+      "start": 109.9,
+      "end": 120.98,
+      "score": 0.6312
+    },
+    {
+      "verse": 11,
+      "start": 121.88,
+      "end": 138.46,
+      "score": 0.6014
+    },
+    {
+      "verse": 12,
+      "start": 138.58,
+      "end": 155.82,
+      "score": 0.5846
+    },
+    {
+      "verse": 13,
+      "start": 155.92,
+      "end": 162.08,
+      "score": 0.6305
+    },
+    {
+      "verse": 14,
+      "start": 163.34,
+      "end": 180.9,
+      "score": 0.5697
+    }
+  ]
+}

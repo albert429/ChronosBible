@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOS",
+  "chapter": 23,
+  "file": "A06___23_Joshua______ARZVDVO1DA.mp3",
+  "audioHash": "9cfd9dcb4df63759259f5bd8ba271502e63e848f70d7ecf6a90cb1d3b82d8407",
+  "textHash": "2d1e49f670fb3d51c09aecd7e34822d0e5f23bfa8eea3abb32100458607223b6",
+  "duration": 316.0555625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.22,
+      "end": 16.94,
+      "score": 0.6133
+    },
+    {
+      "verse": 2,
+      "start": 18.28,
+      "end": 34.88,
+      "score": 0.5842
+    },
+    {
+      "verse": 3,
+      "start": 34.96,
+      "end": 51.04,
+      "score": 0.5875
+    },
+    {
+      "verse": 4,
+      "start": 52.3,
+      "end": 73.12,
+      "score": 0.6204
+    },
+    {
+      "verse": 5,
+      "start": 74.62,
+      "end": 88.26,
+      "score": 0.5866
+    },
+    {
+      "verse": 6,
+      "start": 90.42,
+      "end": 108.38,
+      "score": 0.6054
+    },
+    {
+      "verse": 7,
+      "start": 112.58,
+      "end": 130.32,
+      "score": 0.57
+    },
+    {
+      "verse": 8,
+      "start": 132.3,
+      "end": 142.08,
+      "score": 0.6131
+    },
+    {
+      "verse": 9,
+      "start": 142.08,
+      "end": 156.92,
+      "score": 0.623
+    },
+    {
+      "verse": 10,
+      "start": 156.92,
+      "end": 169.66,
+      "score": 0.6125
+    },
+    {
+      "verse": 11,
+      "start": 171.08,
+      "end": 177.38,
+      "score": 0.5338
+    },
+    {
+      "verse": 12,
+      "start": 178.92,
+      "end": 194.4,
+      "score": 0.6231
+    },
+    {
+      "verse": 13,
+      "start": 195.68,
+      "end": 224.2,
+      "score": 0.6135
+    },
+    {
+      "verse": 14,
+      "start": 228.5,
+      "end": 257.74,
+      "score": 0.6078
+    },
+    {
+      "verse": 15,
+      "start": 259.32,
+      "end": 287.4,
+      "score": 0.608
+    },
+    {
+      "verse": 16,
+      "start": 288.58,
+      "end": 313.62,
+      "score": 0.593
+    }
+  ]
+}

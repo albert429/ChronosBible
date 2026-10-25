@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "SNG",
+  "chapter": 5,
+  "file": "A22___05_SongofSongs_ARZVDVO1DA.mp3",
+  "audioHash": "48a643bb58a943b1f9356839c2ae87898a385df49d1ed7ea27ab2d8f3f5ec263",
+  "textHash": "80ccb997f8eab882ceb0cafa9d7c69a3c518df6ad0bbac74a0704fbc734c0b84",
+  "duration": 225.306125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.96,
+      "end": 27.22,
+      "score": 0.5718
+    },
+    {
+      "verse": 2,
+      "start": 28.18,
+      "end": 51.14,
+      "score": 0.5429
+    },
+    {
+      "verse": 3,
+      "start": 52.78,
+      "end": 64.22,
+      "score": 0.5773
+    },
+    {
+      "verse": 4,
+      "start": 64.32,
+      "end": 70.28,
+      "score": 0.5338
+    },
+    {
+      "verse": 5,
+      "start": 71.74,
+      "end": 82.58,
+      "score": 0.5922
+    },
+    {
+      "verse": 6,
+      "start": 82.58,
+      "end": 100.4,
+      "score": 0.5379
+    },
+    {
+      "verse": 7,
+      "start": 102.32,
+      "end": 113.32,
+      "score": 0.5233
+    },
+    {
+      "verse": 8,
+      "start": 115.32,
+      "end": 126.32,
+      "score": 0.5104
+    },
+    {
+      "verse": 9,
+      "start": 128.18,
+      "end": 139.6,
+      "score": 0.5798
+    },
+    {
+      "verse": 10,
+      "start": 139.6,
+      "end": 146.78,
+      "score": 0.5425
+    },
+    {
+      "verse": 11,
+      "start": 146.78,
+      "end": 158.08,
+      "score": 0.5918
+    },
+    {
+      "verse": 12,
+      "start": 158.1,
+      "end": 170.56,
+      "score": 0.5621
+    },
+    {
+      "verse": 13,
+      "start": 170.64,
+      "end": 182.16,
+      "score": 0.5868
+    },
+    {
+      "verse": 14,
+      "start": 183.62,
+      "end": 196.3,
+      "score": 0.5712
+    },
+    {
+      "verse": 15,
+      "start": 196.3,
+      "end": 210.4,
+      "score": 0.571
+    },
+    {
+      "verse": 16,
+      "start": 210.4,
+      "end": 223.14,
+      "score": 0.5344
+    }
+  ]
+}

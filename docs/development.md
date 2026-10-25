@@ -2,33 +2,36 @@
 
 ## Structure
 
-| Path                                               | Responsibility                                                                                                             |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`, `src/App.tsx`                      | React bootstrap; app shell wiring reader, plan, navigation, and dialogs                                                    |
-| `src/appInfo.ts`                                   | App credits, contact links, and Scripture source                                                                           |
-| `src/lib/`                                         | Shared helpers: `jsonClient` (cache, deduplication, timeout), `useResource`, `network`, `format`, `useNotice`, `useToday`  |
-| `src/bible/`                                       | Verse and reference parsing shared by reader, study, and audio                                                             |
-| `src/plan/`                                        | Plan state: `readings` loading, `progress` profiles, `useProgress`, `schedule`, `backup`, `labels`, `PlanView`, `Calendar` |
-| `src/plan/dialogs/`                                | Join, Invite, Settings, and restore dialogs, loaded on demand                                                              |
-| `src/reader/`                                      | Reader, Scripture rendering, verse tap handling, completion bar, listen button, adjacent-day prefetch                      |
-| `src/navigation/`                                  | Toolbar, menu, day details, appearance panel and preferences, share, About                                                 |
-| `src/components/`                                  | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles              |
-| `src/audio/`                                       | Audio player and controls, manifest loading, media element, Media Session, verse highlighting, delivery contract           |
-| `src/study/`                                       | Lazy verse study sheet: translations, Greek key words, and AI explanations panel                                           |
-| `src/ai/`                                          | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting |
-| `src/styles/`                                      | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                 |
-| `data/`                                            | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)   |
-| `data/study/`                                      | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                        |
-| `data/audio/`                                      | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                    |
-| `scripts/build-data.js`                            | Runs the three builders below into `public/` (`predev`/`prebuild`)                                                         |
-| `scripts/build-{readings,study,audio-index}.js`    | Split plan, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` is shared               |
-| `scripts/import*.py`, `extract-plan.py`, `usfm.py` | Source extraction and importers, with coverage gates                                                                       |
-| `scripts/{align,build}-audio.py`, `audio_text.py`  | Audio alignment and build; `scripts/tests/` holds Python tests for `audio_text.py`                                         |
-| `scripts/verify-audio-host.py`                     | Verify a deployed audio origin against a local folder of recordings                                                        |
-| `scripts/snapshot.mjs`                             | Build-output snapshot and compare tool (`npm run snapshot`)                                                                |
-| `scripts/`                                         | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                          |
-| `tests/`                                           | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                          |
-| `docs/assets/`                                     | README artwork and actual app screenshot; never shipped in the app                                                         |
+| Path                                                            | Responsibility                                                                                                             |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`, `src/App.tsx`                                   | React bootstrap; app shell wiring reader, plan, navigation, and dialogs                                                    |
+| `src/appInfo.ts`                                                | App credits, contact links, and Scripture source                                                                           |
+| `src/lib/`                                                      | Shared helpers: `jsonClient` (cache, deduplication, timeout), `useResource`, `network`, `format`, `useNotice`, `useToday`  |
+| `src/bible/`                                                    | Verse and reference parsing; canonical catalog, chapter client, reading identity (`plan:N`, `bible:USFM:N`), navigation    |
+| `src/plan/`                                                     | Plan state: `readings` loading, `progress` profiles, `useProgress`, `schedule`, `backup`, `labels`, `PlanView`, `Calendar` |
+| `src/plan/dialogs/`                                             | Join, Invite, Settings, and restore dialogs, loaded on demand                                                              |
+| `src/reader/`                                                   | Reader, Scripture and chapter rendering, remembered places and links, verse taps, completion bar, listen button, prefetch  |
+| `src/navigation/`                                               | Toolbar, menu, day details, appearance panel and preferences, share, About                                                 |
+| `src/components/`                                               | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles              |
+| `src/audio/`                                                    | Player and controls, manifests (v1 days, v2 days/chapters), media element, Media Session, highlighting, contract, flags    |
+| `src/study/`                                                    | Lazy verse study sheet: translations, Greek key words, and AI explanations panel                                           |
+| `src/ai/`                                                       | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting |
+| `src/styles/`                                                   | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                 |
+| `data/`                                                         | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)   |
+| `data/bible/`                                                   | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                           |
+| `data/study/`                                                   | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                        |
+| `data/audio/`                                                   | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                    |
+| `scripts/build-data.js`                                         | Runs the static-data builders below into `public/` (`predev`/`prebuild`)                                                   |
+| `scripts/build-{readings,bible,study,audio-index}.js`           | Split plan, 1,189 chapters, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` shared  |
+| `scripts/import*.py`, `extract-plan.py`, `usfm.py`              | Source extraction and importers, with coverage gates                                                                       |
+| `scripts/{align,build}-audio.py`, `audio_*.py`                  | Alignment (NT/OT), daily build with optional spoken references; `scripts/tests/` holds the Python tests                    |
+| `scripts/{build,verify}-canonical-audio.py`                     | Encode and verify the 1,189 chapter recordings; `import-bible.py` imports the full text                                    |
+| `scripts/{prepare,upload}-audio-r2.mjs`, `verify-audio-host.py` | Stage, upload and verify the R2 audio host                                                                                 |
+| `scripts/{build,review}-*audio*.py`                             | Chronological playlists and clips; alignment review. Evidence limits and publication gate: `docs/audio.md`                 |
+| `scripts/snapshot.mjs`                                          | Build-output snapshot and compare tool (`npm run snapshot`)                                                                |
+| `scripts/`                                                      | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                          |
+| `tests/`                                                        | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                          |
+| `docs/assets/`                                                  | README artwork and actual app screenshot; never shipped in the app                                                         |
 
 ## Commands
 
@@ -46,6 +49,8 @@
 | `npm run typecheck`                                | Type-check the app, configs, browser specs and scripts                                   |
 | `npm run snapshot -- save <dir>`                   | Record hashes of generated data and sizes of `dist/assets/`                              |
 | `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
+| `npm run audio:host:prepare`                       | Stage recordings in `artifacts/r2-audio` and write the R2 upload batches                 |
+| `npm run audio:host:upload`                        | Put each batch into the R2 bucket `chronosbible-audio` with wrangler                     |
 | `npm run app:host:deploy`                          | Build, then deploy the app to Cloudflare Workers with wrangler                           |
 | `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                |
 | `python3 -I -m unittest discover -s scripts/tests` | Python audio hash tests (standard library only; CI also runs `py_compile`)               |
@@ -56,13 +61,23 @@
 
 `npm install` sets `core.hooksPath` to `.githooks/`. `pre-commit` runs Prettier and ESLint on the staged files, then `npm run typecheck`; `pre-push` runs `npm test`. Skip them in an emergency with `--no-verify`.
 
-`npm run test:e2e` builds with `AUDIO_TEST_FIXTURES=1` and `VITE_AUDIO_BASE_URL=https://audio.example.test`, then runs Playwright with the same variables; without them the audio specs fail on a fresh clone. Playwright starts the production preview itself, and the build generates `public/readings/` and `public/study/`, which the separate AI test build (`dist-ai/`, see below) reuses. Outside CI it reuses servers already listening on ports 4173, 4174 and the stub's, so stop a stale `npm start` (or any server serving an old `dist/`) first or the specs run against the old build. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser.
+`npm run test:e2e` builds with `AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test` and `VITE_AUDIO_CHAPTERS_ENABLED=true`, then runs Playwright with the same variables; without them the audio specs fail on a fresh clone. Playwright starts the production preview itself, and the build generates `public/readings/` and `public/study/`, which the separate AI test build (`dist-ai/`, see below) reuses. Outside CI it reuses servers already listening on ports 4173, 4174 and the stub's, so stop a stale `npm start` (or any server serving an old `dist/`) first or the specs run against the old build. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser. The Bible audio specs (`tests/browser/bible-audio.spec.ts`) run only in the fixture build: they serve accelerated copies of the committed chapter manifests with synthetic WAV media and abort, then fail on, any request that leaves 127.0.0.1.
 
 Visual and performance scripts expect a running `npm start`. `BASELINE_URL` optionally adds a baseline site. Compare builds using the same server, throttling, and environment. Reports and traces are ignored by Git.
 
 ## State and privacy
 
-`nt-reading-progress-v1` stores profiles, the active reader, personal start dates, and completed days in localStorage. Backup imports create a separate profile. `word-font` and `word-dark` preserve appearance settings. Clearing site data or moving to another browser/domain requires restoring a saved backup to retain progress.
+`bible-reader-state-v2` stores independent places and explicit completion for the guest and each named reader across Bible, youth plan, Old Testament chronology and New Testament chronology. It migrates `nt-reading-progress-v1` and `bible-reader-location-v1`; new backups use version 2 and version 1 youth-plan backups remain importable as separate profiles. `bible-reader-audio-position-v1` retains listening positions by immutable media path. `word-font` and `word-dark` preserve appearance settings. Clearing site data or moving browsers/domains requires restoring a saved backup.
+
+Beside `completion`, each reader (and the guest) has an optional `readOn` map: `track|entry` (`plan|12`, `bible|GEN:1`, `chrono:OT|<id>`) to the Cairo date the reading was marked done. Undoing a reading removes its date. Only still-completed readings with valid dates are kept, invalid entries are dropped rather than rejected, and the field is written only when non-empty. Backups carry it and import accepts it; older backups and v1 data import without it. Readings completed before dates were recorded have none, so streaks start with the next reading.
+
+Streaks (`src/plan/streak.ts`) count consecutive dates with at least one completed reading in any track. Today counts once read and is otherwise still pending. One missed date is forgiven as a rest day when no other rest day falls within a week of it; two missed dates in a row end the streak. The best streak, whether today is still due and a seven-day strip are derived the same way. The streak UI (`src/streak/`) is one lazy chunk shown in the menu's reader section, the plan's day menu, the plan calendar and under a completed reading. Milestone cards appear only when the day's first reading is marked done there (3, 7, 14, 30, 50, 100 and 150 days, and each quarter of the plan). Animations use transform and opacity, run once and stop under reduced motion.
+
+The plan's day menu («تفاصيل اليوم») lists every plan day in five ranges of thirty (`src/navigation/DayJumper.tsx`, lazy, warmed when the day button is pressed). Completed, today's, overdue and open days differ by shape as well as colour.
+
+A fresh reader opens Genesis 1; explicit URLs override saved places. Legacy `?day=N` and `?mode=bible&book=GEN&chapter=1&verse=1` links remain supported alongside chronology links. Navigation supports Back/Forward without marking a reading complete.
+
+`src/chronology/` loads reference-only reading definitions and slices canonical chapter text through the shared chapter cache. The reviewed output contains 412 Old Testament and 141 New Testament readings; source order, repetitions, the documented 1 Timothy 6:22 exception, and nearest natural chapter/section breaks are described in [chronology.md](chronology.md). `scripts/build-chronology.js` runs through the data build; keep that guide authoritative for regeneration and audit details.
 
 Schedules use Cairo dates. Catch-up and advance reading do not move a reader's start date. Daily JSON is cached in memory during the browser session, with concurrent requests deduplicated; failed requests can be retried. This is not a persistent offline/PWA implementation.
 
@@ -186,9 +201,9 @@ Cloudflare serves two independent Workers from the same explicit `wrangler.json`
 | `main`     | `chronosbible`     | `chronosbible.com`     | `npm run app:host:deploy`     |
 | `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
-The production branch keeps its daily-audio snapshot. The development branch
-uses its own full-Bible content and audio publication inventory; its chapter-audio
-flag is enabled only when that branch's Vite configuration supports it. These
+Both environments build the same way from their own branch, using that
+branch's full-Bible content and audio publication inventory. The chapter-audio
+flag is enabled whenever the branch's Vite configuration supports it. These
 hosting scripts do not copy content between branches. Vercel continues using
 `npm run build` and its existing configuration.
 
@@ -246,6 +261,11 @@ connect **each Worker separately** to the repository. Set its production branch
 to the corresponding table entry (`main` for `chronosbible`, `dev` for
 `chronosbible-dev`), root directory to `/` (the repository root), and disable
 preview builds. Set the build environment variable `NODE_VERSION` to `22`.
+Preview builds are configured on each Worker's **Settings → Builds → Previews
+Base** tab; leave **Disable builds** on the **Production** tab off. If
+`chronosbible` still builds other branches, every `dev` commit gets a failing
+"Workers Builds: chronosbible" check: the wrapper refuses to deploy production
+from `dev`, so nothing ships, but the check stays red.
 
 Use this **build command** for both Workers to provision the pinned CLI outside
 the checkout without changing its dependencies or lockfile:
@@ -273,19 +293,18 @@ See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds
 for dependency installation and build-variable settings. Connecting these builds
 and assigning the custom domains is a one-time Cloudflare account setup step.
 
-The Cloudflare app is assets-only: `wrangler.json` has no `main`, and both
-environments serve `./dist` without running code. Workers URLs and preview URLs
-are off. `_headers` exists only in the Cloudflare build and makes `/assets/*`
-immutable. `_redirects` (copied from `hosting/cloudflare-app/` and audited to
-equal the committed file) sends the old `/audio/days/*`,
-`/audio/chapters/assets/*` and `/audio/clips/*` URLs to R2 with a 301.
+The app is assets-only: no Worker code runs, and `wrangler.json` has neither
+`main` nor an asset binding. `_headers` and `_redirects` exist only in the
+Cloudflare build; `_headers` makes `/assets/*` immutable, and `_redirects` sends
+old `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*` URLs to the
+same paths on `https://audio.chronosbible.com` with a `301` (`vercel.json` does
+the same on Vercel). The safe build refuses a `_redirects` that differs from
+the committed file. Workers URLs and preview URLs are off.
 
-R2 at `https://audio.chronosbible.com` is the only audio host: the bucket
-`chronosbible-audio`, served read-only on a public custom domain with a Cache
-Rule for that hostname. Cloudflare builds and Vercel both load audio from it,
-and `vercel.json` redirects the same old media URLs there. The
-`bible-reading-audio` Pages project is retired. New recordings are published
-with the R2 release tooling on `dev`; see [audio delivery](audio.md).
+Cloudflare builds load audio from that origin: the R2 bucket `chronosbible-audio`,
+served read-only on a public custom domain with a Cache Rule for that hostname.
+R2 is the only audio host; the `bible-reading-audio` Pages project is retired.
+Publishing recordings is described in `docs/audio.md`.
 
 Reader progress is stored per origin, so the production, development and Vercel
 sites have independent progress. Use backup and restore when moving between them.
@@ -346,3 +365,5 @@ The focused responsiveness pass was compared against `781e060`, with three runs 
 The verse study panel was compared against `81c73c4` with six runs per build (two rounds of three) under the same mobile Lighthouse throttling: median performance **91.5 → 91**, accessibility **100 → 100**, LCP **3,080 → 3,154ms**, CLS **0.08742 → 0.08742**, and total transfer **490.8 → 491.6KB**. Simulated LCP took only two values in both builds, about 3,005 or 3,155ms (one round trip apart); the baseline landed on the higher value in 3 of 6 runs and the new build in 5 of 6. Initial JavaScript grew by **0.72KB** and CSS by **0.09KB** gzipped; study code (3.4KB) and styles (0.7KB) load only after a reader first presses the text. The first verse still starts at about **162px** at 390×844.
 
 The optional AI explanations leave the default build's sizes unchanged: `index` 82.0KB and `StudyPanel` 3.7KB gzipped, with no AI chunks or text. In an AI build, `StudyPanel` grows by 0.5KB. The card's own chunk (`AiPanel`, 6.2KB plus 0.65KB CSS) loads when the card first opens, and the request chunk (`run`, 5.2KB) loads on the first request. Lighthouse was not re-run, because nothing that loads before a reader opens a verse changed.
+
+Reading streaks and the plan day grid were compared against `dev` (`3d0b296`) with nine runs per build (three rounds of three) under the same mobile Lighthouse throttling: median performance **92 → 92**, accessibility **100 → 100**, LCP **3,154 → 3,155ms**, CLS **0.00105 → 0.00105**, and total transfer **505.9 → 506.4KB**. Simulated LCP again took about 3,005, 3,155 or 3,680–3,760ms; the baseline landed on the slow values in 3 of 9 runs and the new build in 4 of 9. Initial JavaScript grew by **0.49KB** and CSS by **0.06KB** gzipped, within the snapshot budget with about 20 bytes to spare. The streak UI (2.5KB plus 1.1KB CSS) and day grid (0.9KB plus 0.6KB CSS) load on demand.

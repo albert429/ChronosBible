@@ -23,4 +23,7 @@ dist-ai/
 .claude/worktrees/
 .agents/
 
+public/bible/
+public/chronology/
 assets/video/
+assets/reel*/

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ECC",
+  "chapter": 11,
+  "file": "A21___11_EcclesiastesARZVDVO1DA.mp3",
+  "audioHash": "dd7d3a69f7c9378e64502bc75b366b46b5e74061b467378ac2eba4b4d2c2d1c0",
+  "textHash": "ddb952774c63a08f07159f53c3f4e8b91fdb1c869227fa74efefe9033ef6c20f",
+  "duration": 162.1943125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.86,
+      "end": 13.2,
+      "score": 0.5913
+    },
+    {
+      "verse": 2,
+      "start": 13.22,
+      "end": 26.7,
+      "score": 0.6092
+    },
+    {
+      "verse": 3,
+      "start": 26.72,
+      "end": 47.46,
+      "score": 0.6152
+    },
+    {
+      "verse": 4,
+      "start": 47.58,
+      "end": 55.72,
+      "score": 0.6286
+    },
+    {
+      "verse": 5,
+      "start": 57.26,
+      "end": 73.32,
+      "score": 0.616
+    },
+    {
+      "verse": 6,
+      "start": 74.54,
+      "end": 93.98,
+      "score": 0.6085
+    },
+    {
+      "verse": 7,
+      "start": 95.06,
+      "end": 103.7,
+      "score": 0.4507
+    },
+    {
+      "verse": 8,
+      "start": 103.7,
+      "end": 121.7,
+      "score": 0.6184
+    },
+    {
+      "verse": 9,
+      "start": 122.96,
+      "end": 147.78,
+      "score": 0.6044
+    },
+    {
+      "verse": 10,
+      "start": 147.78,
+      "end": 160.22,
+      "score": 0.6157
+    }
+  ]
+}

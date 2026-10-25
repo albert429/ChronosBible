@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JER",
+  "chapter": 40,
+  "file": "A24___40_Jeremiah____ARZVDVO1DA.mp3",
+  "audioHash": "b4466648c88f6642940b4f20396c0394e533f51e29deddbd138eb223cc0bc17a",
+  "textHash": "4c83eeee22003e9262db723d031f450ccce7415d93722295b1ddef373eec7de8",
+  "duration": 299.2849375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.46,
+      "end": 25.18,
+      "score": 0.5804
+    },
+    {
+      "verse": 2,
+      "start": 26.16,
+      "end": 36.62,
+      "score": 0.5973
+    },
+    {
+      "verse": 3,
+      "start": 36.62,
+      "end": 48.12,
+      "score": 0.5972
+    },
+    {
+      "verse": 4,
+      "start": 48.42,
+      "end": 83.98,
+      "score": 0.5833
+    },
+    {
+      "verse": 5,
+      "start": 83.98,
+      "end": 110.64,
+      "score": 0.6157
+    },
+    {
+      "verse": 6,
+      "start": 111.56,
+      "end": 122.72,
+      "score": 0.6133
+    },
+    {
+      "verse": 7,
+      "start": 122.86,
+      "end": 142.76,
+      "score": 0.5981
+    },
+    {
+      "verse": 8,
+      "start": 143.5,
+      "end": 163.08,
+      "score": 0.5789
+    },
+    {
+      "verse": 9,
+      "start": 164.14,
+      "end": 180.06,
+      "score": 0.6198
+    },
+    {
+      "verse": 10,
+      "start": 180.36,
+      "end": 202.22,
+      "score": 0.6146
+    },
+    {
+      "verse": 11,
+      "start": 202.22,
+      "end": 221.88,
+      "score": 0.6029
+    },
+    {
+      "verse": 12,
+      "start": 222.86,
+      "end": 238.42,
+      "score": 0.6121
+    },
+    {
+      "verse": 13,
+      "start": 239.86,
+      "end": 249.08,
+      "score": 0.6149
+    },
+    {
+      "verse": 14,
+      "start": 249.08,
+      "end": 264.02,
+      "score": 0.5653
+    },
+    {
+      "verse": 15,
+      "start": 265.0,
+      "end": 284.62,
+      "score": 0.5986
+    },
+    {
+      "verse": 16,
+      "start": 285.46,
+      "end": 296.96,
+      "score": 0.6018
+    }
+  ]
+}

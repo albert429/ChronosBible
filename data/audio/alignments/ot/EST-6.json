@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EST",
+  "chapter": 6,
+  "file": "A17___06_Esther______ARZVDVO1DA.mp3",
+  "audioHash": "631af7e29c4bf28165ff17d3946ee2fede9ba20ee2c3e819c167313ec925ec95",
+  "textHash": "b52aa3f905b8fbf820a0b8095df934b6b9eaa655eb4c180a2fbfe1fb777ce8fb",
+  "duration": 210.207375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.28,
+      "end": 16.56,
+      "score": 0.5702
+    },
+    {
+      "verse": 2,
+      "start": 16.56,
+      "end": 31.5,
+      "score": 0.6083
+    },
+    {
+      "verse": 3,
+      "start": 32.18,
+      "end": 43.64,
+      "score": 0.6094
+    },
+    {
+      "verse": 4,
+      "start": 44.18,
+      "end": 58.96,
+      "score": 0.5999
+    },
+    {
+      "verse": 5,
+      "start": 59.56,
+      "end": 66.72,
+      "score": 0.6116
+    },
+    {
+      "verse": 6,
+      "start": 67.26,
+      "end": 83.78,
+      "score": 0.5928
+    },
+    {
+      "verse": 7,
+      "start": 84.78,
+      "end": 90.62,
+      "score": 0.594
+    },
+    {
+      "verse": 8,
+      "start": 91.58,
+      "end": 104.86,
+      "score": 0.6231
+    },
+    {
+      "verse": 9,
+      "start": 104.86,
+      "end": 131.96,
+      "score": 0.6019
+    },
+    {
+      "verse": 10,
+      "start": 132.06,
+      "end": 149.5,
+      "score": 0.6106
+    },
+    {
+      "verse": 11,
+      "start": 149.64,
+      "end": 167.8,
+      "score": 0.5886
+    },
+    {
+      "verse": 12,
+      "start": 167.82,
+      "end": 177.24,
+      "score": 0.5817
+    },
+    {
+      "verse": 13,
+      "start": 177.68,
+      "end": 197.32,
+      "score": 0.5605
+    },
+    {
+      "verse": 14,
+      "start": 197.96,
+      "end": 208.2,
+      "score": 0.5959
+    }
+  ]
+}

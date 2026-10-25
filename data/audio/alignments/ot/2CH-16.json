@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "2CH",
+  "chapter": 16,
+  "file": "A14___16_2Chronicles_ARZVDVO1DA.mp3",
+  "audioHash": "c6c1ebb7438b20eca1c46dabd29e6a905b8e3992aaca1168a5e2f6018b331ffa",
+  "textHash": "faa4a38a58e37652d8cbf4644db2c986b81efd187e33212c1f3941c9aabf377c",
+  "duration": 204.5649375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.62,
+      "end": 22.1,
+      "score": 0.613
+    },
+    {
+      "verse": 2,
+      "start": 23.0,
+      "end": 35.34,
+      "score": 0.6059
+    },
+    {
+      "verse": 3,
+      "start": 35.34,
+      "end": 51.72,
+      "score": 0.5847
+    },
+    {
+      "verse": 4,
+      "start": 52.74,
+      "end": 68.24,
+      "score": 0.5957
+    },
+    {
+      "verse": 5,
+      "start": 69.18,
+      "end": 74.9,
+      "score": 0.5121
+    },
+    {
+      "verse": 6,
+      "start": 75.58,
+      "end": 88.18,
+      "score": 0.6107
+    },
+    {
+      "verse": 7,
+      "start": 88.18,
+      "end": 107.3,
+      "score": 0.5645
+    },
+    {
+      "verse": 8,
+      "start": 107.32,
+      "end": 120.02,
+      "score": 0.6111
+    },
+    {
+      "verse": 9,
+      "start": 120.02,
+      "end": 136.26,
+      "score": 0.5989
+    },
+    {
+      "verse": 10,
+      "start": 137.5,
+      "end": 148.62,
+      "score": 0.6025
+    },
+    {
+      "verse": 11,
+      "start": 149.48,
+      "end": 158.76,
+      "score": 0.6286
+    },
+    {
+      "verse": 12,
+      "start": 158.76,
+      "end": 173.44,
+      "score": 0.5898
+    },
+    {
+      "verse": 13,
+      "start": 173.44,
+      "end": 180.82,
+      "score": 0.5955
+    },
+    {
+      "verse": 14,
+      "start": 181.82,
+      "end": 202.06,
+      "score": 0.5924
+    }
+  ]
+}

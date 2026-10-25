@@ -41,3 +41,14 @@
   background: var(--soft);
   color: var(--olive);
 }
+
+.continuous-option {
+  cursor: pointer;
+  gap: 12px;
+}
+.continuous-option input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--olive);
+}

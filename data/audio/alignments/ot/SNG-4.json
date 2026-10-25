@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "SNG",
+  "chapter": 4,
+  "file": "A22___04_SongofSongs_ARZVDVO1DA.mp3",
+  "audioHash": "4e7d55faff17ab12f8e1c951531c0e023b6ae6eee3b3b3d485301a800d21aa1a",
+  "textHash": "99300df11e77332744bc4e129446ef3faa4fcf9545c9747074a3165a14bf499d",
+  "duration": 215.7453125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.6,
+      "end": 22.72,
+      "score": 0.5683
+    },
+    {
+      "verse": 2,
+      "start": 22.94,
+      "end": 37.12,
+      "score": 0.59
+    },
+    {
+      "verse": 3,
+      "start": 38.52,
+      "end": 50.06,
+      "score": 0.5645
+    },
+    {
+      "verse": 4,
+      "start": 50.1,
+      "end": 63.4,
+      "score": 0.5422
+    },
+    {
+      "verse": 5,
+      "start": 63.4,
+      "end": 71.98,
+      "score": 0.5817
+    },
+    {
+      "verse": 6,
+      "start": 72.56,
+      "end": 82.12,
+      "score": 0.5864
+    },
+    {
+      "verse": 7,
+      "start": 83.38,
+      "end": 87.74,
+      "score": 0.5694
+    },
+    {
+      "verse": 8,
+      "start": 88.84,
+      "end": 107.06,
+      "score": 0.5823
+    },
+    {
+      "verse": 9,
+      "start": 108.22,
+      "end": 120.56,
+      "score": 0.5762
+    },
+    {
+      "verse": 10,
+      "start": 120.56,
+      "end": 136.6,
+      "score": 0.5643
+    },
+    {
+      "verse": 11,
+      "start": 136.6,
+      "end": 152.34,
+      "score": 0.5637
+    },
+    {
+      "verse": 12,
+      "start": 152.36,
+      "end": 160.44,
+      "score": 0.6091
+    },
+    {
+      "verse": 13,
+      "start": 161.68,
+      "end": 170.1,
+      "score": 0.622
+    },
+    {
+      "verse": 14,
+      "start": 171.28,
+      "end": 186.44,
+      "score": 0.59
+    },
+    {
+      "verse": 15,
+      "start": 186.44,
+      "end": 194.6,
+      "score": 0.5838
+    },
+    {
+      "verse": 16,
+      "start": 194.94,
+      "end": 213.5,
+      "score": 0.5735
+    }
+  ]
+}

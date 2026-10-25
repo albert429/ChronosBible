@@ -67,3 +67,46 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Compact: the first verse still begins within 200px of a 390x844 phone. */
+.audio-unavailable {
+  margin-block: 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+/* Paragraph and poetry starts: a new line with a little space, inside the
+   flowing verses rather than a block per verse. */
+.scripture-break {
+  display: block;
+  height: 0.4em;
+}
+.chapter-text .scripture-qc {
+  display: block;
+  text-align: center;
+}
+.scripture-superscription,
+.scripture-source-note {
+  font-size: 0.85em;
+  color: var(--muted);
+  margin-block: 8px 12px;
+}
+.scripture-acrostic {
+  color: var(--olive);
+  font-size: 0.85em;
+  margin-block: 12px 0;
+}
+.scripture-inline-note {
+  display: block;
+  font-family: Noto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.9;
+  color: var(--olive);
+  margin-block: 16px 4px;
+}
+/* The listening verse's underline reaches block children but not inline
+   blocks, so a heading inside that verse is not underlined as read text. */
+.scripture-inline-note > span {
+  display: inline-block;
+}

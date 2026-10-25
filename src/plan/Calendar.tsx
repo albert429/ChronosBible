@@ -12,6 +12,7 @@ import type { Reader } from "./progress";
 import { planIndex } from "./readings";
 import { useResource } from "../lib/useResource";
 import { Loading, LoadError } from "../components/Feedback";
+import { StreakChip } from "../streak/Streak";
 import "./Calendar.css";
 
 const STATUS_LABELS = {
@@ -23,6 +24,7 @@ const STATUS_LABELS = {
 
 export default function Calendar({
   member,
+  completed,
   start,
   current,
   page,
@@ -30,6 +32,7 @@ export default function Calendar({
   go,
 }: {
   member: Reader | null;
+  completed: readonly number[];
   start: string;
   current: number;
   page: number;
@@ -37,7 +40,7 @@ export default function Calendar({
   go: (day: number) => void;
 }) {
   const { data: plan, error, retry } = useResource(planIndex, "plan");
-  const count = member?.completed.length || 0;
+  const count = completed.length;
   return (
     <section className="calendar-panel" aria-label="أيام خطة القراءة">
       <div className="calendar-summary">
@@ -47,11 +50,12 @@ export default function Calendar({
             {ar(count)}
             <span> / ١٥٠ يومًا</span>
           </p>
+          <StreakChip />
         </div>
         <p>
           {member
             ? `بدأت رحلتك في ${dateLabel(start)}`
-            : "اختر يومًا لتصفح قراءته، وابدأ رحلتك لحفظ تقدمك."}
+            : "التقدم محفوظ على هذا الجهاز. التواريخ تبدأ من اليوم حتى تختار تاريخ بدايتك."}
         </p>
       </div>
       <div
@@ -95,7 +99,7 @@ export default function Calendar({
       ) : (
         <div className="calendar-grid">
           {plan.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((day) => {
-            const complete = member?.completed.includes(day.day);
+            const complete = completed.includes(day.day);
             // Past and today style the card whether or not the day is complete.
             const position = dayStatus(day.day, current, false);
             const status = STATUS_LABELS[complete ? "done" : position];

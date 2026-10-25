@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import {
   closeSheet,
   createGate,
+  MODES,
   expectAccessible,
   noOverflow,
   ready,
@@ -77,7 +78,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function openPlayer(page: Page) {
-  await page.goto("/");
+  await page.goto("/?day=1");
   await ready(page);
   await page.getByRole("button", { name: "استمع إلى قراءة اليوم" }).click();
   await expect(page.locator("audio")).toHaveAttribute(
@@ -93,7 +94,7 @@ test("audio loads only after listening, streams, and stops on day navigation", a
   page.on("request", (r) => {
     if (r.url().includes("/audio/")) requests.push(r.url());
   });
-  await page.goto("/");
+  await page.goto("/?day=1");
   await ready(page);
   expect(requests).toEqual([]);
   const firstVerse = await page.locator(".verse").first().boundingBox();
@@ -173,6 +174,8 @@ test("direct speed, close, study pause and highlights remain accessible on phone
       .toBe(false);
   }
   await expect(page.locator("dialog[open]")).toHaveCount(0);
+  // A verse is highlighted before the study sheet pauses playback.
+  await expect(page.locator("[data-listening]")).toHaveCount(1);
   await page.locator(".verse-number").first().focus();
   await page.keyboard.press("Enter");
   await expect
@@ -217,7 +220,7 @@ test("failed manifests retry; stale transcripts never play", async ({
     if (++attempts === 1) return route.fulfill({ status: 503, body: "failed" });
     await route.fallback();
   });
-  await page.goto("/");
+  await page.goto("/?day=1");
   await ready(page);
   await page.getByRole("button", { name: "استمع إلى قراءة اليوم" }).click();
   await expect(page.getByRole("alert")).toContainText("تعذر تحميل التسجيل");
@@ -325,9 +328,7 @@ test("media failures retry, final verse stops, and leaving reading releases audi
       page.locator("audio").evaluate((el: HTMLAudioElement) => el.paused),
     )
     .toBe(true);
-  await page
-    .getByRole("button", { name: "رحلتي في ١٥٠ يومًا", exact: true })
-    .click();
+  await page.getByRole("button", { name: MODES.bible, exact: true }).click();
   await expect(page.locator("audio")).toHaveCount(0);
 });
 
@@ -339,7 +340,7 @@ test("slow or failed player code gives visible feedback and navigation recovers"
     await gate.opened;
     await route.fulfill({ status: 503, body: "unavailable" });
   });
-  await page.goto("/");
+  await page.goto("/?day=1");
   await ready(page);
   await page.getByRole("button", { name: "استمع إلى قراءة اليوم" }).click();
   const status = page.getByRole("status");

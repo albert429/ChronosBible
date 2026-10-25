@@ -20,14 +20,15 @@ export default function Join({
     ) {
       actions.close();
       actions.navigate("read");
-      actions.setNotice("أهلًا بك! بدأت رحلتك، وحُفظت على هذا الجهاز.");
+      actions.setNotice("أهلًا بك! حُفظ القارئ على هذا الجهاز.");
     }
   }
   return (
     <>
-      <h2 id="dialog-title">لنبدأ الرحلة</h2>
+      <h2 id="dialog-title">القراء على هذا الجهاز</h2>
       <p className="dialog-description">
-        اسمك وتاريخ البداية فقط. يُحفظ تقدمك في هذا المتصفح.
+        القراءة متاحة دون اسم. أضف اسمًا وتاريخ بداية لخطة الـ١٥٠ يومًا ليكون لك
+        تقدم منفصل على هذا المتصفح، دون حساب أو تسجيل دخول.
       </p>
       {profiles.length > 0 && (
         <label className="reader-picker">
@@ -50,7 +51,7 @@ export default function Join({
       )}
       <form onSubmit={join}>
         <label>
-          اسمك
+          الاسم
           <input
             name="name"
             autoComplete="given-name"
@@ -61,7 +62,7 @@ export default function Join({
           />
         </label>
         <label>
-          تاريخ بداية رحلتك
+          تاريخ بداية الخطة
           <input
             name="start"
             type="date"
@@ -73,7 +74,7 @@ export default function Join({
         </label>
         <p className="form-hint">يمكنك تعويض أي يوم أو القراءة مسبقًا.</p>
         <button className="primary full">
-          ابدأ القراءة
+          إضافة القارئ
           <ArrowLeft size={18} />
         </button>
       </form>

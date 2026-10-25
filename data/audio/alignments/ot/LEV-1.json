@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "LEV",
+  "chapter": 1,
+  "file": "A03___01_Leviticus___ARZVDVO1DA.mp3",
+  "audioHash": "a41bc874364fedcc627db991868d324a2281739d660671c9608eacdec27f4ca9",
+  "textHash": "58cc5c1e04790271780843793839539dbfdd60a891d3e6c272610ab874bcd732",
+  "duration": 177.2930625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.86,
+      "end": 12.34,
+      "score": 0.6084
+    },
+    {
+      "verse": 2,
+      "start": 13.56,
+      "end": 25.22,
+      "score": 0.6117
+    },
+    {
+      "verse": 3,
+      "start": 26.12,
+      "end": 38.2,
+      "score": 0.6001
+    },
+    {
+      "verse": 4,
+      "start": 38.98,
+      "end": 44.56,
+      "score": 0.5724
+    },
+    {
+      "verse": 5,
+      "start": 45.76,
+      "end": 58.08,
+      "score": 0.6233
+    },
+    {
+      "verse": 6,
+      "start": 58.08,
+      "end": 62.66,
+      "score": 0.5913
+    },
+    {
+      "verse": 7,
+      "start": 62.66,
+      "end": 68.72,
+      "score": 0.6364
+    },
+    {
+      "verse": 8,
+      "start": 69.56,
+      "end": 78.7,
+      "score": 0.6455
+    },
+    {
+      "verse": 9,
+      "start": 79.64,
+      "end": 91.62,
+      "score": 0.6002
+    },
+    {
+      "verse": 10,
+      "start": 91.62,
+      "end": 98.86,
+      "score": 0.5946
+    },
+    {
+      "verse": 11,
+      "start": 99.66,
+      "end": 108.08,
+      "score": 0.6152
+    },
+    {
+      "verse": 12,
+      "start": 109.1,
+      "end": 119.1,
+      "score": 0.6096
+    },
+    {
+      "verse": 13,
+      "start": 119.1,
+      "end": 132.54,
+      "score": 0.6159
+    },
+    {
+      "verse": 14,
+      "start": 133.3,
+      "end": 142.56,
+      "score": 0.6114
+    },
+    {
+      "verse": 15,
+      "start": 142.56,
+      "end": 153.5,
+      "score": 0.5974
+    },
+    {
+      "verse": 16,
+      "start": 153.5,
+      "end": 160.58,
+      "score": 0.5869
+    },
+    {
+      "verse": 17,
+      "start": 161.46,
+      "end": 175.38,
+      "score": 0.5962
+    }
+  ]
+}

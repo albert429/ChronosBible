@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ISA",
+  "chapter": 27,
+  "file": "A23___27_Isaiah______ARZVDVO1DA.mp3",
+  "audioHash": "cc6992d3ea75dd74e084afb2e152a59e8c87a10eb466e283349ecbd269153d15",
+  "textHash": "a3281f4c1aecab71e56bfc23cd05558947ab501f662d9636731c4bbc6ea84f7b",
+  "duration": 193.410625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.04,
+      "end": 25.9,
+      "score": 0.6236
+    },
+    {
+      "verse": 2,
+      "start": 27.28,
+      "end": 32.82,
+      "score": 0.6011
+    },
+    {
+      "verse": 3,
+      "start": 32.82,
+      "end": 42.4,
+      "score": 0.5883
+    },
+    {
+      "verse": 4,
+      "start": 44.1,
+      "end": 52.94,
+      "score": 0.623
+    },
+    {
+      "verse": 5,
+      "start": 52.96,
+      "end": 60.72,
+      "score": 0.5782
+    },
+    {
+      "verse": 6,
+      "start": 62.0,
+      "end": 72.88,
+      "score": 0.6084
+    },
+    {
+      "verse": 7,
+      "start": 74.26,
+      "end": 80.58,
+      "score": 0.4629
+    },
+    {
+      "verse": 8,
+      "start": 81.58,
+      "end": 91.24,
+      "score": 0.6181
+    },
+    {
+      "verse": 9,
+      "start": 92.26,
+      "end": 113.58,
+      "score": 0.5868
+    },
+    {
+      "verse": 10,
+      "start": 114.56,
+      "end": 129.92,
+      "score": 0.6099
+    },
+    {
+      "verse": 11,
+      "start": 129.94,
+      "end": 150.6,
+      "score": 0.582
+    },
+    {
+      "verse": 12,
+      "start": 151.56,
+      "end": 167.18,
+      "score": 0.6247
+    },
+    {
+      "verse": 13,
+      "start": 167.18,
+      "end": 193.38,
+      "score": 0.6037
+    }
+  ]
+}

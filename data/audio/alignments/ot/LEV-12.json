@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "LEV",
+  "chapter": 12,
+  "file": "A03___12_Leviticus___ARZVDVO1DA.mp3",
+  "audioHash": "e848ef1b426f03f7225bc0a7a1c7f65cc061eca004a6ea2ca1b20e2f87d09c59",
+  "textHash": "c0f2157ba0b2c3b1446068478ba9629b707488b23fff00c26fb18f198f2b683a",
+  "duration": 95.6343125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.62,
+      "end": 7.74,
+      "score": 0.6547
+    },
+    {
+      "verse": 2,
+      "start": 8.76,
+      "end": 22.98,
+      "score": 0.5853
+    },
+    {
+      "verse": 3,
+      "start": 24.08,
+      "end": 27.56,
+      "score": 0.6364
+    },
+    {
+      "verse": 4,
+      "start": 27.56,
+      "end": 41.62,
+      "score": 0.5957
+    },
+    {
+      "verse": 5,
+      "start": 41.62,
+      "end": 53.76,
+      "score": 0.5612
+    },
+    {
+      "verse": 6,
+      "start": 53.94,
+      "end": 68.22,
+      "score": 0.6037
+    },
+    {
+      "verse": 7,
+      "start": 68.68,
+      "end": 79.72,
+      "score": 0.567
+    },
+    {
+      "verse": 8,
+      "start": 80.22,
+      "end": 93.64,
+      "score": 0.628
+    }
+  ]
+}

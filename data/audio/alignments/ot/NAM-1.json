@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "NAM",
+  "chapter": 1,
+  "file": "A34___01_Nahum_______ARZVDVO1DA.mp3",
+  "audioHash": "aa9b2756a671fb1ca5d315a12ac88895a0fb1725e6bff3af529f299ebeeeb681",
+  "textHash": "375639e6335fe97978a9f394b95a85ee69469dd311f7728f55bde2a776a5a2c1",
+  "duration": 209.6326875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.26,
+      "end": 12.42,
+      "score": 0.5959
+    },
+    {
+      "verse": 2,
+      "start": 13.1,
+      "end": 28.18,
+      "score": 0.5858
+    },
+    {
+      "verse": 3,
+      "start": 29.12,
+      "end": 44.86,
+      "score": 0.5744
+    },
+    {
+      "verse": 4,
+      "start": 45.94,
+      "end": 58.9,
+      "score": 0.5988
+    },
+    {
+      "verse": 5,
+      "start": 60.02,
+      "end": 75.0,
+      "score": 0.5899
+    },
+    {
+      "verse": 6,
+      "start": 75.0,
+      "end": 88.06,
+      "score": 0.534
+    },
+    {
+      "verse": 7,
+      "start": 89.54,
+      "end": 100.02,
+      "score": 0.5787
+    },
+    {
+      "verse": 8,
+      "start": 100.02,
+      "end": 112.7,
+      "score": 0.5443
+    },
+    {
+      "verse": 9,
+      "start": 113.58,
+      "end": 124.56,
+      "score": 0.603
+    },
+    {
+      "verse": 10,
+      "start": 125.54,
+      "end": 138.82,
+      "score": 0.633
+    },
+    {
+      "verse": 11,
+      "start": 138.82,
+      "end": 145.0,
+      "score": 0.6527
+    },
+    {
+      "verse": 12,
+      "start": 145.8,
+      "end": 160.14,
+      "score": 0.6334
+    },
+    {
+      "verse": 13,
+      "start": 161.12,
+      "end": 167.08,
+      "score": 0.5611
+    },
+    {
+      "verse": 14,
+      "start": 168.5,
+      "end": 187.06,
+      "score": 0.5911
+    },
+    {
+      "verse": 15,
+      "start": 187.96,
+      "end": 207.52,
+      "score": 0.5617
+    }
+  ]
+}

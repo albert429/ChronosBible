@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "MAL",
+  "chapter": 2,
+  "file": "A39___02_Malachi_____ARZVDVO1DA.mp3",
+  "audioHash": "2f47e4a259904dce590f3484eb005a0f9da391d1ccc8eaab1f4093e7d1a1f126",
+  "textHash": "587b192211200197e7d4107845f1cc9dcd0eacf771ee798531154a2f8d3733af",
+  "duration": 241.3191875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.0,
+      "end": 8.14,
+      "score": 0.6236
+    },
+    {
+      "verse": 2,
+      "start": 8.9,
+      "end": 28.6,
+      "score": 0.6153
+    },
+    {
+      "verse": 3,
+      "start": 29.74,
+      "end": 40.08,
+      "score": 0.6008
+    },
+    {
+      "verse": 4,
+      "start": 41.6,
+      "end": 50.52,
+      "score": 0.574
+    },
+    {
+      "verse": 5,
+      "start": 50.52,
+      "end": 62.88,
+      "score": 0.5563
+    },
+    {
+      "verse": 6,
+      "start": 64.14,
+      "end": 79.92,
+      "score": 0.6024
+    },
+    {
+      "verse": 7,
+      "start": 81.24,
+      "end": 91.94,
+      "score": 0.5681
+    },
+    {
+      "verse": 8,
+      "start": 91.96,
+      "end": 104.46,
+      "score": 0.6308
+    },
+    {
+      "verse": 9,
+      "start": 105.64,
+      "end": 118.12,
+      "score": 0.6117
+    },
+    {
+      "verse": 10,
+      "start": 118.12,
+      "end": 131.28,
+      "score": 0.5855
+    },
+    {
+      "verse": 11,
+      "start": 132.24,
+      "end": 146.1,
+      "score": 0.6007
+    },
+    {
+      "verse": 12,
+      "start": 147.2,
+      "end": 159.5,
+      "score": 0.6119
+    },
+    {
+      "verse": 13,
+      "start": 159.5,
+      "end": 173.54,
+      "score": 0.6099
+    },
+    {
+      "verse": 14,
+      "start": 174.6,
+      "end": 188.72,
+      "score": 0.6063
+    },
+    {
+      "verse": 15,
+      "start": 188.82,
+      "end": 203.78,
+      "score": 0.6181
+    },
+    {
+      "verse": 16,
+      "start": 203.96,
+      "end": 219.24,
+      "score": 0.6008
+    },
+    {
+      "verse": 17,
+      "start": 220.16,
+      "end": 238.98,
+      "score": 0.6062
+    }
+  ]
+}

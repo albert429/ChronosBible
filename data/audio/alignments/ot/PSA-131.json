@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 131,
+  "file": "A19__131_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "08d2296b4e8afb1eb9cea83b0939ddc0d98d766561f1b4a3b9fa65cab7050a5e",
+  "textHash": "ab0138d21a042706edcf4de35c3e05379daed48b29fefc41f1c1b99255349dee",
+  "duration": 39.83675,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 9.4,
+      "end": 21.98,
+      "score": 0.5923
+    },
+    {
+      "verse": 2,
+      "start": 23.26,
+      "end": 30.9,
+      "score": 0.5578
+    },
+    {
+      "verse": 3,
+      "start": 32.38,
+      "end": 37.18,
+      "score": 0.6562
+    }
+  ]
+}

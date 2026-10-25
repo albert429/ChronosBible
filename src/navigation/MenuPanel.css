@@ -1,23 +1,42 @@
 .menu-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-block: 0 20px;
+  gap: 14px;
+  margin-block: 0 16px;
 }
 .menu-brand img {
   flex-shrink: 0;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
 }
-.menu-brand > span {
-  max-width: 280px;
+.menu-brand p {
+  min-width: 0;
+}
+.menu-brand span {
+  display: block;
   font-family: Amiri, serif;
   font-size: 25px;
-  line-height: 1.6;
+  line-height: 1.5;
+}
+.menu-brand small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
 }
 .menu-links {
   margin-inline: -8px;
+}
+.menu-section {
+  margin: 10px 8px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.8;
+}
+.menu-reader .menu-section {
+  margin-inline: 0;
 }
 .menu-footer {
   display: flex;
@@ -69,9 +88,9 @@
   text-align: start;
   border-radius: 8px;
   min-height: 52px;
-  padding: 12px;
+  padding: 10px 12px;
   font-size: 14px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 .nav-item > svg:last-child:not(:first-child) {
   margin-inline-start: auto;
@@ -81,21 +100,27 @@
   background: var(--soft);
   color: var(--olive);
 }
+.menu-link-label {
+  min-width: 0;
+}
 .menu-link-label small {
   display: block;
   margin-top: 2px;
   color: var(--muted);
   font-size: 12px;
 }
+.menu-reader {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
 .profile {
   display: flex;
   width: 100%;
   align-items: center;
   gap: 12px;
+  min-height: 56px;
+  padding: 8px 0;
   text-align: start;
-  border-top: 1px solid var(--line);
-  padding: 20px 0;
-  margin-top: auto;
 }
 .avatar {
   display: grid;
@@ -118,6 +143,34 @@
 }
 .profile > svg {
   margin-inline-start: auto;
+}
+.menu-backup summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.menu-backup p {
+  margin-block: 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 0;
+  text-align: start;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.menu-row:hover {
+  color: var(--olive);
 }
 @media (max-width: 299px) {
   .menu-footer {

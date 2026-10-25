@@ -4,7 +4,7 @@ export const FONT_MIN = 22;
 export const FONT_MAX = 38;
 const FONT_DEFAULT = 28;
 
-type Snapshot = { font: number; dark: boolean };
+type Snapshot = { font: number; dark: boolean; diacritics: boolean };
 
 const listeners = new Set<() => void>();
 let snapshot: Snapshot | undefined;
@@ -26,7 +26,7 @@ function saveStored(key: string, value: string) {
 }
 
 /** Preserve the existing preference keys when changing the reading layout. */
-function apply({ font, dark }: Snapshot) {
+function apply({ font, dark, diacritics }: Snapshot) {
   const root = document.documentElement;
   root.dataset.theme = dark ? "dark" : "light";
   root.style.setProperty("--verse-size", `${font}px`);
@@ -35,6 +35,7 @@ function apply({ font, dark }: Snapshot) {
     ?.setAttribute("content", dark ? "#181e1a" : "#f7f5ef");
   saveStored("word-dark", String(dark));
   saveStored("word-font", String(font));
+  saveStored("word-diacritics", String(diacritics));
 }
 function get() {
   if (!snapshot) {
@@ -47,6 +48,7 @@ function get() {
         ),
       ),
       dark: readStored("word-dark", "false") === "true",
+      diacritics: readStored("word-diacritics", "true") !== "false",
     };
     apply(snapshot);
   }
@@ -65,6 +67,7 @@ function subscribe(listener: () => void) {
 const actions = {
   setFont: (font: number) => update({ font }),
   setDark: (dark: boolean) => update({ dark }),
+  setDiacritics: (diacritics: boolean) => update({ diacritics }),
 };
 
 /** Applies the saved preferences before the first render. */

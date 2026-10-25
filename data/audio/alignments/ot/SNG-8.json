@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "SNG",
+  "chapter": 8,
+  "file": "A22___08_SongofSongs_ARZVDVO1DA.mp3",
+  "audioHash": "54642dd63e80bfa4b712cfce11f0778c488be93994bf8ebf16bfc65a591d56cd",
+  "textHash": "fd275b35a3f59367db836f1023a89164779d19806c6378d5da2301eeb4d849dc",
+  "duration": 186.5143125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.74,
+      "end": 16.78,
+      "score": 0.5837
+    },
+    {
+      "verse": 2,
+      "start": 18.1,
+      "end": 29.36,
+      "score": 0.5755
+    },
+    {
+      "verse": 3,
+      "start": 30.78,
+      "end": 36.46,
+      "score": 0.559
+    },
+    {
+      "verse": 4,
+      "start": 38.1,
+      "end": 49.34,
+      "score": 0.5598
+    },
+    {
+      "verse": 5,
+      "start": 49.42,
+      "end": 67.34,
+      "score": 0.5728
+    },
+    {
+      "verse": 6,
+      "start": 67.5,
+      "end": 87.16,
+      "score": 0.5864
+    },
+    {
+      "verse": 7,
+      "start": 87.16,
+      "end": 104.74,
+      "score": 0.5998
+    },
+    {
+      "verse": 8,
+      "start": 106.78,
+      "end": 115.44,
+      "score": 0.6091
+    },
+    {
+      "verse": 9,
+      "start": 115.52,
+      "end": 124.62,
+      "score": 0.6107
+    },
+    {
+      "verse": 10,
+      "start": 125.94,
+      "end": 137.84,
+      "score": 0.6269
+    },
+    {
+      "verse": 11,
+      "start": 138.74,
+      "end": 151.32,
+      "score": 0.5994
+    },
+    {
+      "verse": 12,
+      "start": 151.44,
+      "end": 161.28,
+      "score": 0.6043
+    },
+    {
+      "verse": 13,
+      "start": 161.84,
+      "end": 170.94,
+      "score": 0.6233
+    },
+    {
+      "verse": 14,
+      "start": 172.46,
+      "end": 181.38,
+      "score": 0.5459
+    }
+  ]
+}

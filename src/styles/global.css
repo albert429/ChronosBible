@@ -3,6 +3,19 @@
   font-size: 12px;
   font-weight: 600;
 }
+/* A thin completion bar: the calendar and chronology contents. */
+.progress-track {
+  height: 5px;
+  overflow: hidden;
+  background: var(--line);
+  border-radius: 5px;
+}
+.progress-track i {
+  display: block;
+  height: 100%;
+  background: var(--olive);
+  border-radius: 5px;
+}
 .listen-button {
   display: inline-flex;
   align-items: center;
@@ -61,8 +74,11 @@
 .page-heading p {
   color: var(--muted);
 }
-.page-heading > button {
+.page-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
   flex-shrink: 0;
+  gap: 8px;
 }
 dialog {
   color: var(--ink);
@@ -183,7 +199,7 @@ dialog::backdrop {
   .page-heading h1 {
     font-size: 32px;
   }
-  .page-heading > button {
+  .page-heading-actions {
     margin-top: 20px;
   }
   .dialog-content {

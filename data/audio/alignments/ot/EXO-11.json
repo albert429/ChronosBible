@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EXO",
+  "chapter": 11,
+  "file": "A02___11_Exodus______ARZVDVO1DA.mp3",
+  "audioHash": "5be9e058f9485d2d9c3386d9c5702c84ba35b12e094947f8b4957d61e105f469",
+  "textHash": "7f6d40a722a2bdd9fcf0d98b060c41070c5a3e2b42335881c54fe82894f4f725",
+  "duration": 148.0098125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.4,
+      "end": 24.08,
+      "score": 0.6267
+    },
+    {
+      "verse": 2,
+      "start": 24.08,
+      "end": 37.12,
+      "score": 0.5751
+    },
+    {
+      "verse": 3,
+      "start": 38.4,
+      "end": 53.44,
+      "score": 0.6123
+    },
+    {
+      "verse": 4,
+      "start": 53.46,
+      "end": 63.32,
+      "score": 0.5736
+    },
+    {
+      "verse": 5,
+      "start": 63.32,
+      "end": 76.12,
+      "score": 0.6023
+    },
+    {
+      "verse": 6,
+      "start": 76.88,
+      "end": 85.24,
+      "score": 0.5793
+    },
+    {
+      "verse": 7,
+      "start": 86.64,
+      "end": 101.3,
+      "score": 0.6342
+    },
+    {
+      "verse": 8,
+      "start": 102.52,
+      "end": 122.28,
+      "score": 0.6106
+    },
+    {
+      "verse": 9,
+      "start": 122.28,
+      "end": 131.3,
+      "score": 0.6116
+    },
+    {
+      "verse": 10,
+      "start": 132.5,
+      "end": 145.78,
+      "score": 0.6111
+    }
+  ]
+}

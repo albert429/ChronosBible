@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 117,
+  "file": "A19__117_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "a8b99e999972bb14cbf5189539d9b65931639aed22ec7ff65f26e09eae9d2647",
+  "textHash": "f9f8c5d08e5cce335480dabbbdf0cc17b7194b2333942ca3ee2f878febb10581",
+  "duration": 23.458,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.38,
+      "end": 12.12,
+      "score": 0.6078
+    },
+    {
+      "verse": 2,
+      "start": 12.12,
+      "end": 20.42,
+      "score": 0.6023
+    }
+  ]
+}

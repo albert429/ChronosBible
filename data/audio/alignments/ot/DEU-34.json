@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "DEU",
+  "chapter": 34,
+  "file": "A05___34_Deuteronomy_ARZVDVO1DA.mp3",
+  "audioHash": "0ecb55f76d05908498ca2dc41c53ebaccce685bbe11e8b72724511895af9386e",
+  "textHash": "b2fe16e6c731d7ac4bcd33f1a6215f4745fbc0b0f9ded8d50d79c9875aa8448d",
+  "duration": 145.058,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.88,
+      "end": 21.14,
+      "score": 0.5922
+    },
+    {
+      "verse": 2,
+      "start": 21.14,
+      "end": 29.84,
+      "score": 0.6053
+    },
+    {
+      "verse": 3,
+      "start": 29.86,
+      "end": 36.3,
+      "score": 0.5829
+    },
+    {
+      "verse": 4,
+      "start": 36.3,
+      "end": 56.06,
+      "score": 0.5906
+    },
+    {
+      "verse": 5,
+      "start": 56.2,
+      "end": 63.46,
+      "score": 0.5926
+    },
+    {
+      "verse": 6,
+      "start": 63.46,
+      "end": 74.44,
+      "score": 0.6116
+    },
+    {
+      "verse": 7,
+      "start": 74.56,
+      "end": 82.72,
+      "score": 0.5375
+    },
+    {
+      "verse": 8,
+      "start": 84.08,
+      "end": 95.28,
+      "score": 0.5866
+    },
+    {
+      "verse": 9,
+      "start": 95.28,
+      "end": 108.52,
+      "score": 0.5864
+    },
+    {
+      "verse": 10,
+      "start": 108.52,
+      "end": 116.5,
+      "score": 0.6509
+    },
+    {
+      "verse": 11,
+      "start": 117.36,
+      "end": 128.38,
+      "score": 0.585
+    },
+    {
+      "verse": 12,
+      "start": 129.14,
+      "end": 140.08,
+      "score": 0.6292
+    }
+  ]
+}

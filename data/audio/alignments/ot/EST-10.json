@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EST",
+  "chapter": 10,
+  "file": "A17___10_Esther______ARZVDVO1DA.mp3",
+  "audioHash": "6276ccc092f4d70c0581108db77c827bf093bd7826b4c998f0e807be52872507",
+  "textHash": "e81f0a2f50b173f37c88a58ba01cbcf33ed046a31241ccc5b0bf35cf6ab73fd9",
+  "duration": 49.188625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.8,
+      "end": 11.38,
+      "score": 0.6014
+    },
+    {
+      "verse": 2,
+      "start": 11.88,
+      "end": 25.54,
+      "score": 0.5799
+    },
+    {
+      "verse": 3,
+      "start": 26.2,
+      "end": 44.12,
+      "score": 0.6211
+    }
+  ]
+}

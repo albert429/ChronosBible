@@ -3,8 +3,15 @@ import { ar } from "../lib/format";
 import { FONT_MIN, FONT_MAX, useAppearance } from "./appearance";
 import "./AppearancePanel.css";
 
-export default function AppearancePanel() {
-  const { font, setFont, dark, setDark } = useAppearance();
+export default function AppearancePanel({
+  continuous,
+  setContinuous,
+}: {
+  continuous: boolean;
+  setContinuous: (enabled: boolean) => void;
+}) {
+  const { font, setFont, dark, setDark, diacritics, setDiacritics } =
+    useAppearance();
   return (
     <>
       <div className="appearance-row">
@@ -31,6 +38,22 @@ export default function AppearancePanel() {
           </button>
         </div>
       </div>
+      <label className="appearance-row continuous-option">
+        <span>استماع متواصل للإصحاحات</span>
+        <input
+          type="checkbox"
+          checked={continuous}
+          onChange={(event) => setContinuous(event.target.checked)}
+        />
+      </label>
+      <label className="appearance-row continuous-option">
+        <span>إظهار التشكيل</span>
+        <input
+          type="checkbox"
+          checked={diacritics}
+          onChange={(event) => setDiacritics(event.target.checked)}
+        />
+      </label>
       <div className="theme-options" role="group" aria-label="مظهر القراءة">
         <button
           className="theme-option"

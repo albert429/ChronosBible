@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ZEP",
+  "chapter": 3,
+  "file": "A36___03_Zephaniah___ARZVDVO1DA.mp3",
+  "audioHash": "7e8929c022db69f8c02dc241595ab552dd68b0ea100eeb9915586b711acf1abd",
+  "textHash": "e7479224fc21595cc62ae3f1515c6e26f2fd34273f46b5fdee7e0a1fa2a799be",
+  "duration": 266.449,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.16,
+      "end": 10.48,
+      "score": 0.5344
+    },
+    {
+      "verse": 2,
+      "start": 11.42,
+      "end": 21.48,
+      "score": 0.5868
+    },
+    {
+      "verse": 3,
+      "start": 21.54,
+      "end": 24.0,
+      "score": 0.0306
+    },
+    {
+      "verse": 4,
+      "start": 24.02,
+      "end": 32.32,
+      "score": 0.5046
+    },
+    {
+      "verse": 5,
+      "start": 33.88,
+      "end": 48.76,
+      "score": 0.6001
+    },
+    {
+      "verse": 6,
+      "start": 49.84,
+      "end": 62.6,
+      "score": 0.6112
+    },
+    {
+      "verse": 7,
+      "start": 63.88,
+      "end": 79.4,
+      "score": 0.5666
+    },
+    {
+      "verse": 8,
+      "start": 80.58,
+      "end": 104.6,
+      "score": 0.5756
+    },
+    {
+      "verse": 9,
+      "start": 104.6,
+      "end": 117.14,
+      "score": 0.5777
+    },
+    {
+      "verse": 10,
+      "start": 117.8,
+      "end": 126.28,
+      "score": 0.566
+    },
+    {
+      "verse": 11,
+      "start": 127.22,
+      "end": 145.2,
+      "score": 0.5693
+    },
+    {
+      "verse": 12,
+      "start": 145.94,
+      "end": 154.36,
+      "score": 0.6292
+    },
+    {
+      "verse": 13,
+      "start": 154.36,
+      "end": 170.0,
+      "score": 0.6186
+    },
+    {
+      "verse": 14,
+      "start": 170.08,
+      "end": 182.46,
+      "score": 0.5544
+    },
+    {
+      "verse": 15,
+      "start": 182.46,
+      "end": 194.44,
+      "score": 0.61
+    },
+    {
+      "verse": 16,
+      "start": 195.74,
+      "end": 205.34,
+      "score": 0.5903
+    },
+    {
+      "verse": 17,
+      "start": 205.34,
+      "end": 217.78,
+      "score": 0.5452
+    },
+    {
+      "verse": 18,
+      "start": 219.98,
+      "end": 228.16,
+      "score": 0.6213
+    },
+    {
+      "verse": 19,
+      "start": 228.28,
+      "end": 243.38,
+      "score": 0.6044
+    },
+    {
+      "verse": 20,
+      "start": 244.34,
+      "end": 266.42,
+      "score": 0.6212
+    }
+  ]
+}

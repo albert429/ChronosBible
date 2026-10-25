@@ -10,6 +10,7 @@ import {
   loadProgress,
   validDate,
   PROGRESS_KEY,
+  STATE_KEY,
 } from "../src/plan/progress.ts";
 function storage() {
   const values = new Map<string, string>();
@@ -66,7 +67,7 @@ test("Backup can move to another browser and never overwrites an existing profil
 test("Bad dates, malformed backups, and corrupt stored data do not replace progress", () => {
   const s = storage();
   createReader(s, "Test", "2026-10-01");
-  const before = s.getItem(PROGRESS_KEY);
+  const before = s.getItem(STATE_KEY);
   for (const text of [
     "invalid",
     "null",
@@ -81,12 +82,18 @@ test("Bad dates, malformed backups, and corrupt stored data do not replace progr
     }),
   ])
     assert.throws(() => importBackup(s, text));
-  assert.equal(s.getItem(PROGRESS_KEY), before);
+  assert.equal(s.getItem(STATE_KEY), before);
   assert.equal(validDate("2024-02-29"), true);
   assert.equal(validDate("2026-02-29"), false);
-  s.setItem(PROGRESS_KEY, "corrupt");
+  s.setItem(STATE_KEY, "corrupt");
   assert.throws(() => createReader(s, "New", "2026-10-01"));
-  assert.equal(s.getItem(PROGRESS_KEY), "corrupt");
+  assert.equal(s.getItem(STATE_KEY), "corrupt");
+  // Corrupt legacy progress is never migrated over, nor changed.
+  const legacy = storage();
+  legacy.setItem(PROGRESS_KEY, "corrupt");
+  assert.throws(() => createReader(legacy, "New", "2026-10-01"));
+  assert.equal(legacy.getItem(PROGRESS_KEY), "corrupt");
+  assert.equal(legacy.getItem(STATE_KEY), null);
 });
 test("Blocked storage reports failed saving instead of pretending success", () => {
   const s = storage();

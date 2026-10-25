@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "MIC",
+  "chapter": 6,
+  "file": "A33___06_Micah_______ARZVDVO1DA.mp3",
+  "audioHash": "23939c6e2427adf214a0a94581e103d815d6b7360f7c41ca433cdfa32ea4109f",
+  "textHash": "f21a80a5a0381a34c9432dbc98aed82d0029680967608bdc1b5358df712bb467",
+  "duration": 203.075875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.16,
+      "end": 13.7,
+      "score": 0.6302
+    },
+    {
+      "verse": 2,
+      "start": 15.04,
+      "end": 30.82,
+      "score": 0.6136
+    },
+    {
+      "verse": 3,
+      "start": 31.04,
+      "end": 38.0,
+      "score": 0.6338
+    },
+    {
+      "verse": 4,
+      "start": 38.38,
+      "end": 48.52,
+      "score": 0.5861
+    },
+    {
+      "verse": 5,
+      "start": 49.44,
+      "end": 67.0,
+      "score": 0.6222
+    },
+    {
+      "verse": 6,
+      "start": 67.0,
+      "end": 77.3,
+      "score": 0.5956
+    },
+    {
+      "verse": 7,
+      "start": 78.32,
+      "end": 92.62,
+      "score": 0.568
+    },
+    {
+      "verse": 8,
+      "start": 94.18,
+      "end": 110.86,
+      "score": 0.5938
+    },
+    {
+      "verse": 9,
+      "start": 111.56,
+      "end": 121.06,
+      "score": 0.5664
+    },
+    {
+      "verse": 10,
+      "start": 121.06,
+      "end": 128.82,
+      "score": 0.5936
+    },
+    {
+      "verse": 11,
+      "start": 129.9,
+      "end": 135.88,
+      "score": 0.5738
+    },
+    {
+      "verse": 12,
+      "start": 137.04,
+      "end": 147.46,
+      "score": 0.6233
+    },
+    {
+      "verse": 13,
+      "start": 148.86,
+      "end": 156.98,
+      "score": 0.6315
+    },
+    {
+      "verse": 14,
+      "start": 157.06,
+      "end": 168.52,
+      "score": 0.5779
+    },
+    {
+      "verse": 15,
+      "start": 169.68,
+      "end": 180.16,
+      "score": 0.5976
+    },
+    {
+      "verse": 16,
+      "start": 181.68,
+      "end": 200.56,
+      "score": 0.585
+    }
+  ]
+}

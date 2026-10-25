@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EXO",
+  "chapter": 17,
+  "file": "A02___17_Exodus______ARZVDVO1DA.mp3",
+  "audioHash": "1e62d7115a14bf8fc6f689581e5ec2b4a7ecb588c6a3c904f0b1966b1b989b37",
+  "textHash": "07e2bf2cf9d5e6b4607c4e4f0beb0ac6ce65b8e36e9b4ded08d2ff89384647cd",
+  "duration": 210.6775625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.24,
+      "end": 21.1,
+      "score": 0.599
+    },
+    {
+      "verse": 2,
+      "start": 21.86,
+      "end": 35.86,
+      "score": 0.6168
+    },
+    {
+      "verse": 3,
+      "start": 35.86,
+      "end": 53.02,
+      "score": 0.6129
+    },
+    {
+      "verse": 4,
+      "start": 53.02,
+      "end": 61.68,
+      "score": 0.6368
+    },
+    {
+      "verse": 5,
+      "start": 62.82,
+      "end": 76.06,
+      "score": 0.6465
+    },
+    {
+      "verse": 6,
+      "start": 77.62,
+      "end": 95.34,
+      "score": 0.6199
+    },
+    {
+      "verse": 7,
+      "start": 95.36,
+      "end": 109.86,
+      "score": 0.5698
+    },
+    {
+      "verse": 8,
+      "start": 111.3,
+      "end": 116.04,
+      "score": 0.5969
+    },
+    {
+      "verse": 9,
+      "start": 116.7,
+      "end": 128.16,
+      "score": 0.6136
+    },
+    {
+      "verse": 10,
+      "start": 129.4,
+      "end": 139.22,
+      "score": 0.55
+    },
+    {
+      "verse": 11,
+      "start": 140.04,
+      "end": 150.8,
+      "score": 0.6048
+    },
+    {
+      "verse": 12,
+      "start": 151.32,
+      "end": 171.58,
+      "score": 0.5989
+    },
+    {
+      "verse": 13,
+      "start": 172.68,
+      "end": 177.28,
+      "score": 0.5876
+    },
+    {
+      "verse": 14,
+      "start": 178.16,
+      "end": 192.36,
+      "score": 0.6357
+    },
+    {
+      "verse": 15,
+      "start": 194.04,
+      "end": 198.46,
+      "score": 0.5963
+    },
+    {
+      "verse": 16,
+      "start": 198.86,
+      "end": 208.6,
+      "score": 0.6082
+    }
+  ]
+}

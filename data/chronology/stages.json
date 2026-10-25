@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "notes": "Stages follow the source order. `start` is the first source occurrence of a stage or substage; `verse` splits that occurrence. See docs/chronology.md.",
+  "testaments": {
+    "OT": {
+      "title": "العهد القديم بالترتيب الزمني",
+      "stages": [
+        {
+          "id": "beginnings",
+          "title": "البدايات: الخلق والطوفان",
+          "start": {
+            "occurrence": "g001-1",
+            "first": "GEN 1:1"
+          },
+          "reason": "Genesis 1 to Genesis 11:26 (with the 1 Chronicles 1 genealogies the source interleaves)."
+        },
+        {
+          "id": "patriarchs",
+          "title": "الآباء: من إبراهيم إلى يوسف",
+          "start": {
+            "occurrence": "g004-3",
+            "first": "GEN 11:27"
+          },
+          "reason": "Genesis 11:27 opens the account of Terah and Abram. Job stays here, where the source places it (groups 19-31), after Genesis 50."
+        },
+        {
+          "id": "exodus",
+          "title": "الخروج من مصر والعهد",
+          "start": {
+            "occurrence": "g032-1",
+            "first": "EXO 1:1"
+          },
+          "reason": "Exodus 1 through Sinai: Exodus, Leviticus and Numbers 1-9, including both source occurrences of Numbers 7-9."
+        },
+        {
+          "id": "wilderness",
+          "title": "البرية والاستعداد لأرض الموعد",
+          "start": {
+            "occurrence": "g061-1",
+            "first": "NUM 10:1"
+          },
+          "reason": "Numbers 10 (the source group in which Israel leaves Sinai) through Deuteronomy 34 and Psalm 90."
+        },
+        {
+          "id": "promised-land",
+          "title": "أرض الموعد وعصر القضاة",
+          "start": {
+            "occurrence": "g081-3",
+            "first": "JOS 1:1"
+          },
+          "reason": "Joshua 1 through Judges, Ruth and 1 Samuel 1-7 (Samuel, the last judge)."
+        },
+        {
+          "id": "united-kingdom",
+          "title": "المملكة المتحدة: شاول وداود وسليمان",
+          "start": {
+            "occurrence": "g100-5",
+            "first": "1SA 8:1"
+          },
+          "reason": "1 Samuel 8, where Israel asks for a king, through Solomon's death and Ecclesiastes, which the source places after 1 Kings 11."
+        },
+        {
+          "id": "divided-kingdom",
+          "title": "المملكة المنقسمة وخدمة الأنبياء",
+          "start": {
+            "occurrence": "g159-3",
+            "first": "1KI 12:1"
+          },
+          "reason": "1 Kings 12, the division of the kingdom, through the siege of Jerusalem, with the prophets where the source interleaves them."
+        },
+        {
+          "id": "exile",
+          "title": "السبي والرجاء",
+          "start": {
+            "occurrence": "g237-4",
+            "first": "2KI 25:3"
+          },
+          "reason": "2 Kings 25:3, the fall of Jerusalem, through Daniel 9."
+        },
+        {
+          "id": "return",
+          "title": "العودة وتجديد العهد",
+          "start": {
+            "occurrence": "g251-3",
+            "first": "2CH 36:22"
+          },
+          "reason": "2 Chronicles 36:22-23 and Ezra 1, Cyrus's decree, through Nehemiah, Malachi and Joel, which the source places last."
+        }
+      ]
+    },
+    "NT": {
+      "title": "العهد الجديد بالترتيب الزمني",
+      "stages": [
+        {
+          "id": "life-of-jesus",
+          "title": "حياة يسوع وخدمته",
+          "start": {
+            "occurrence": "g267-1",
+            "first": "MRK 1:1"
+          },
+          "reason": "The four Gospels, harmonized by the source, through the ascension.",
+          "substages": [
+            {
+              "id": "birth",
+              "title": "الميلاد والبداية",
+              "start": {
+                "occurrence": "g267-1",
+                "first": "MRK 1:1"
+              },
+              "reason": "Prologues, birth, childhood, John the Baptist, baptism and temptation, first disciples and the beginning of signs (John 2-4)."
+            },
+            {
+              "id": "ministry",
+              "title": "الخدمة",
+              "start": {
+                "occurrence": "g272-1",
+                "first": "MRK 1:14"
+              },
+              "reason": "Mark 1:14-15: after John's arrest Jesus begins preaching in Galilee; through the Olivet discourse."
+            },
+            {
+              "id": "passion",
+              "title": "الصلب والقيامة",
+              "start": {
+                "occurrence": "g302-1",
+                "first": "MRK 14:1"
+              },
+              "reason": "Mark 14:1, the plot to kill Jesus and the Passover, through the resurrection appearances and the ascension."
+            }
+          ]
+        },
+        {
+          "id": "early-church",
+          "title": "بداية الكنيسة وانتشار الإنجيل",
+          "start": {
+            "occurrence": "g311-3",
+            "first": "ACT 1:1"
+          },
+          "reason": "Acts 1-12."
+        },
+        {
+          "id": "missionary-journeys",
+          "title": "رحلات بولس التبشيرية",
+          "start": {
+            "occurrence": "g316-2",
+            "first": "ACT 13:1"
+          },
+          "reason": "Acts 13-20 with the letters the source interleaves.",
+          "substages": [
+            {
+              "id": "first-journey",
+              "title": "الرحلة التبشيرية الأولى",
+              "start": {
+                "occurrence": "g316-2",
+                "first": "ACT 13:1"
+              },
+              "reason": "Acts 13:1-15:35: the first journey, Galatians and the Jerusalem council."
+            },
+            {
+              "id": "second-journey",
+              "title": "الرحلة التبشيرية الثانية",
+              "start": {
+                "occurrence": "g319-1",
+                "verse": 36,
+                "first": "ACT 15:36"
+              },
+              "reason": "Acts 15:36 (heading: بولس وبرنابا يفترقان) to 18:22, with 1 and 2 Thessalonians."
+            },
+            {
+              "id": "third-journey",
+              "title": "الرحلة التبشيرية الثالثة",
+              "start": {
+                "occurrence": "g321-5",
+                "verse": 23,
+                "first": "ACT 18:23"
+              },
+              "reason": "Acts 18:23, Paul sets out through Galatia and Phrygia, to Acts 20:38, with 1 Corinthians, Romans and 2 Corinthians."
+            }
+          ]
+        },
+        {
+          "id": "paul-to-rome",
+          "title": "بولس إلى روما ورسائل السجن",
+          "start": {
+            "occurrence": "g336-2",
+            "first": "ACT 21:1"
+          },
+          "reason": "Acts 21-28 with Ephesians, Colossians, Philemon and Philippians."
+        },
+        {
+          "id": "letters",
+          "title": "تثبيت الكنائس ورسائل الرسل",
+          "start": {
+            "occurrence": "g346-1",
+            "first": "JAS 1:1"
+          },
+          "reason": "James (after Philippians in the source) through Jude."
+        },
+        {
+          "id": "revelation",
+          "title": "سفر الرؤيا",
+          "start": {
+            "occurrence": "g360-2",
+            "first": "REV 1:1"
+          },
+          "reason": "Revelation 1-22."
+        }
+      ]
+    }
+  }
+}

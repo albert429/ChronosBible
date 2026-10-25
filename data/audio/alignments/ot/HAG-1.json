@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "HAG",
+  "chapter": 1,
+  "file": "A37___01_Haggai______ARZVDVO1DA.mp3",
+  "audioHash": "575f9a3fcf2e69220f94be293b86d357f9f4c72ccccabf47d6673749e720910d",
+  "textHash": "26957d0a534f7893a46e20eb462dba6dcaba76b990a09771e87f37ed0f1fac0f",
+  "duration": 209.1625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.04,
+      "end": 28.3,
+      "score": 0.5978
+    },
+    {
+      "verse": 2,
+      "start": 30.42,
+      "end": 40.66,
+      "score": 0.6239
+    },
+    {
+      "verse": 3,
+      "start": 40.66,
+      "end": 44.7,
+      "score": 0.5908
+    },
+    {
+      "verse": 4,
+      "start": 45.76,
+      "end": 53.08,
+      "score": 0.6234
+    },
+    {
+      "verse": 5,
+      "start": 54.08,
+      "end": 61.28,
+      "score": 0.6336
+    },
+    {
+      "verse": 6,
+      "start": 62.38,
+      "end": 80.3,
+      "score": 0.6256
+    },
+    {
+      "verse": 7,
+      "start": 81.16,
+      "end": 86.74,
+      "score": 0.5917
+    },
+    {
+      "verse": 8,
+      "start": 86.92,
+      "end": 97.84,
+      "score": 0.5834
+    },
+    {
+      "verse": 9,
+      "start": 97.96,
+      "end": 117.04,
+      "score": 0.6157
+    },
+    {
+      "verse": 10,
+      "start": 117.78,
+      "end": 126.32,
+      "score": 0.5837
+    },
+    {
+      "verse": 11,
+      "start": 126.34,
+      "end": 143.86,
+      "score": 0.6159
+    },
+    {
+      "verse": 12,
+      "start": 143.86,
+      "end": 167.7,
+      "score": 0.5915
+    },
+    {
+      "verse": 13,
+      "start": 167.7,
+      "end": 180.02,
+      "score": 0.593
+    },
+    {
+      "verse": 14,
+      "start": 180.02,
+      "end": 199.0,
+      "score": 0.6061
+    },
+    {
+      "verse": 15,
+      "start": 199.9,
+      "end": 208.84,
+      "score": 0.6511
+    }
+  ]
+}

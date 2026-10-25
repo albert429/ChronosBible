@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "status": "DRAFT-wording-corrections-not-adopted; parent integrates into data/audio/reference-texts.json only after user review",
+  "notes": [
+    "Connected-speech vowelling (i'rab) on words followed by a hamzat-wasl article so the article is elided correctly (al-iṣḥāḥu s-sādisa, not al-iṣḥāḥ ʔas-sādis).",
+    "Compound ordinals 11-19 are built on fatha for both parts: السَّادِسَ عَشَرَ (m.), الرَّابِعَةَ عَشْرَةَ / السَّادِسَةَ عَشْرَةَ (f.). The current drafts omit the joining fatha.",
+    "Phrase-final words stay pausal (sukun / taa marbuta read as -a).",
+    "piperPhonemes are hand-written espeak-ng IPA for the Kareem voice: espeak-ng ar reads hamzat-wasl articles as ʔa-, reads آيَة as ʔaːiːat, and keeps -at on pausal taa marbuta. Closed vocabulary (book names, ordinals, fixed words) makes a reviewed lexicon practical for all 537 references."
+  ],
+  "references": [
+    {
+      "id": "LUK-1-1-4",
+      "draftText": "إِنْجِيل لُوقَا، الْإِصْحَاح الْأَوَّل، مِنَ الْآيَة الْأُولَى إِلَى الرَّابِعَة.",
+      "proposedText": "إِنْجِيلُ لُوقَا، الْإِصْحَاحُ الْأَوَّلْ، مِنَ الْآيَةِ الْأُولَى إِلَى الرَّابِعَةْ.",
+      "piperPhonemes": "ʔindʒˈiːlu lˈuːqaː, alʔis̪ħˈaːħu lʔˈawːal, mˈina lʔˈaːjati lʔˈuːlaː ʔˈila rːˈaːbiʕa."
+    },
+    {
+      "id": "MRK-16-14-14",
+      "draftText": "إِنْجِيل مَرْقُس، الْإِصْحَاح السَّادِس عَشَر، الْآيَة الرَّابِعَة عَشْرَة.",
+      "proposedText": "إِنْجِيلُ مَرْقُسْ، الْإِصْحَاحُ السَّادِسَ عَشَرْ، الْآيَةُ الرَّابِعَةَ عَشْرَةْ.",
+      "piperPhonemes": "ʔindʒˈiːlu mˈarqus, alʔis̪ħˈaːħu sːˈaːdisa ʕˈaʃar, alʔˈaːjatu rːˈaːbiʕata ʕˈaʃra."
+    },
+    {
+      "id": "MAT-28-16-20",
+      "draftText": "إِنْجِيل مَتَّى، الْإِصْحَاح الثَّامِن وَالْعِشْرُون، مِنَ الْآيَة السَّادِسَة عَشْرَة إِلَى الْعِشْرِين.",
+      "proposedText": "إِنْجِيلُ مَتَّى، الْإِصْحَاحُ الثَّامِنُ وَالْعِشْرُونْ، مِنَ الْآيَةِ السَّادِسَةَ عَشْرَةَ إِلَى الْعِشْرِينْ.",
+      "piperPhonemes": "ʔindʒˈiːlu mˈatːaː, alʔis̪ħˈaːħu θːˈaːminu walʕiʃrˈuːn, mˈina lʔˈaːjati sːˈaːdisata ʕˈaʃrata ʔˈila lʕiʃrˈiːn."
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
-import type { Day } from "../plan/readings";
+import type { AnyScriptureReading } from "../bible/types";
 import { connectionAllowsPrefetch } from "../lib/network";
 import { loadStudyPanel, type StudyTarget } from "../study/VerseStudy";
 import {
@@ -10,7 +10,7 @@ import {
   verseLocation,
 } from "./scriptureDom";
 
-export function useVerseTap(reading: Day | undefined) {
+export function useVerseTap(reading: AnyScriptureReading | undefined) {
   const [target, setTarget] = useState<StudyTarget | null>(null);
   const [open, setOpen] = useState(false);
   const press = useRef<{ t: number; x: number; y: number; selection: boolean }>(

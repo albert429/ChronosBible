@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JOB",
+  "chapter": 25,
+  "file": "A18___25_Job_________ARZVDVO1DA.mp3",
+  "audioHash": "f992e7aab956decea642a9d5947c12179b8c7583c7d459d0e343097f08de4850",
+  "textHash": "a5a0657e3f17ffccbf58d46d9207084f130c4196b48703c8bb93440e1b8bb291",
+  "duration": 54.8833125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.34,
+      "end": 9.74,
+      "score": 0.6017
+    },
+    {
+      "verse": 2,
+      "start": 11.1,
+      "end": 19.36,
+      "score": 0.5709
+    },
+    {
+      "verse": 3,
+      "start": 21.08,
+      "end": 26.46,
+      "score": 0.5347
+    },
+    {
+      "verse": 4,
+      "start": 28.1,
+      "end": 35.52,
+      "score": 0.6162
+    },
+    {
+      "verse": 5,
+      "start": 36.96,
+      "end": 44.56,
+      "score": 0.6152
+    },
+    {
+      "verse": 6,
+      "start": 46.02,
+      "end": 52.92,
+      "score": 0.6458
+    }
+  ]
+}

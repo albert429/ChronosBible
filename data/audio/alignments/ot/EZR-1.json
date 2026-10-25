@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EZR",
+  "chapter": 1,
+  "file": "A15___01_Ezra________ARZVDVO1DA.mp3",
+  "audioHash": "247aa8698f96bdf57fa06eb77e675c743c8e7faab6a90724c73c5d5a8366bfa5",
+  "textHash": "194e9623cf06276c3d5820c664f8fb78152c5451b3b887863e61555c7dc28879",
+  "duration": 160.26125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.52,
+      "end": 24.1,
+      "score": 0.6214
+    },
+    {
+      "verse": 2,
+      "start": 25.14,
+      "end": 40.44,
+      "score": 0.5891
+    },
+    {
+      "verse": 3,
+      "start": 40.44,
+      "end": 55.64,
+      "score": 0.6074
+    },
+    {
+      "verse": 4,
+      "start": 56.42,
+      "end": 72.3,
+      "score": 0.5877
+    },
+    {
+      "verse": 5,
+      "start": 73.04,
+      "end": 87.44,
+      "score": 0.5883
+    },
+    {
+      "verse": 6,
+      "start": 87.54,
+      "end": 101.76,
+      "score": 0.6059
+    },
+    {
+      "verse": 7,
+      "start": 101.76,
+      "end": 111.58,
+      "score": 0.5812
+    },
+    {
+      "verse": 8,
+      "start": 111.78,
+      "end": 120.64,
+      "score": 0.5948
+    },
+    {
+      "verse": 9,
+      "start": 121.48,
+      "end": 130.94,
+      "score": 0.6163
+    },
+    {
+      "verse": 10,
+      "start": 131.6,
+      "end": 143.66,
+      "score": 0.6188
+    },
+    {
+      "verse": 11,
+      "start": 144.76,
+      "end": 160.2,
+      "score": 0.6011
+    }
+  ]
+}

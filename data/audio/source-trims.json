@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "Reviewed exceptions: an original recording that also contains another chapter is cut, never re-recorded or padded. Each end is re-derived from its evidence (scripts/audio_sources.py check_source_trim) and must fall in detected silence when encoded.",
+  "trims": [
+    {
+      "identity": "bible:JOB:36",
+      "source": "A18___36_Job_________ARZVDVO1DA.mp3",
+      "sourceHash": "0e628179db974e2cfd2a3691fd87d28c9e4b068506bfbff6a7748a4fe5a5dffd",
+      "keepVerses": 33,
+      "appended": "bible:JOB:37",
+      "end": 267.75,
+      "evidence": "data/audio/trims/JOB-36-JOB-37.json",
+      "reason": "After Job 36:33 (ends 266.9 s) the original continues with all of Job 37 (24 verses, 268.6-468.94 s, minimum score 0.5327); Job 37 has its own original recording.",
+      "review": "Forced alignment of the whole recording against Job 36 + Job 37 text (verses 1-33 identical to the chapter alignment) and ffmpeg silencedetect: silence 266.867-268.659 s contains the cut.",
+      "supersedes": "/audio/chapters/assets/JOB-36-26fa3a24ae2029ba3164.m4a"
+    }
+  ]
+}

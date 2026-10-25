@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "DAN",
+  "chapter": 12,
+  "file": "A27___12_Daniel______ARZVDVO1DA.mp3",
+  "audioHash": "fb5c982a769dae64ab2c87ff9082cdd7e195ab325f4334200dbec685e05ffbfd",
+  "textHash": "32242dde507d86872c57197e12f3f19db39166456b3b548d7397c800f86015b1",
+  "duration": 188.447375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.54,
+      "end": 29.94,
+      "score": 0.6425
+    },
+    {
+      "verse": 2,
+      "start": 29.94,
+      "end": 45.06,
+      "score": 0.572
+    },
+    {
+      "verse": 3,
+      "start": 45.06,
+      "end": 56.02,
+      "score": 0.5746
+    },
+    {
+      "verse": 4,
+      "start": 56.16,
+      "end": 72.24,
+      "score": 0.6032
+    },
+    {
+      "verse": 5,
+      "start": 72.32,
+      "end": 83.38,
+      "score": 0.6118
+    },
+    {
+      "verse": 6,
+      "start": 84.36,
+      "end": 92.22,
+      "score": 0.579
+    },
+    {
+      "verse": 7,
+      "start": 92.96,
+      "end": 117.1,
+      "score": 0.6121
+    },
+    {
+      "verse": 8,
+      "start": 117.1,
+      "end": 125.4,
+      "score": 0.5739
+    },
+    {
+      "verse": 9,
+      "start": 125.4,
+      "end": 135.28,
+      "score": 0.6074
+    },
+    {
+      "verse": 10,
+      "start": 135.28,
+      "end": 151.62,
+      "score": 0.5915
+    },
+    {
+      "verse": 11,
+      "start": 152.28,
+      "end": 161.36,
+      "score": 0.5285
+    },
+    {
+      "verse": 12,
+      "start": 162.32,
+      "end": 169.02,
+      "score": 0.6236
+    },
+    {
+      "verse": 13,
+      "start": 169.04,
+      "end": 181.1,
+      "score": 0.6289
+    }
+  ]
+}

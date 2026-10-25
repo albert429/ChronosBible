@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ECC",
+  "chapter": 7,
+  "file": "A21___07_EcclesiastesARZVDVO1DA.mp3",
+  "audioHash": "e39bd9f2a733bdd7e283f00377cd37d27eed454fb464093740b9a733b7fdc250",
+  "textHash": "e0aa2bf25c2333f8dd692d9f3dc262918b3374f7ffaf93fd993050023825ad0c",
+  "duration": 339.748625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.28,
+      "end": 12.68,
+      "score": 0.6422
+    },
+    {
+      "verse": 2,
+      "start": 13.46,
+      "end": 27.82,
+      "score": 0.6034
+    },
+    {
+      "verse": 3,
+      "start": 27.82,
+      "end": 38.16,
+      "score": 0.6333
+    },
+    {
+      "verse": 4,
+      "start": 38.16,
+      "end": 47.36,
+      "score": 0.6252
+    },
+    {
+      "verse": 5,
+      "start": 47.36,
+      "end": 55.68,
+      "score": 0.65
+    },
+    {
+      "verse": 6,
+      "start": 57.44,
+      "end": 68.44,
+      "score": 0.6387
+    },
+    {
+      "verse": 7,
+      "start": 69.7,
+      "end": 78.24,
+      "score": 0.6007
+    },
+    {
+      "verse": 8,
+      "start": 78.3,
+      "end": 88.08,
+      "score": 0.636
+    },
+    {
+      "verse": 9,
+      "start": 88.1,
+      "end": 98.9,
+      "score": 0.5883
+    },
+    {
+      "verse": 10,
+      "start": 98.9,
+      "end": 111.3,
+      "score": 0.626
+    },
+    {
+      "verse": 11,
+      "start": 112.34,
+      "end": 121.08,
+      "score": 0.6327
+    },
+    {
+      "verse": 12,
+      "start": 121.08,
+      "end": 134.88,
+      "score": 0.5685
+    },
+    {
+      "verse": 13,
+      "start": 134.9,
+      "end": 140.58,
+      "score": 0.5785
+    },
+    {
+      "verse": 14,
+      "start": 141.7,
+      "end": 157.4,
+      "score": 0.6254
+    },
+    {
+      "verse": 15,
+      "start": 157.4,
+      "end": 169.82,
+      "score": 0.5823
+    },
+    {
+      "verse": 16,
+      "start": 169.82,
+      "end": 179.96,
+      "score": 0.5926
+    },
+    {
+      "verse": 17,
+      "start": 179.96,
+      "end": 190.98,
+      "score": 0.6419
+    },
+    {
+      "verse": 18,
+      "start": 190.98,
+      "end": 204.52,
+      "score": 0.6076
+    },
+    {
+      "verse": 19,
+      "start": 204.54,
+      "end": 215.7,
+      "score": 0.6127
+    },
+    {
+      "verse": 20,
+      "start": 215.7,
+      "end": 224.08,
+      "score": 0.6358
+    },
+    {
+      "verse": 21,
+      "start": 224.1,
+      "end": 233.12,
+      "score": 0.5978
+    },
+    {
+      "verse": 22,
+      "start": 233.7,
+      "end": 243.22,
+      "score": 0.6161
+    },
+    {
+      "verse": 23,
+      "start": 243.28,
+      "end": 254.48,
+      "score": 0.5819
+    },
+    {
+      "verse": 24,
+      "start": 255.7,
+      "end": 263.12,
+      "score": 0.6044
+    },
+    {
+      "verse": 25,
+      "start": 264.02,
+      "end": 278.46,
+      "score": 0.5914
+    },
+    {
+      "verse": 26,
+      "start": 279.84,
+      "end": 301.36,
+      "score": 0.6238
+    },
+    {
+      "verse": 27,
+      "start": 301.38,
+      "end": 309.44,
+      "score": 0.5945
+    },
+    {
+      "verse": 28,
+      "start": 309.5,
+      "end": 323.68,
+      "score": 0.5746
+    },
+    {
+      "verse": 29,
+      "start": 325.1,
+      "end": 337.68,
+      "score": 0.6296
+    }
+  ]
+}

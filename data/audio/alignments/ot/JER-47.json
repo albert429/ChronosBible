@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JER",
+  "chapter": 47,
+  "file": "A24___47_Jeremiah____ARZVDVO1DA.mp3",
+  "audioHash": "ab2059f392f366cad53f2bd469b7de28af058bc43d6ed11041d03f340c2017fe",
+  "textHash": "b1aa825ef6843a63da9cb598b643a577febb1665a63a7cab1b725037d5db839a",
+  "duration": 106.0310625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.16,
+      "end": 13.58,
+      "score": 0.586
+    },
+    {
+      "verse": 2,
+      "start": 15.04,
+      "end": 35.46,
+      "score": 0.6311
+    },
+    {
+      "verse": 3,
+      "start": 36.3,
+      "end": 51.46,
+      "score": 0.5681
+    },
+    {
+      "verse": 4,
+      "start": 52.64,
+      "end": 68.6,
+      "score": 0.5708
+    },
+    {
+      "verse": 5,
+      "start": 70.24,
+      "end": 80.7,
+      "score": 0.5875
+    },
+    {
+      "verse": 6,
+      "start": 82.18,
+      "end": 92.44,
+      "score": 0.5795
+    },
+    {
+      "verse": 7,
+      "start": 93.6,
+      "end": 103.56,
+      "score": 0.5856
+    }
+  ]
+}

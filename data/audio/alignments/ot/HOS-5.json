@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "HOS",
+  "chapter": 5,
+  "file": "A28___05_Hosea_______ARZVDVO1DA.mp3",
+  "audioHash": "b444e20aaff6bed772e6d1acdcbfd7492c8c70a946ea3876c218a47f9a7a7993",
+  "textHash": "e8f6613f975418507ca4f25e484f05fb8ea0b16dfd5b2ce78e87dcc5b48226a7",
+  "duration": 174.9420625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.34,
+      "end": 25.28,
+      "score": 0.6091
+    },
+    {
+      "verse": 2,
+      "start": 25.28,
+      "end": 31.12,
+      "score": 0.6216
+    },
+    {
+      "verse": 3,
+      "start": 32.32,
+      "end": 43.7,
+      "score": 0.6267
+    },
+    {
+      "verse": 4,
+      "start": 43.98,
+      "end": 56.0,
+      "score": 0.593
+    },
+    {
+      "verse": 5,
+      "start": 56.0,
+      "end": 67.56,
+      "score": 0.5604
+    },
+    {
+      "verse": 6,
+      "start": 68.78,
+      "end": 76.48,
+      "score": 0.5562
+    },
+    {
+      "verse": 7,
+      "start": 77.86,
+      "end": 88.46,
+      "score": 0.6237
+    },
+    {
+      "verse": 8,
+      "start": 89.64,
+      "end": 98.88,
+      "score": 0.6154
+    },
+    {
+      "verse": 9,
+      "start": 99.86,
+      "end": 109.0,
+      "score": 0.6385
+    },
+    {
+      "verse": 10,
+      "start": 109.0,
+      "end": 117.3,
+      "score": 0.5876
+    },
+    {
+      "verse": 11,
+      "start": 117.32,
+      "end": 124.9,
+      "score": 0.5803
+    },
+    {
+      "verse": 12,
+      "start": 125.04,
+      "end": 131.74,
+      "score": 0.5844
+    },
+    {
+      "verse": 13,
+      "start": 131.74,
+      "end": 150.3,
+      "score": 0.5813
+    },
+    {
+      "verse": 14,
+      "start": 150.3,
+      "end": 161.54,
+      "score": 0.6009
+    },
+    {
+      "verse": 15,
+      "start": 161.72,
+      "end": 174.9,
+      "score": 0.5589
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JER",
+  "chapter": 41,
+  "file": "A24___41_Jeremiah____ARZVDVO1DA.mp3",
+  "audioHash": "0ad81d33701804fd3e4842b301043ea980560b0423d1edd346dba1e97ab9338b",
+  "textHash": "9631e3aa489f0967f852c06d743eeaf0f4b87b80db04f3a9f104213930810598",
+  "duration": 292.388625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 6.14,
+      "end": 29.9,
+      "score": 0.5953
+    },
+    {
+      "verse": 2,
+      "start": 29.9,
+      "end": 49.28,
+      "score": 0.5951
+    },
+    {
+      "verse": 3,
+      "start": 49.28,
+      "end": 63.68,
+      "score": 0.5923
+    },
+    {
+      "verse": 4,
+      "start": 63.68,
+      "end": 68.76,
+      "score": 0.6527
+    },
+    {
+      "verse": 5,
+      "start": 69.96,
+      "end": 89.48,
+      "score": 0.6107
+    },
+    {
+      "verse": 6,
+      "start": 90.42,
+      "end": 105.5,
+      "score": 0.5722
+    },
+    {
+      "verse": 7,
+      "start": 107.02,
+      "end": 120.54,
+      "score": 0.5666
+    },
+    {
+      "verse": 8,
+      "start": 120.64,
+      "end": 140.0,
+      "score": 0.574
+    },
+    {
+      "verse": 9,
+      "start": 140.92,
+      "end": 158.86,
+      "score": 0.5941
+    },
+    {
+      "verse": 10,
+      "start": 159.96,
+      "end": 184.84,
+      "score": 0.5914
+    },
+    {
+      "verse": 11,
+      "start": 185.56,
+      "end": 196.64,
+      "score": 0.5939
+    },
+    {
+      "verse": 12,
+      "start": 196.74,
+      "end": 209.5,
+      "score": 0.5966
+    },
+    {
+      "verse": 13,
+      "start": 209.5,
+      "end": 219.58,
+      "score": 0.561
+    },
+    {
+      "verse": 14,
+      "start": 220.48,
+      "end": 230.2,
+      "score": 0.5944
+    },
+    {
+      "verse": 15,
+      "start": 230.46,
+      "end": 240.08,
+      "score": 0.5818
+    },
+    {
+      "verse": 16,
+      "start": 240.56,
+      "end": 264.54,
+      "score": 0.6036
+    },
+    {
+      "verse": 17,
+      "start": 264.54,
+      "end": 273.9,
+      "score": 0.598
+    },
+    {
+      "verse": 18,
+      "start": 273.96,
+      "end": 292.3,
+      "score": 0.6129
+    }
+  ]
+}

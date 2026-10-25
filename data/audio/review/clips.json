@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "method": "machine evidence only (scores, review flags, ffmpeg silencedetect); not listening review",
+  "silence": {
+    "noise": "-35dB",
+    "minimumSeconds": 0.3,
+    "toleranceSeconds": 0.1
+  },
+  "clips": {
+    "1CH-14-8-17-ec08a14b95eeefde6bd9.m4a": {
+      "chapterOnly": [
+        13
+      ],
+      "silenceCuts": []
+    },
+    "1CH-6-31-48-8c8e279b9a7d1ab85b76.m4a": {
+      "chapterOnly": [
+        47
+      ],
+      "silenceCuts": []
+    },
+    "1KI-7-13-51-50cd2648bf4c1da413f7.m4a": {
+      "chapterOnly": [
+        43
+      ],
+      "silenceCuts": []
+    },
+    "2CH-6-1-11-ef9f86cfa6a5fb086678.m4a": {
+      "chapterOnly": [
+        7
+      ],
+      "silenceCuts": []
+    },
+    "ACT-12-6-25-ab73e42dd3d489ce4004.m4a": {
+      "chapterOnly": [
+        22
+      ],
+      "silenceCuts": []
+    },
+    "ACT-15-1-21-581d41de52978c124730.m4a": {
+      "chapterOnly": [
+        6
+      ],
+      "silenceCuts": []
+    },
+    "ACT-23-1-21-fe0121d865ae24eb944d.m4a": {
+      "chapterOnly": [
+        13
+      ],
+      "silenceCuts": []
+    },
+    "ACT-25-13-27-1320a406296ea6ec00a4.m4a": {
+      "chapterOnly": [
+        17
+      ],
+      "silenceCuts": []
+    },
+    "ACT-7-1-53-15076f54af3bf4d863d8.m4a": {
+      "chapterOnly": [
+        28
+      ],
+      "silenceCuts": []
+    },
+    "DEU-25-1-4-2028ca3800b9175a8897.m4a": {
+      "chapterOnly": [
+        4
+      ],
+      "silenceCuts": [
+        {
+          "cut": 44.47,
+          "between": [
+            4,
+            5
+          ],
+          "silence": [
+            44.457,
+            45.48
+          ]
+        }
+      ]
+    },
+    "DEU-25-5-19-f7dc8e2a10975a5a151d.m4a": {
+      "chapterOnly": [],
+      "silenceCuts": [
+        {
+          "cut": 44.47,
+          "between": [
+            4,
+            5
+          ],
+          "silence": [
+            44.457,
+            45.48
+          ]
+        }
+      ]
+    },
+    "EZK-33-21-33-f69ccdea3b55a40a0995.m4a": {
+      "chapterOnly": [
+        28
+      ],
+      "silenceCuts": []
+    },
+    "JHN-11-38-57-a69f471e8deecf5dd5c0.m4a": {
+      "chapterOnly": [
+        48
+      ],
+      "silenceCuts": []
+    },
+    "JHN-12-1-11-67559db96d4e8eb080ee.m4a": {
+      "chapterOnly": [
+        5
+      ],
+      "silenceCuts": []
+    },
+    "JHN-4-1-45-6fd83afd86d9da0d712e.m4a": {
+      "chapterOnly": [
+        20
+      ],
+      "silenceCuts": []
+    },
+    "JHN-9-13-41-0b06177287f2f97ae775.m4a": {
+      "chapterOnly": [
+        33
+      ],
+      "silenceCuts": []
+    },
+    "LUK-19-28-40-09ea22cc8d50c26871d6.m4a": {
+      "chapterOnly": [
+        38
+      ],
+      "silenceCuts": []
+    },
+    "LUK-2-1-20-d5259e117280a199408b.m4a": {
+      "chapterOnly": [
+        14
+      ],
+      "silenceCuts": []
+    },
+    "LUK-8-26-39-5b1429f32b919797b832.m4a": {
+      "chapterOnly": [
+        28
+      ],
+      "silenceCuts": []
+    },
+    "MRK-1-21-28-0c93aebee4d4607c4423.m4a": {
+      "chapterOnly": [
+        24
+      ],
+      "silenceCuts": []
+    },
+    "MRK-11-1-11-2611d514c65a9aee47d2.m4a": {
+      "chapterOnly": [
+        10
+      ],
+      "silenceCuts": []
+    },
+    "MRK-5-1-20-c585ea29ed488b7cb2f1.m4a": {
+      "chapterOnly": [
+        9
+      ],
+      "silenceCuts": []
+    },
+    "MRK-6-30-44-2245be441610a47c9520.m4a": {
+      "chapterOnly": [
+        36
+      ],
+      "silenceCuts": []
+    },
+    "MRK-6-7-13-b423ccf19c732ade0600.m4a": {
+      "chapterOnly": [
+        12
+      ],
+      "silenceCuts": []
+    },
+    "NEH-7-4-73-d29b4001cab3bd883047.m4a": {
+      "chapterOnly": [
+        40
+      ],
+      "silenceCuts": []
+    },
+    "NUM-15-1-21-d335914344937ac84b8e.m4a": {
+      "chapterOnly": [
+        7
+      ],
+      "silenceCuts": []
+    },
+    "REV-22-7-21-f7e022eab7a05eed38ba.m4a": {
+      "chapterOnly": [
+        17
+      ],
+      "silenceCuts": []
+    }
+  }
+}

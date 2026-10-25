@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PRO",
+  "chapter": 9,
+  "file": "A20___09_Proverbs____ARZVDVO1DA.mp3",
+  "audioHash": "568857f6553018bf8bcb6b64e643df2804aeb3e2fe71ab20625dff3c383ad92c",
+  "textHash": "b4fa6aae20d7ae027a9cab4533be5afbb1c32e4472f8e92cc01344a60a9c8ae6",
+  "duration": 149.315875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.6,
+      "end": 12.28,
+      "score": 0.5577
+    },
+    {
+      "verse": 2,
+      "start": 12.28,
+      "end": 19.22,
+      "score": 0.5956
+    },
+    {
+      "verse": 3,
+      "start": 19.24,
+      "end": 24.98,
+      "score": 0.5707
+    },
+    {
+      "verse": 4,
+      "start": 24.98,
+      "end": 32.04,
+      "score": 0.5935
+    },
+    {
+      "verse": 5,
+      "start": 32.04,
+      "end": 39.06,
+      "score": 0.6086
+    },
+    {
+      "verse": 6,
+      "start": 39.08,
+      "end": 45.86,
+      "score": 0.5637
+    },
+    {
+      "verse": 7,
+      "start": 45.86,
+      "end": 56.9,
+      "score": 0.6144
+    },
+    {
+      "verse": 8,
+      "start": 58.3,
+      "end": 68.18,
+      "score": 0.5778
+    },
+    {
+      "verse": 9,
+      "start": 68.2,
+      "end": 76.72,
+      "score": 0.6058
+    },
+    {
+      "verse": 10,
+      "start": 77.82,
+      "end": 83.58,
+      "score": 0.579
+    },
+    {
+      "verse": 11,
+      "start": 85.32,
+      "end": 92.56,
+      "score": 0.5346
+    },
+    {
+      "verse": 12,
+      "start": 92.6,
+      "end": 104.56,
+      "score": 0.5744
+    },
+    {
+      "verse": 13,
+      "start": 104.56,
+      "end": 110.34,
+      "score": 0.5919
+    },
+    {
+      "verse": 14,
+      "start": 112.08,
+      "end": 119.36,
+      "score": 0.5911
+    },
+    {
+      "verse": 15,
+      "start": 119.36,
+      "end": 124.16,
+      "score": 0.5525
+    },
+    {
+      "verse": 16,
+      "start": 125.28,
+      "end": 131.9,
+      "score": 0.588
+    },
+    {
+      "verse": 17,
+      "start": 132.96,
+      "end": 138.64,
+      "score": 0.6114
+    },
+    {
+      "verse": 18,
+      "start": 139.26,
+      "end": 146.9,
+      "score": 0.5995
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ECC",
+  "chapter": 8,
+  "file": "A21___08_EcclesiastesARZVDVO1DA.mp3",
+  "audioHash": "062464537945fc0d959403917dc207b08e1fabc7147d54b91bf0f21e097214b4",
+  "textHash": "473ba9d7d0770a1499d69b0481d2c203c1a4a921bfcc219ccaca0bd02d8ff0ec",
+  "duration": 263.889,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.44,
+      "end": 20.66,
+      "score": 0.5901
+    },
+    {
+      "verse": 2,
+      "start": 20.68,
+      "end": 29.84,
+      "score": 0.603
+    },
+    {
+      "verse": 3,
+      "start": 29.84,
+      "end": 41.16,
+      "score": 0.623
+    },
+    {
+      "verse": 4,
+      "start": 41.18,
+      "end": 51.62,
+      "score": 0.6032
+    },
+    {
+      "verse": 5,
+      "start": 51.62,
+      "end": 62.44,
+      "score": 0.6359
+    },
+    {
+      "verse": 6,
+      "start": 62.44,
+      "end": 69.88,
+      "score": 0.6176
+    },
+    {
+      "verse": 7,
+      "start": 71.12,
+      "end": 80.18,
+      "score": 0.5507
+    },
+    {
+      "verse": 8,
+      "start": 80.7,
+      "end": 97.74,
+      "score": 0.6413
+    },
+    {
+      "verse": 9,
+      "start": 98.74,
+      "end": 113.24,
+      "score": 0.5977
+    },
+    {
+      "verse": 10,
+      "start": 114.68,
+      "end": 131.16,
+      "score": 0.6148
+    },
+    {
+      "verse": 11,
+      "start": 132.5,
+      "end": 144.64,
+      "score": 0.5998
+    },
+    {
+      "verse": 12,
+      "start": 144.64,
+      "end": 164.12,
+      "score": 0.6007
+    },
+    {
+      "verse": 13,
+      "start": 164.26,
+      "end": 176.56,
+      "score": 0.605
+    },
+    {
+      "verse": 14,
+      "start": 176.58,
+      "end": 197.46,
+      "score": 0.6063
+    },
+    {
+      "verse": 15,
+      "start": 198.56,
+      "end": 221.5,
+      "score": 0.5989
+    },
+    {
+      "verse": 16,
+      "start": 222.96,
+      "end": 237.02,
+      "score": 0.6008
+    },
+    {
+      "verse": 17,
+      "start": 238.3,
+      "end": 263.84,
+      "score": 0.6138
+    }
+  ]
+}

@@ -38,8 +38,12 @@
   background: var(--olive);
   border-radius: 50%;
 }
-.audio-player .audio-play:hover {
+.audio-player .audio-play:hover:not([aria-disabled="true"]) {
   background: var(--olive-hover);
+}
+.audio-player .audio-play[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .audio-status {
   max-width: 800px;
@@ -100,7 +104,7 @@
     transform 80ms ease,
     background 120ms ease;
 }
-.audio-player button:active:not(:disabled) {
+.audio-player button:active:not(:disabled, [aria-disabled="true"]) {
   transform: scale(0.97);
 }
 @media (max-width: 280px) {

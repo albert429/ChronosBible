@@ -1,6 +1,7 @@
 /** Public app credits and the provenance of the bundled Scripture edition. */
 export const APP_INFO = {
-  title: "العهد الجديد بالترتيب الزمني",
+  title: "الكتاب المقدس",
+  description: "قراءة واستماع، بالترتيب المعتاد أو الزمني",
   church: "كنيسة الإخوة بخلوصي",
   email: "albertalfred429@gmail.com",
   githubName: "albert429/ChronosBible",

@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "HOS",
+  "chapter": 3,
+  "file": "A28___03_Hosea_______ARZVDVO1DA.mp3",
+  "audioHash": "edd0e3425c48c19551f6660f1e347087d963da09e40838c97eccc91f03c6427b",
+  "textHash": "5999e1d95c50f27208c792570b8c9b33848bce986c5062586ce1d5a3e5f18e00",
+  "duration": 73.6914375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 4.84,
+      "end": 22.42,
+      "score": 0.6359
+    },
+    {
+      "verse": 2,
+      "start": 23.4,
+      "end": 30.9,
+      "score": 0.6112
+    },
+    {
+      "verse": 3,
+      "start": 31.96,
+      "end": 42.22,
+      "score": 0.5753
+    },
+    {
+      "verse": 4,
+      "start": 43.08,
+      "end": 58.26,
+      "score": 0.6028
+    },
+    {
+      "verse": 5,
+      "start": 58.32,
+      "end": 71.54,
+      "score": 0.6037
+    }
+  ]
+}

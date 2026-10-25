@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "JDG",
+  "chapter": 12,
+  "file": "A07___12_Judges______ARZVDVO1DA.mp3",
+  "audioHash": "a72636e2029fe2b3d3a72621f057e690f96e54543c9ed24d92bf9404238c1b98",
+  "textHash": "24197cefa7fd53e7b17b203acfe73e7a1b05a3ec1f4775c13d663a7ce8ace4eb",
+  "duration": 194.2726875,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.52,
+      "end": 20.7,
+      "score": 0.5784
+    },
+    {
+      "verse": 2,
+      "start": 21.82,
+      "end": 32.82,
+      "score": 0.6
+    },
+    {
+      "verse": 3,
+      "start": 34.02,
+      "end": 48.44,
+      "score": 0.5923
+    },
+    {
+      "verse": 4,
+      "start": 49.76,
+      "end": 66.06,
+      "score": 0.5774
+    },
+    {
+      "verse": 5,
+      "start": 67.1,
+      "end": 86.16,
+      "score": 0.5905
+    },
+    {
+      "verse": 6,
+      "start": 86.94,
+      "end": 109.54,
+      "score": 0.6011
+    },
+    {
+      "verse": 7,
+      "start": 111.36,
+      "end": 123.26,
+      "score": 0.5958
+    },
+    {
+      "verse": 8,
+      "start": 123.4,
+      "end": 127.54,
+      "score": 0.6088
+    },
+    {
+      "verse": 9,
+      "start": 128.82,
+      "end": 143.34,
+      "score": 0.6251
+    },
+    {
+      "verse": 10,
+      "start": 144.46,
+      "end": 147.92,
+      "score": 0.5598
+    },
+    {
+      "verse": 11,
+      "start": 149.3,
+      "end": 157.2,
+      "score": 0.604
+    },
+    {
+      "verse": 12,
+      "start": 157.2,
+      "end": 164.46,
+      "score": 0.5609
+    },
+    {
+      "verse": 13,
+      "start": 164.54,
+      "end": 170.78,
+      "score": 0.5759
+    },
+    {
+      "verse": 14,
+      "start": 171.08,
+      "end": 181.28,
+      "score": 0.6387
+    },
+    {
+      "verse": 15,
+      "start": 182.5,
+      "end": 192.32,
+      "score": 0.6022
+    }
+  ]
+}

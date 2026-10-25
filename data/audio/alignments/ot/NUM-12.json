@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "NUM",
+  "chapter": 12,
+  "file": "A04___12_Numbers_____ARZVDVO1DA.mp3",
+  "audioHash": "57751682c7a9f8d93c49b5aedd3098c11b305dba8437db282eb386d4392759aa",
+  "textHash": "1e6135c201c44744fe88a3ce83045bba3a459f03e37c649ab0f54b9916db29b9",
+  "duration": 159.216375,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.4,
+      "end": 15.32,
+      "score": 0.5981
+    },
+    {
+      "verse": 2,
+      "start": 15.78,
+      "end": 23.4,
+      "score": 0.5896
+    },
+    {
+      "verse": 3,
+      "start": 24.06,
+      "end": 31.98,
+      "score": 0.6464
+    },
+    {
+      "verse": 4,
+      "start": 32.68,
+      "end": 43.76,
+      "score": 0.62
+    },
+    {
+      "verse": 5,
+      "start": 44.6,
+      "end": 52.96,
+      "score": 0.5702
+    },
+    {
+      "verse": 6,
+      "start": 53.74,
+      "end": 64.3,
+      "score": 0.593
+    },
+    {
+      "verse": 7,
+      "start": 65.08,
+      "end": 70.6,
+      "score": 0.6034
+    },
+    {
+      "verse": 8,
+      "start": 71.72,
+      "end": 85.28,
+      "score": 0.6083
+    },
+    {
+      "verse": 9,
+      "start": 85.64,
+      "end": 89.38,
+      "score": 0.5989
+    },
+    {
+      "verse": 10,
+      "start": 90.74,
+      "end": 101.86,
+      "score": 0.584
+    },
+    {
+      "verse": 11,
+      "start": 101.86,
+      "end": 111.86,
+      "score": 0.5556
+    },
+    {
+      "verse": 12,
+      "start": 111.88,
+      "end": 119.12,
+      "score": 0.5893
+    },
+    {
+      "verse": 13,
+      "start": 119.88,
+      "end": 125.34,
+      "score": 0.6442
+    },
+    {
+      "verse": 14,
+      "start": 126.34,
+      "end": 141.04,
+      "score": 0.5978
+    },
+    {
+      "verse": 15,
+      "start": 141.68,
+      "end": 149.66,
+      "score": 0.5981
+    },
+    {
+      "verse": 16,
+      "start": 150.56,
+      "end": 157.02,
+      "score": 0.5933
+    }
+  ]
+}

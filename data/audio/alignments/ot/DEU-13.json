@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "DEU",
+  "chapter": 13,
+  "file": "A05___13_Deuteronomy_ARZVDVO1DA.mp3",
+  "audioHash": "d9e7201b750ca79bba3af9880654bada5014a653c2994450ec5093476e2a6f06",
+  "textHash": "c072552ffb789d1c2da43f96e7120ab86ce06bab84ace9c60c5bed1f6fc6b029",
+  "duration": 241.6588125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 3.76,
+      "end": 12.94,
+      "score": 0.6322
+    },
+    {
+      "verse": 2,
+      "start": 13.86,
+      "end": 25.72,
+      "score": 0.6169
+    },
+    {
+      "verse": 3,
+      "start": 26.22,
+      "end": 43.24,
+      "score": 0.599
+    },
+    {
+      "verse": 4,
+      "start": 44.12,
+      "end": 60.02,
+      "score": 0.5557
+    },
+    {
+      "verse": 5,
+      "start": 60.12,
+      "end": 84.62,
+      "score": 0.5989
+    },
+    {
+      "verse": 6,
+      "start": 85.6,
+      "end": 103.5,
+      "score": 0.6152
+    },
+    {
+      "verse": 7,
+      "start": 103.88,
+      "end": 113.08,
+      "score": 0.6202
+    },
+    {
+      "verse": 8,
+      "start": 113.7,
+      "end": 121.8,
+      "score": 0.5959
+    },
+    {
+      "verse": 9,
+      "start": 122.06,
+      "end": 130.5,
+      "score": 0.6279
+    },
+    {
+      "verse": 10,
+      "start": 131.44,
+      "end": 143.22,
+      "score": 0.5705
+    },
+    {
+      "verse": 11,
+      "start": 143.22,
+      "end": 152.64,
+      "score": 0.6182
+    },
+    {
+      "verse": 12,
+      "start": 152.76,
+      "end": 159.76,
+      "score": 0.5946
+    },
+    {
+      "verse": 13,
+      "start": 160.68,
+      "end": 173.38,
+      "score": 0.5965
+    },
+    {
+      "verse": 14,
+      "start": 173.38,
+      "end": 183.54,
+      "score": 0.6008
+    },
+    {
+      "verse": 15,
+      "start": 184.08,
+      "end": 196.38,
+      "score": 0.5773
+    },
+    {
+      "verse": 16,
+      "start": 196.38,
+      "end": 213.16,
+      "score": 0.57
+    },
+    {
+      "verse": 17,
+      "start": 213.28,
+      "end": 226.68,
+      "score": 0.5776
+    },
+    {
+      "verse": 18,
+      "start": 227.48,
+      "end": 241.62,
+      "score": 0.5837
+    }
+  ]
+}

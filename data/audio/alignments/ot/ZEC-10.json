@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "ZEC",
+  "chapter": 10,
+  "file": "A38___10_Zechariah___ARZVDVO1DA.mp3",
+  "audioHash": "093751b1b88e5c772436e4ad9f9fd64bde0d3c0f854e7f227c6eda798c6dbb56",
+  "textHash": "3f1bb2539ab40e79a25cd49d3a2058298c4bd00a50fa8074e138f7383e0f715b",
+  "duration": 154.8278125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.2,
+      "end": 17.2,
+      "score": 0.6213
+    },
+    {
+      "verse": 2,
+      "start": 18.24,
+      "end": 33.94,
+      "score": 0.5937
+    },
+    {
+      "verse": 3,
+      "start": 35.42,
+      "end": 48.66,
+      "score": 0.578
+    },
+    {
+      "verse": 4,
+      "start": 50.08,
+      "end": 58.06,
+      "score": 0.6276
+    },
+    {
+      "verse": 5,
+      "start": 59.5,
+      "end": 71.52,
+      "score": 0.6423
+    },
+    {
+      "verse": 6,
+      "start": 71.68,
+      "end": 88.02,
+      "score": 0.5636
+    },
+    {
+      "verse": 7,
+      "start": 88.98,
+      "end": 100.48,
+      "score": 0.5905
+    },
+    {
+      "verse": 8,
+      "start": 101.34,
+      "end": 108.42,
+      "score": 0.5947
+    },
+    {
+      "verse": 9,
+      "start": 109.66,
+      "end": 118.4,
+      "score": 0.6107
+    },
+    {
+      "verse": 10,
+      "start": 119.72,
+      "end": 130.16,
+      "score": 0.6019
+    },
+    {
+      "verse": 11,
+      "start": 131.46,
+      "end": 144.16,
+      "score": 0.5965
+    },
+    {
+      "verse": 12,
+      "start": 145.56,
+      "end": 152.5,
+      "score": 0.5943
+    }
+  ]
+}

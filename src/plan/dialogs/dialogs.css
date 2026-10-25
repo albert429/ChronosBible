@@ -50,13 +50,3 @@
   resize: vertical;
   line-height: 1.9;
 }
-.profile-backup summary {
-  min-height: 44px;
-  align-content: center;
-  color: var(--muted);
-  font-size: 13px;
-  cursor: pointer;
-}
-.profile-backup .privacy-note {
-  margin-block: 12px 20px;
-}

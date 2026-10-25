@@ -13,6 +13,11 @@
   --ai-teal: #1f6b66;
   --ai-plum: #7a4590;
   --ai-glow: rgba(200, 149, 43, 0.35);
+  /* Reading streaks: decoration only, never text colours. */
+  --flame: #c2410c;
+  --flame-glow: #f59e0b;
+  --flame-soft: #fbeee4;
+  --flame-line: #f0c9ad;
   --button-ink: #fffefa;
   --error-bg: #faede7;
   --error-ink: #8a382c;
@@ -33,6 +38,10 @@
   --ai-teal: #6cc3bb;
   --ai-plum: #c39ad6;
   --ai-glow: rgba(230, 194, 107, 0.22);
+  --flame: #fb923c;
+  --flame-glow: #fcd34d;
+  --flame-soft: #3a2c22;
+  --flame-line: #6b4a33;
   --button-ink: #1d281e;
   --error-bg: #442d28;
   --error-ink: #ffcabd;

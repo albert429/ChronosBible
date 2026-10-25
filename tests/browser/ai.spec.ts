@@ -18,7 +18,7 @@ import {
   study,
   tap,
 } from "./helpers";
-import { PROGRESS_KEY } from "../../src/plan/progress.ts";
+import { STATE_KEY } from "../../src/plan/progress.ts";
 import { AI_KEY, AI_URL, STUB_URL } from "./ai-stub";
 
 const GEMMA = "google/gemma-4-31b-it:free";
@@ -663,7 +663,7 @@ test("turning the feature off clears its data until it is turned on again", asyn
   expect(await stored(page, CACHE)).not.toBeNull();
   const progress = await page.evaluate(
     (k) => localStorage.getItem(k),
-    PROGRESS_KEY,
+    STATE_KEY,
   );
 
   await details(page).click();
@@ -677,9 +677,9 @@ test("turning the feature off clears its data until it is turned on again", asyn
   expect(await stored(page, CACHE)).toBeNull();
   expect(await stored(page, OFF)).toBe(1);
   expect(await stored(page, USAGE)).toMatchObject({ n: 1, a: 1 });
-  expect(
-    await page.evaluate((k) => localStorage.getItem(k), PROGRESS_KEY),
-  ).toBe(progress);
+  expect(await page.evaluate((k) => localStorage.getItem(k), STATE_KEY)).toBe(
+    progress,
+  );
   await page.reload();
   await ready(page);
   await openCard(page);
@@ -876,17 +876,17 @@ test("a numbered list split by a paragraph keeps its numbering", async ({
   await expect(lists.nth(1)).toHaveAttribute("start", "3");
 });
 
-test("About the app discloses the AI service", async ({ page }) => {
+test("عن التطبيق (About) discloses the AI service", async ({ page }) => {
   await seedAi(page);
   await page.goto("/");
   await ready(page);
   await page.getByRole("button", { name: "فتح القائمة", exact: true }).click();
   await page
     .getByRole("dialog", { name: "القائمة", exact: true })
-    .getByRole("button", { name: "About the app" })
+    .getByRole("button", { name: "عن التطبيق" })
     .click();
   const about = page.getByRole("dialog", {
-    name: "About the app",
+    name: "عن التطبيق",
     exact: true,
   });
   await expect(about).toContainText("شرح الآيات بالذكاء الاصطناعي اختياري");

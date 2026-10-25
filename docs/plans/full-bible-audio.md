@@ -6,7 +6,47 @@
 > `https://audio.chronosbible.com`. See [docs/audio.md](../audio.md) for the
 > current deployment.
 
-Feasibility study and implementation plan, 11 October 2026. Planning only.
+Feasibility study and implementation plan, 11 October 2026; implementation
+status below as of 16 October 2026.
+
+## Implementation status — 16 October 2026 (`codex/claude-bible-integration`)
+
+Built and tested (unit, Python, Chromium and WebKit; synthetic media in browsers):
+
+- Both menu modes; all 66 books and 1,189 chapters from the pinned eBible
+  source with headings, Psalm titles, paragraphs and diacritics; every NT
+  verse equal to the plan text. Each mode remembers its place (plan days per
+  reader), static chapter links, Back/Forward, endpoints at Genesis 1 and
+  Revelation 22. Progress and backup formats are unchanged.
+- NT study through the plan's study data; OT verses offer no invented study.
+- Canonical audio for all 1,189 chapters: 260 NT chapters with verse timing
+  and an explicit opening interval, 929 OT chapters with honest chapter-only
+  timing. All manifests, fingerprints, media and original source hashes verify.
+  Optional continuous listening on natural end only, one audio element, stopping
+  after Revelation 22; recording-bound resume.
+- Offline spoken-reference assembly with exact sample offsets, explicit reference
+  intervals, intro-only loudness matching and immutable fingerprints, verified on
+  pilot days 1, 32 and 150 with synthetic tones in place of a voice.
+- Hosting: `/audio/chapters/assets/` in the contract, Vercel rewrite and
+  `no-store` CDN header, Pages routes/headers and byte-exact `206` ranges; the
+  largest file (Psalm 119, 7.31 MiB) is under the 8 MiB limit.
+
+Open gates — not complete:
+
+1. **Voice and wording.** No announcement voice is approved (MMS rejected;
+   later auditions await the owner). The 537 references are unreviewed drafts.
+   No announced daily audio has been published, and the 150 published day
+   manifests are unchanged.
+2. **OT verse timing.** A five-chapter benchmark aligned at ~32× real time with
+   no low scores; all 929 chapters would take ~2.4 hours and then need listening
+   review. Not run without the owner's go-ahead.
+3. **Listening review.** NT timing review queue, announcement transitions on the
+   pilot days, OT boundaries if aligned.
+4. **Physical devices.** Background and locked-screen continuation on iOS and
+   Android; desktop emulation cannot certify it.
+5. **Rights and deployment.** Confirm reuse terms for both recordings; upload
+   chapter media to the audio host before releasing manifests that reference it;
+   compare performance against the refactor baseline.
 
 ## Decisions and findings
 

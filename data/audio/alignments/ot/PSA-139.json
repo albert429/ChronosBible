@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 139,
+  "file": "A19__139_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "2b5205fecbae8866376b5122261b24b334b7a71ecd972d409a60d99ff53b9f58",
+  "textHash": "6663037731350e36300787ceae31e9614cc75f4d67282e1d15c14d91c894999b",
+  "duration": 201.2735,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 10.46,
+      "end": 14.44,
+      "score": 0.592
+    },
+    {
+      "verse": 2,
+      "start": 15.24,
+      "end": 20.3,
+      "score": 0.5878
+    },
+    {
+      "verse": 3,
+      "start": 21.36,
+      "end": 27.22,
+      "score": 0.5544
+    },
+    {
+      "verse": 4,
+      "start": 27.22,
+      "end": 35.02,
+      "score": 0.5513
+    },
+    {
+      "verse": 5,
+      "start": 35.02,
+      "end": 43.4,
+      "score": 0.6098
+    },
+    {
+      "verse": 6,
+      "start": 43.42,
+      "end": 50.68,
+      "score": 0.5807
+    },
+    {
+      "verse": 7,
+      "start": 50.8,
+      "end": 56.58,
+      "score": 0.6039
+    },
+    {
+      "verse": 8,
+      "start": 56.66,
+      "end": 64.94,
+      "score": 0.6009
+    },
+    {
+      "verse": 9,
+      "start": 64.98,
+      "end": 71.18,
+      "score": 0.5982
+    },
+    {
+      "verse": 10,
+      "start": 72.06,
+      "end": 78.68,
+      "score": 0.5664
+    },
+    {
+      "verse": 11,
+      "start": 78.8,
+      "end": 84.4,
+      "score": 0.5932
+    },
+    {
+      "verse": 12,
+      "start": 85.66,
+      "end": 95.12,
+      "score": 0.6072
+    },
+    {
+      "verse": 13,
+      "start": 96.48,
+      "end": 102.96,
+      "score": 0.5556
+    },
+    {
+      "verse": 14,
+      "start": 103.92,
+      "end": 115.2,
+      "score": 0.5767
+    },
+    {
+      "verse": 15,
+      "start": 116.58,
+      "end": 125.38,
+      "score": 0.5986
+    },
+    {
+      "verse": 16,
+      "start": 125.38,
+      "end": 135.56,
+      "score": 0.5782
+    },
+    {
+      "verse": 17,
+      "start": 135.62,
+      "end": 142.78,
+      "score": 0.6325
+    },
+    {
+      "verse": 18,
+      "start": 142.82,
+      "end": 153.12,
+      "score": 0.566
+    },
+    {
+      "verse": 19,
+      "start": 153.12,
+      "end": 159.78,
+      "score": 0.572
+    },
+    {
+      "verse": 20,
+      "start": 161.6,
+      "end": 169.28,
+      "score": 0.5852
+    },
+    {
+      "verse": 21,
+      "start": 169.3,
+      "end": 175.56,
+      "score": 0.5702
+    },
+    {
+      "verse": 22,
+      "start": 175.56,
+      "end": 180.46,
+      "score": 0.5894
+    },
+    {
+      "verse": 23,
+      "start": 182.36,
+      "end": 188.82,
+      "score": 0.6494
+    },
+    {
+      "verse": 24,
+      "start": 190.24,
+      "end": 198.76,
+      "score": 0.631
+    }
+  ]
+}

@@ -4,15 +4,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { AUDIO_BASE_URL } from "../scripts/cloudflare-app.mjs";
 import {
   AUDIO_HOST_ORIGIN,
-  AUDIO_MEDIA_PREFIX,
+  AUDIO_MEDIA_PREFIXES,
 } from "../src/audio/contract.ts";
-
-// Every media namespace the app has served; old URLs must keep redirecting.
-const AUDIO_MEDIA_PREFIXES = [
-  AUDIO_MEDIA_PREFIX,
-  "/audio/chapters/assets/",
-  "/audio/clips/",
-];
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));

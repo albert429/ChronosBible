@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "RUT",
+  "chapter": 1,
+  "file": "A08___01_Ruth________ARZVDVO1DA.mp3",
+  "audioHash": "7afe6f433e4eb36b380f922898136349ebb77a50cac95fe2eb8d38b09450aedb",
+  "textHash": "7a9e04e1924205820c3b7b882dec4e7de199fcac543596538161b6ba8ed9fe15",
+  "duration": 301.9755625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.86,
+      "end": 23.32,
+      "score": 0.5924
+    },
+    {
+      "verse": 2,
+      "start": 23.32,
+      "end": 39.4,
+      "score": 0.5654
+    },
+    {
+      "verse": 3,
+      "start": 39.42,
+      "end": 44.76,
+      "score": 0.5643
+    },
+    {
+      "verse": 4,
+      "start": 45.64,
+      "end": 58.58,
+      "score": 0.6029
+    },
+    {
+      "verse": 5,
+      "start": 59.46,
+      "end": 68.0,
+      "score": 0.5704
+    },
+    {
+      "verse": 6,
+      "start": 69.16,
+      "end": 81.24,
+      "score": 0.584
+    },
+    {
+      "verse": 7,
+      "start": 82.42,
+      "end": 91.44,
+      "score": 0.6118
+    },
+    {
+      "verse": 8,
+      "start": 92.22,
+      "end": 107.78,
+      "score": 0.5752
+    },
+    {
+      "verse": 9,
+      "start": 108.98,
+      "end": 123.0,
+      "score": 0.5916
+    },
+    {
+      "verse": 10,
+      "start": 123.64,
+      "end": 129.22,
+      "score": 0.5672
+    },
+    {
+      "verse": 11,
+      "start": 129.22,
+      "end": 140.86,
+      "score": 0.5295
+    },
+    {
+      "verse": 12,
+      "start": 141.96,
+      "end": 159.18,
+      "score": 0.577
+    },
+    {
+      "verse": 13,
+      "start": 160.18,
+      "end": 180.44,
+      "score": 0.5766
+    },
+    {
+      "verse": 14,
+      "start": 180.44,
+      "end": 191.8,
+      "score": 0.5884
+    },
+    {
+      "verse": 15,
+      "start": 191.94,
+      "end": 203.28,
+      "score": 0.5689
+    },
+    {
+      "verse": 16,
+      "start": 203.28,
+      "end": 217.98,
+      "score": 0.5546
+    },
+    {
+      "verse": 17,
+      "start": 218.78,
+      "end": 231.78,
+      "score": 0.57
+    },
+    {
+      "verse": 18,
+      "start": 231.78,
+      "end": 239.4,
+      "score": 0.6075
+    },
+    {
+      "verse": 19,
+      "start": 239.48,
+      "end": 254.96,
+      "score": 0.5678
+    },
+    {
+      "verse": 20,
+      "start": 255.68,
+      "end": 267.74,
+      "score": 0.5401
+    },
+    {
+      "verse": 21,
+      "start": 269.02,
+      "end": 284.08,
+      "score": 0.5542
+    },
+    {
+      "verse": 22,
+      "start": 286.24,
+      "end": 300.24,
+      "score": 0.5865
+    }
+  ]
+}

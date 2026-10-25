@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "HOS",
+  "chapter": 13,
+  "file": "A28___13_Hosea_______ARZVDVO1DA.mp3",
+  "audioHash": "fcaf04f3656add80d12c87a8f2396926a6c1d00cf9d52cfd425cbff47cecfedd",
+  "textHash": "9b1522807cd3ba84ef1d35b22b58b866d99d07a61c46b2e212eb5d2d62318671",
+  "duration": 181.028625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.26,
+      "end": 14.0,
+      "score": 0.6107
+    },
+    {
+      "verse": 2,
+      "start": 14.86,
+      "end": 36.54,
+      "score": 0.6187
+    },
+    {
+      "verse": 3,
+      "start": 36.54,
+      "end": 48.52,
+      "score": 0.5887
+    },
+    {
+      "verse": 4,
+      "start": 49.7,
+      "end": 58.78,
+      "score": 0.5894
+    },
+    {
+      "verse": 5,
+      "start": 59.76,
+      "end": 65.02,
+      "score": 0.6198
+    },
+    {
+      "verse": 6,
+      "start": 65.02,
+      "end": 74.06,
+      "score": 0.5713
+    },
+    {
+      "verse": 7,
+      "start": 75.34,
+      "end": 80.32,
+      "score": 0.5948
+    },
+    {
+      "verse": 8,
+      "start": 81.2,
+      "end": 93.24,
+      "score": 0.61
+    },
+    {
+      "verse": 9,
+      "start": 94.2,
+      "end": 99.88,
+      "score": 0.5907
+    },
+    {
+      "verse": 10,
+      "start": 100.0,
+      "end": 109.84,
+      "score": 0.5676
+    },
+    {
+      "verse": 11,
+      "start": 109.86,
+      "end": 115.76,
+      "score": 0.5815
+    },
+    {
+      "verse": 12,
+      "start": 117.12,
+      "end": 121.98,
+      "score": 0.4748
+    },
+    {
+      "verse": 13,
+      "start": 123.06,
+      "end": 131.92,
+      "score": 0.629
+    },
+    {
+      "verse": 14,
+      "start": 132.94,
+      "end": 147.96,
+      "score": 0.5805
+    },
+    {
+      "verse": 15,
+      "start": 147.96,
+      "end": 164.68,
+      "score": 0.61
+    },
+    {
+      "verse": 16,
+      "start": 166.38,
+      "end": 181.0,
+      "score": 0.5754
+    }
+  ]
+}

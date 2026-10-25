@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 87,
+  "file": "A19__087_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "5ddd398399bc0e69e5e44a5659662140922ff9699193f271e1fc770a626b1edc",
+  "textHash": "9e8cf5f9af3f2c9e4aef0480dbe8a6ca59ad27e507187a48cff37623d7c5e8ee",
+  "duration": 61.466125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 8.48,
+      "end": 12.12,
+      "score": 0.6104
+    },
+    {
+      "verse": 2,
+      "start": 12.84,
+      "end": 19.94,
+      "score": 0.5656
+    },
+    {
+      "verse": 3,
+      "start": 20.2,
+      "end": 24.92,
+      "score": 0.5404
+    },
+    {
+      "verse": 4,
+      "start": 24.92,
+      "end": 35.1,
+      "score": 0.5724
+    },
+    {
+      "verse": 5,
+      "start": 35.1,
+      "end": 46.92,
+      "score": 0.6036
+    },
+    {
+      "verse": 6,
+      "start": 46.94,
+      "end": 54.06,
+      "score": 0.5282
+    },
+    {
+      "verse": 7,
+      "start": 54.14,
+      "end": 59.12,
+      "score": 0.583
+    }
+  ]
+}

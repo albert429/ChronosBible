@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { STATE_KEY } from "../../src/plan/progress.ts";
 import {
+  MODES,
   blockFonts,
   chooseFromMenu,
+  openPlanCalendar,
   createGate,
   nextDay,
   planDay,
@@ -14,6 +17,25 @@ import {
 } from "./helpers";
 
 test.describe("loading and caching", () => {
+  test("a fresh visitor loads only Genesis 1: no plan, chronology, audio or About logo", async ({
+    page,
+  }) => {
+    await stubConnection(page, { saveData: true });
+    const requests = recordRequests(page, (path) =>
+      /^\/(bible|readings|chronology|audio|study)\/|church-logo|About|ChronologyPanel|AudioPlayer/.test(
+        path,
+      ),
+    );
+    await page.goto("/");
+    await ready(page);
+    await expect(page.getByRole("article")).toHaveAttribute(
+      "data-reading",
+      "bible:GEN:1",
+    );
+    await page.waitForLoadState("networkidle");
+    expect(requests).toEqual(["/bible/GEN/1.json"]);
+  });
+
   test("returning reader fetches their day first; revisits and calendar are cached", async ({
     page,
   }) => {
@@ -35,11 +57,11 @@ test.describe("loading and caching", () => {
     expect(requests.filter((url) => url === "/readings/10.json")).toHaveLength(
       1,
     );
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await expect(page.locator(".calendar-day")).toHaveCount(30);
-    await chooseFromMenu(page, "القراءة اليومية");
+    await chooseFromMenu(page, MODES.plan);
     await ready(page);
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await expect(page.locator(".calendar-day")).toHaveCount(30);
     expect(requests.filter((url) => url.endsWith("plan.json"))).toHaveLength(1);
   });
@@ -59,15 +81,15 @@ test.describe("loading and caching", () => {
         ? route.fulfill({ status: 503, body: "failed" })
         : route.continue(),
     );
-    await page.goto("/");
+    await page.goto("/?day=1");
     await expect(page.getByRole("alert")).toContainText("تعذر تحميل القراءة");
     await expect(
       page.getByRole("button", { name: "تمت القراءة", exact: true }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     failDay = false;
     await page.getByRole("button", { name: "إعادة المحاولة" }).click();
     await ready(page);
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await expect(page.getByRole("alert")).toContainText(
       "تعذر تحميل خطة القراءة",
     );
@@ -84,7 +106,7 @@ test.describe("loading and caching", () => {
       await gate.opened;
       await route.continue();
     });
-    await page.goto("/");
+    await page.goto("/?day=1");
     await ready(page);
     const requested = page.waitForRequest("**/readings/2.json");
     await nextDay(page).click();
@@ -107,7 +129,7 @@ test.describe("prefetch", () => {
   }) => {
     const requests = recordRequests(page);
     const fonts = await blockFonts(page);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/?day=1", { waitUntil: "domcontentloaded" });
     await expect(page.locator(".scripture")).toBeVisible();
     // A quiet period: prefetch is scheduled 500ms after the fonts settle, so
     // wait it out to prove that nothing is requested while they are held.
@@ -166,7 +188,7 @@ test.describe("prefetch", () => {
         : route.continue(),
     );
     const failed = page.waitForResponse("**/readings/2.json");
-    await page.goto("/");
+    await page.goto("/?day=1");
     await ready(page);
     await (await failed).finished();
     await page.evaluate(
@@ -189,8 +211,11 @@ test.describe("prefetch", () => {
       { effectiveType: "3g" },
     ]) {
       await stubConnection(page, connection);
+      // Each connection is a first visit: forget the place the last one opened.
+      if (page.url().startsWith("http"))
+        await page.evaluate((key) => localStorage.removeItem(key), STATE_KEY);
       const requests = readingRequests(page);
-      await page.goto("/");
+      await page.goto("/?day=1");
       await ready(page);
       // A quiet period: allowed prefetch would fire 500ms after the fonts settle.
       await page.waitForTimeout(700);
@@ -204,9 +229,9 @@ test.describe("prefetch", () => {
   test("leaving reading cancels queued prefetch", async ({ page }) => {
     const requests = readingRequests(page);
     const fonts = await blockFonts(page);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/?day=1", { waitUntil: "domcontentloaded" });
     await expect(page.locator(".scripture")).toBeVisible();
-    await chooseFromMenu(page, "رحلتي في ١٥٠ يومًا");
+    await openPlanCalendar(page);
     await expect(page.locator(".calendar-day")).toHaveCount(30);
     fonts.open();
     await page.evaluate(() => document.fonts.ready);

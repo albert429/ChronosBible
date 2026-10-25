@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "LEV",
+  "chapter": 4,
+  "file": "A03___04_Leviticus___ARZVDVO1DA.mp3",
+  "audioHash": "8d6624caada6554e637b28b19ef83339b0187fadab27e68b227dd266eca6d52f",
+  "textHash": "42e31fcf4495fb28830f8ac4868a66bb5c70332efdd274af9e24c0553480455c",
+  "duration": 365.27025,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.56,
+      "end": 7.56,
+      "score": 0.6143
+    },
+    {
+      "verse": 2,
+      "start": 8.92,
+      "end": 22.78,
+      "score": 0.6505
+    },
+    {
+      "verse": 3,
+      "start": 23.72,
+      "end": 35.32,
+      "score": 0.6285
+    },
+    {
+      "verse": 4,
+      "start": 36.22,
+      "end": 46.7,
+      "score": 0.6247
+    },
+    {
+      "verse": 5,
+      "start": 46.72,
+      "end": 52.44,
+      "score": 0.635
+    },
+    {
+      "verse": 6,
+      "start": 53.3,
+      "end": 62.52,
+      "score": 0.61
+    },
+    {
+      "verse": 7,
+      "start": 62.52,
+      "end": 78.88,
+      "score": 0.6379
+    },
+    {
+      "verse": 8,
+      "start": 78.88,
+      "end": 88.54,
+      "score": 0.6498
+    },
+    {
+      "verse": 9,
+      "start": 88.56,
+      "end": 96.7,
+      "score": 0.6353
+    },
+    {
+      "verse": 10,
+      "start": 96.7,
+      "end": 104.36,
+      "score": 0.6144
+    },
+    {
+      "verse": 11,
+      "start": 104.36,
+      "end": 110.46,
+      "score": 0.5933
+    },
+    {
+      "verse": 12,
+      "start": 110.74,
+      "end": 122.56,
+      "score": 0.6115
+    },
+    {
+      "verse": 13,
+      "start": 122.64,
+      "end": 137.88,
+      "score": 0.5989
+    },
+    {
+      "verse": 14,
+      "start": 138.86,
+      "end": 150.24,
+      "score": 0.6023
+    },
+    {
+      "verse": 15,
+      "start": 151.14,
+      "end": 159.34,
+      "score": 0.6434
+    },
+    {
+      "verse": 16,
+      "start": 159.34,
+      "end": 163.9,
+      "score": 0.6312
+    },
+    {
+      "verse": 17,
+      "start": 164.8,
+      "end": 172.58,
+      "score": 0.5942
+    },
+    {
+      "verse": 18,
+      "start": 172.58,
+      "end": 185.24,
+      "score": 0.6233
+    },
+    {
+      "verse": 19,
+      "start": 186.12,
+      "end": 190.36,
+      "score": 0.6086
+    },
+    {
+      "verse": 20,
+      "start": 191.18,
+      "end": 200.58,
+      "score": 0.5984
+    },
+    {
+      "verse": 21,
+      "start": 201.46,
+      "end": 211.22,
+      "score": 0.6299
+    },
+    {
+      "verse": 22,
+      "start": 211.28,
+      "end": 220.96,
+      "score": 0.6033
+    },
+    {
+      "verse": 23,
+      "start": 221.98,
+      "end": 229.94,
+      "score": 0.6225
+    },
+    {
+      "verse": 24,
+      "start": 231.46,
+      "end": 241.42,
+      "score": 0.6126
+    },
+    {
+      "verse": 25,
+      "start": 242.26,
+      "end": 253.22,
+      "score": 0.5914
+    },
+    {
+      "verse": 26,
+      "start": 253.22,
+      "end": 263.6,
+      "score": 0.6083
+    },
+    {
+      "verse": 27,
+      "start": 264.3,
+      "end": 274.56,
+      "score": 0.6135
+    },
+    {
+      "verse": 28,
+      "start": 274.56,
+      "end": 285.12,
+      "score": 0.5766
+    },
+    {
+      "verse": 29,
+      "start": 286.16,
+      "end": 294.14,
+      "score": 0.6035
+    },
+    {
+      "verse": 30,
+      "start": 294.14,
+      "end": 303.5,
+      "score": 0.5725
+    },
+    {
+      "verse": 31,
+      "start": 304.36,
+      "end": 318.3,
+      "score": 0.5931
+    },
+    {
+      "verse": 32,
+      "start": 318.98,
+      "end": 326.5,
+      "score": 0.6032
+    },
+    {
+      "verse": 33,
+      "start": 326.52,
+      "end": 335.1,
+      "score": 0.6103
+    },
+    {
+      "verse": 34,
+      "start": 335.1,
+      "end": 346.5,
+      "score": 0.6094
+    },
+    {
+      "verse": 35,
+      "start": 346.5,
+      "end": 363.2,
+      "score": 0.617
+    }
+  ]
+}

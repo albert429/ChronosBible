@@ -7,7 +7,7 @@ import {
   matchesReading,
   validManifest,
   cueAt,
-  type AudioManifest,
+  type LegacyAudioManifest,
   type Cue,
 } from "../src/audio/manifest.ts";
 import { audioUrl } from "../src/audio/url.ts";
@@ -41,7 +41,7 @@ const cues: Cue[] = [
   { passage: 0, verse: 2, start: 3, end: 6 },
   { passage: 1, verse: 1, start: 6.5, end: 8 },
 ];
-const manifest = async (): Promise<AudioManifest> => ({
+const manifest = async (): Promise<LegacyAudioManifest> => ({
   version: 1,
   day: 1,
   readingHash: await readingHash(reading),

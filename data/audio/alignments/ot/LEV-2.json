@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "LEV",
+  "chapter": 2,
+  "file": "A03___02_Leviticus___ARZVDVO1DA.mp3",
+  "audioHash": "0da7c9303d284e612f5349a9c038616e0c1cf84e91711222bd601d6d28ff4c29",
+  "textHash": "1775c923fdd74ecc2201ddc71a3a39dbece5a29e8b6c320da2eed6bd8e5ac4e5",
+  "duration": 169.195125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 5.7,
+      "end": 18.58,
+      "score": 0.6095
+    },
+    {
+      "verse": 2,
+      "start": 19.64,
+      "end": 39.18,
+      "score": 0.5872
+    },
+    {
+      "verse": 3,
+      "start": 39.2,
+      "end": 47.34,
+      "score": 0.6016
+    },
+    {
+      "verse": 4,
+      "start": 48.18,
+      "end": 61.54,
+      "score": 0.6524
+    },
+    {
+      "verse": 5,
+      "start": 62.4,
+      "end": 69.68,
+      "score": 0.6065
+    },
+    {
+      "verse": 6,
+      "start": 70.68,
+      "end": 76.2,
+      "score": 0.5636
+    },
+    {
+      "verse": 7,
+      "start": 77.06,
+      "end": 83.2,
+      "score": 0.6155
+    },
+    {
+      "verse": 8,
+      "start": 84.0,
+      "end": 93.86,
+      "score": 0.6078
+    },
+    {
+      "verse": 9,
+      "start": 93.86,
+      "end": 102.68,
+      "score": 0.6033
+    },
+    {
+      "verse": 10,
+      "start": 102.7,
+      "end": 110.02,
+      "score": 0.5973
+    },
+    {
+      "verse": 11,
+      "start": 110.02,
+      "end": 121.96,
+      "score": 0.6057
+    },
+    {
+      "verse": 12,
+      "start": 121.96,
+      "end": 129.2,
+      "score": 0.5843
+    },
+    {
+      "verse": 13,
+      "start": 130.18,
+      "end": 142.22,
+      "score": 0.5705
+    },
+    {
+      "verse": 14,
+      "start": 143.3,
+      "end": 153.78,
+      "score": 0.6098
+    },
+    {
+      "verse": 15,
+      "start": 153.78,
+      "end": 159.32,
+      "score": 0.5989
+    },
+    {
+      "verse": 16,
+      "start": 160.2,
+      "end": 167.14,
+      "score": 0.6161
+    }
+  ]
+}

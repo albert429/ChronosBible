@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "PSA",
+  "chapter": 81,
+  "file": "A19__081_Psalms______ARZVDVO1DA.mp3",
+  "audioHash": "792feae1080cac46ec9e931cc4877fdafa19ba4e12e546a5240c0c1f659b6d26",
+  "textHash": "db532f65c41480bb63d8131f7281f5aa72dc87863c0337e39b4d8139bbdf2b23",
+  "duration": 127.268625,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 9.74,
+      "end": 15.3,
+      "score": 0.5432
+    },
+    {
+      "verse": 2,
+      "start": 15.34,
+      "end": 21.32,
+      "score": 0.6139
+    },
+    {
+      "verse": 3,
+      "start": 22.2,
+      "end": 28.44,
+      "score": 0.6499
+    },
+    {
+      "verse": 4,
+      "start": 28.44,
+      "end": 34.96,
+      "score": 0.6281
+    },
+    {
+      "verse": 5,
+      "start": 35.02,
+      "end": 44.54,
+      "score": 0.5861
+    },
+    {
+      "verse": 6,
+      "start": 44.54,
+      "end": 50.84,
+      "score": 0.5519
+    },
+    {
+      "verse": 7,
+      "start": 50.84,
+      "end": 59.96,
+      "score": 0.5474
+    },
+    {
+      "verse": 8,
+      "start": 60.42,
+      "end": 66.58,
+      "score": 0.613
+    },
+    {
+      "verse": 9,
+      "start": 67.9,
+      "end": 72.42,
+      "score": 0.6137
+    },
+    {
+      "verse": 10,
+      "start": 72.48,
+      "end": 82.3,
+      "score": 0.5941
+    },
+    {
+      "verse": 11,
+      "start": 82.36,
+      "end": 87.28,
+      "score": 0.665
+    },
+    {
+      "verse": 12,
+      "start": 88.52,
+      "end": 93.92,
+      "score": 0.5715
+    },
+    {
+      "verse": 13,
+      "start": 95.1,
+      "end": 100.26,
+      "score": 0.5941
+    },
+    {
+      "verse": 14,
+      "start": 101.08,
+      "end": 107.64,
+      "score": 0.5809
+    },
+    {
+      "verse": 15,
+      "start": 108.82,
+      "end": 114.94,
+      "score": 0.6151
+    },
+    {
+      "verse": 16,
+      "start": 116.02,
+      "end": 124.5,
+      "score": 0.6058
+    }
+  ]
+}

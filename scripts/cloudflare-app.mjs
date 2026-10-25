@@ -76,10 +76,9 @@ export function buildEnvironment(target, source = process.env, config = "") {
     CI: "true",
     NODE_ENV: "production",
     VITE_AUDIO_BASE_URL: AUDIO_BASE_URL,
-    VITE_AUDIO_CHAPTERS_ENABLED:
-      target === "dev" && config.includes("VITE_AUDIO_CHAPTERS_ENABLED")
-        ? "true"
-        : "false",
+    VITE_AUDIO_CHAPTERS_ENABLED: config.includes("VITE_AUDIO_CHAPTERS_ENABLED")
+      ? "true"
+      : "false",
     VITE_AI_PROVIDERS: "",
     VITE_OPENROUTER_API_KEY: "",
   };

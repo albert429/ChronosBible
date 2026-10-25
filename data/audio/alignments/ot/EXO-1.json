@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "algorithm": "mms-fa-v2",
+  "book": "EXO",
+  "chapter": 1,
+  "file": "A02___01_Exodus______ARZVDVO1DA.mp3",
+  "audioHash": "945ac322e4e701bd37ff2569a2d6090382747a34d997d6394dd6049487288080",
+  "textHash": "a0b8a47763e2fe451da96ab2f7fd13e958c2212b975a874efb57fe67cf96170d",
+  "duration": 206.315125,
+  "method": "MMS_FA/uroman, machine aligned; review before publication",
+  "verses": [
+    {
+      "verse": 1,
+      "start": 7.56,
+      "end": 15.76,
+      "score": 0.6212
+    },
+    {
+      "verse": 2,
+      "start": 16.74,
+      "end": 20.16,
+      "score": 0.6018
+    },
+    {
+      "verse": 3,
+      "start": 20.96,
+      "end": 24.76,
+      "score": 0.5422
+    },
+    {
+      "verse": 4,
+      "start": 24.76,
+      "end": 28.66,
+      "score": 0.5914
+    },
+    {
+      "verse": 5,
+      "start": 29.4,
+      "end": 37.08,
+      "score": 0.6142
+    },
+    {
+      "verse": 6,
+      "start": 37.78,
+      "end": 42.18,
+      "score": 0.594
+    },
+    {
+      "verse": 7,
+      "start": 43.0,
+      "end": 52.48,
+      "score": 0.6318
+    },
+    {
+      "verse": 8,
+      "start": 53.42,
+      "end": 59.48,
+      "score": 0.6093
+    },
+    {
+      "verse": 9,
+      "start": 59.68,
+      "end": 66.54,
+      "score": 0.6202
+    },
+    {
+      "verse": 10,
+      "start": 67.38,
+      "end": 79.14,
+      "score": 0.583
+    },
+    {
+      "verse": 11,
+      "start": 80.48,
+      "end": 92.34,
+      "score": 0.6078
+    },
+    {
+      "verse": 12,
+      "start": 93.18,
+      "end": 101.12,
+      "score": 0.6294
+    },
+    {
+      "verse": 13,
+      "start": 102.2,
+      "end": 105.72,
+      "score": 0.6607
+    },
+    {
+      "verse": 14,
+      "start": 106.9,
+      "end": 118.38,
+      "score": 0.5993
+    },
+    {
+      "verse": 15,
+      "start": 119.8,
+      "end": 128.78,
+      "score": 0.5946
+    },
+    {
+      "verse": 16,
+      "start": 129.1,
+      "end": 141.74,
+      "score": 0.5775
+    },
+    {
+      "verse": 17,
+      "start": 142.76,
+      "end": 153.18,
+      "score": 0.585
+    },
+    {
+      "verse": 18,
+      "start": 153.2,
+      "end": 162.44,
+      "score": 0.607
+    },
+    {
+      "verse": 19,
+      "start": 163.3,
+      "end": 175.9,
+      "score": 0.596
+    },
+    {
+      "verse": 20,
+      "start": 176.9,
+      "end": 182.66,
+      "score": 0.643
+    },
+    {
+      "verse": 21,
+      "start": 184.26,
+      "end": 189.84,
+      "score": 0.6184
+    },
+    {
+      "verse": 22,
+      "start": 191.02,
+      "end": 204.2,
+      "score": 0.6016
+    }
+  ]
+}
