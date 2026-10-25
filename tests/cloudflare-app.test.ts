@@ -155,6 +155,35 @@ test("Preflight binds environment to a clean branch, checkout root and CI commit
   }
 });
 
+test("Workers Builds detached checkouts need matching CI metadata", () => {
+  const f = checkout();
+  const head = f.git("rev-parse", "HEAD");
+  const options = { root: f.root, cwd: f.root };
+  const ci = (branch: string, sha = head) => ({
+    ...options,
+    env: { WORKERS_CI_BRANCH: branch, WORKERS_CI_COMMIT_SHA: sha },
+  });
+  try {
+    f.git("checkout", "--detach");
+    assert.throws(
+      () => preflight("production", { ...options, env: {} }),
+      /Cloudflare app: production requires main/,
+    );
+    assert.equal(preflight("production", ci("main")).branch, "main");
+    assert.throws(() => preflight("dev", ci("main")), /requires dev/);
+    assert.equal(preflight("dev", ci("dev")).name, "chronosbible-dev");
+    assert.throws(() => preflight("production", ci("dev")), /requires main/);
+    assert.throws(
+      () => preflight("production", ci("main", "0".repeat(40))),
+      /requires main/,
+    );
+    f.git("checkout", "-b", "task-branch");
+    assert.throws(() => preflight("production", ci("main")), /requires main/);
+  } finally {
+    f.close();
+  }
+});
+
 test("Ignored env files and media in public OR old dist stop deployment", () => {
   const f = checkout();
   const options = { root: f.root, cwd: f.root, env: {} };
@@ -371,7 +400,7 @@ test(
         },
       );
       assert.equal(result.status, 0, result.stderr + result.stdout);
-      assert.match(result.stdout, /# pass 8\b/);
+      assert.match(result.stdout, /# pass 9\b/);
       assert.equal(outer.git("rev-parse", "HEAD"), head);
       assert.deepEqual(readFileSync(join(outer.root, ".git/index")), index);
       assert.deepEqual(readFileSync(join(outer.root, ".git/config")), config);

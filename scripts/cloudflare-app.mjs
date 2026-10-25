@@ -146,12 +146,39 @@ export function preflight(
   const head = git(root, "rev-parse", "HEAD");
   const branch = git(root, "branch", "--show-current");
   if (branch !== selected.branch) {
+    // Workers Builds clones the pushed commit detached, without remote refs, so
+    // a missing origin ref means "no match" rather than a git error.
+    let origin;
+    try {
+      origin = execFileSync(
+        "git",
+        [
+          "-C",
+          root,
+          "rev-parse",
+          "--verify",
+          "--quiet",
+          `refs/remotes/origin/${selected.branch}`,
+        ],
+        {
+          encoding: "utf8",
+          env: gitEnvironment(),
+          stdio: ["ignore", "pipe", "ignore"],
+        },
+      ).trim();
+    } catch {
+      origin = undefined;
+    }
     if (
       branch ||
-      git(root, "rev-parse", `refs/remotes/origin/${selected.branch}`) !== head
+      (origin !== head &&
+        !(
+          env.WORKERS_CI_BRANCH === selected.branch &&
+          env.WORKERS_CI_COMMIT_SHA === head
+        ))
     )
       fail(
-        `${target} requires ${selected.branch} (or its exact origin commit detached)`,
+        `${target} requires ${selected.branch} (or its exact origin commit detached, or Workers Builds metadata with WORKERS_CI_BRANCH=${selected.branch} and WORKERS_CI_COMMIT_SHA equal to this commit)`,
       );
   }
   if (env.WORKERS_CI_BRANCH && env.WORKERS_CI_BRANCH !== selected.branch)
