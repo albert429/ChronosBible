@@ -23,4 +23,8 @@ Preserve Scripture wording, section headings, passage order, and existing progre
 
 Keep names, saved progress, backups, credentials, and generated test reports out of commits. Never commit a `.env*` file other than `.env.example`, or any real API key: the AI build compiles its key into public JavaScript, so keys belong only in an ignored `.env.development.local` or in the host's environment settings. Generated reports belong in ignored `artifacts/`. Documentation images belong in `docs/assets/`, not the runtime bundle.
 
-See [docs/development.md](docs/development.md) for architecture and data regeneration. Contributions do not change the repository's [license terms](LICENSE).
+See [docs/development.md](docs/development.md) for architecture and data regeneration.
+
+Open pull requests against `dev`; `main` is production and only receives reviewed release merges from `dev`. Contributions are licensed under AGPL-3.0-or-later (inbound = outbound), and every commit must be signed off with `git commit -s` under the [Developer Certificate of Origin](https://developercertificate.org/).
+
+Please follow the [Code of Conduct](CODE_OF_CONDUCT.md), report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), and use the issue forms for bugs, feature requests and Scripture text corrections.

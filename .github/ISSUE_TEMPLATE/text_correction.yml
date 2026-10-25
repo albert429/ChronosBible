@@ -1,0 +1,47 @@
+name: تصحيح نص / Text correction
+description: أبلغ عن خطأ في نص الكتاب المقدس أو الدراسة / Report an error in the Scripture or study text
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        نص الكتاب المقدس يتبع المصادر الموثَّقة ولا يُعدَّل يدويًا؛ يُراجَع الخطأ مقابل المصدر ثم يُصحَّح عبر أدوات الاستيراد.
+
+        Scripture wording follows the documented sources and is not edited by hand. Each report is checked against the source and fixed through the importers.
+  - type: input
+    id: book
+    attributes:
+      label: السفر / Book
+    validations:
+      required: true
+  - type: input
+    id: chapter
+    attributes:
+      label: الأصحاح / Chapter
+    validations:
+      required: true
+  - type: input
+    id: verses
+    attributes:
+      label: الآية أو الآيات / Verse(s)
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: النص الحالي / Current text
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: التصحيح المقترح / Proposed correction
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: المصدر أو الطبعة / Source edition or reference
+      description: مثل فان دايك، eBible.org / For example Van Dyck, eBible.org
+    validations:
+      required: true

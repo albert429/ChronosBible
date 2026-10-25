@@ -4,14 +4,14 @@
   "private": true,
   "description": "The Holy Bible / الكتاب المقدس: Arabic reading and listening in canonical or chronological order, with a 150-day youth plan.",
   "author": "Albert Alfred <albertalfred429@gmail.com>",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/albert429/Bible150.git"
+    "url": "git+https://github.com/albert429/ChronosBible.git"
   },
   "homepage": "https://sfk-bible-reading.vercel.app/",
   "bugs": {
-    "url": "https://github.com/albert429/Bible150/issues"
+    "url": "https://github.com/albert429/ChronosBible/issues"
   },
   "type": "module",
   "scripts": {

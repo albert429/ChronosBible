@@ -4,7 +4,7 @@ export const APP_INFO = {
   description: "قراءة واستماع، بالترتيب المعتاد أو الزمني",
   church: "كنيسة الإخوة بخلوصي",
   email: "albertalfred429@gmail.com",
-  githubName: "albert429/Bible150",
-  githubUrl: "https://github.com/albert429/Bible150",
+  githubName: "albert429/ChronosBible",
+  githubUrl: "https://github.com/albert429/ChronosBible",
   scriptureSource: "https://ebible.org/bible/details.php?id=arb-vd",
 } as const;
