@@ -664,6 +664,79 @@ test("cleanup previews by default, blocks unsafe state, and applies after integr
   );
 });
 
+for (const kind of ["repository", "linked worktree", "marker symlink"]) {
+  test(`cleanup preserves a nested ${kind} inside generated output`, () => {
+    const r = readyTask();
+    integrate(r, "t1");
+    const w = r.wt("t1");
+    const nested = join(w, "node_modules/packages/local-source");
+    mkdirSync(nested, { recursive: true });
+    if (kind === "repository") {
+      git(nested, "init", "-q", "-b", "main");
+    } else if (kind === "linked worktree") {
+      const foreign = join(r.root, "foreign");
+      mkdirSync(foreign);
+      git(foreign, "init", "-q", "-b", "main");
+      write(foreign, "source.txt");
+      git(foreign, "add", "-A");
+      git(foreign, "commit", "-qm", "foreign base");
+      git(foreign, "worktree", "add", "-q", "--detach", nested);
+    } else {
+      symlinkSync(join(r.root, "missing-git-dir"), join(nested, ".git"));
+    }
+    write(nested, "valuable.txt", "unique uncommitted foreign source\n");
+    write(w, "dist/index.html", "ordinary generated output\n");
+    const registryBefore = readFileSync(
+      join(r.repo, ".agents/state/registry.json"),
+      "utf8",
+    );
+    for (const apply of [false, true]) {
+      const res = cli(r.repo, [
+        "cleanup",
+        "t1",
+        "--discard-generated",
+        ...(apply ? ["--apply"] : []),
+      ]);
+      assert.equal(res.code, 1);
+      assert.match(
+        apply ? res.stderr : res.stdout,
+        /ignored file blocks removal \(nested Git marker: packages\/local-source\/\.git\): node_modules\//,
+      );
+      assert.equal(
+        readFileSync(join(nested, "valuable.txt"), "utf8"),
+        "unique uncommitted foreign source\n",
+      );
+      assert.ok(existsSync(join(w, "dist/index.html")));
+      assert.equal(
+        readFileSync(join(r.repo, ".agents/state/registry.json"), "utf8"),
+        registryBefore,
+      );
+      assert.equal(git(w, "branch", "--show-current"), "agents/t1");
+    }
+  });
+}
+
+test("generated cleanup removes directory symlinks without following them", () => {
+  const r = readyTask();
+  integrate(r, "t1");
+  const foreign = join(r.root, "foreign");
+  mkdirSync(foreign);
+  git(foreign, "init", "-q", "-b", "main");
+  write(foreign, "valuable.txt", "preserved outside the worktree\n");
+  const modules = join(r.wt("t1"), "node_modules");
+  mkdirSync(modules);
+  symlinkSync(foreign, join(modules, "local-source"));
+  write(r.wt("t1"), "dist/index.html");
+  ok(cli(r.repo, ["cleanup", "t1", "--discard-generated", "--apply"]));
+  assert.equal(
+    readFileSync(join(foreign, "valuable.txt"), "utf8"),
+    "preserved outside the worktree\n",
+  );
+  assert.ok(existsSync(join(foreign, ".git")));
+  assert.ok(!existsSync(r.wt("t1")));
+  assert.equal(r.registry().tasks.t1.status, "archived");
+});
+
 test("cleanup protects integration, foreign paths, unfinished and unintegrated work", () => {
   const r = readyTask();
   assert.match(

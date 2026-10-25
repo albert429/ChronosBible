@@ -7,6 +7,7 @@ import {
   lstatSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   rmSync,
 } from "node:fs";
@@ -602,6 +603,21 @@ const GENERATED_DIRS = [
 const GENERATED_FILE_RE =
   /(?:^|\/)(?:\.DS_Store|[^/]+\.tsbuildinfo|[^/]+\.pyc)$/;
 
+/** Find repository markers without descending through directory symlinks. */
+function nestedGitMarker(root) {
+  const pending = [root];
+  while (pending.length) {
+    const dir = pending.pop();
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      // Files, directories and even dangling symlinks can identify a checkout.
+      if (entry.name === ".git") return relative(root, path);
+      if (entry.isDirectory()) pending.push(path);
+    }
+  }
+  return null;
+}
+
 /** Null when `entry` is a vetted generated path that is safe to delete. */
 function generatedProblem(root, entry) {
   const isDir = entry.endsWith("/");
@@ -619,7 +635,16 @@ function generatedProblem(root, entry) {
     if (st.isSymbolicLink()) return "symlink";
   }
   if (isDir ? !st.isDirectory() : !st.isFile()) return "unexpected file type";
-  return within(root, realpathSync(cur)) ? null : "outside the worktree";
+  if (!within(root, realpathSync(cur))) return "outside the worktree";
+  if (isDir) {
+    try {
+      const marker = nestedGitMarker(cur);
+      if (marker) return `nested Git marker: ${marker}`;
+    } catch (error) {
+      return `unreadable generated directory: ${error.code}`;
+    }
+  }
+  return null;
 }
 
 function planCleanup(ctx, registry, id, { discardGenerated }) {
