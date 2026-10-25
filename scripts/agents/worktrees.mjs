@@ -136,20 +136,55 @@ function safeAncestor(cwd, a, b) {
   }
 }
 
-/** A handed-off task whose commits are all in the integration branch. */
-function isIntegrated(ctx, task, tip) {
-  if (task.status === "integrated" || task.status === "archived") return true;
+/** The recorded handoff head has its own commits, all in integration. */
+function handoffIntegrated(ctx, task, tip) {
   const h = task.handoff;
-  if (task.status !== "ready" || !h?.commits.length || !tip) return false;
-  return safeAncestor(ctx.primaryRoot, h.headSha, tip);
+  if (!h || h.remainingWork.length || !h.commits.length || !tip) return false;
+  return (
+    !safeAncestor(ctx.primaryRoot, h.headSha, task.baseSha) &&
+    safeAncestor(ctx.primaryRoot, h.headSha, tip)
+  );
 }
 
-function promoteIntegrated(ctx, registry, tip) {
+/** Why the live branch/checkout no longer matches the handoff, or null. */
+function handoffDrift(ctx, task) {
+  const h = task.handoff;
+  if (!h) return "no handoff recorded";
+  const tip = branchSha(ctx.primaryRoot, task.branch);
+  if (tip && tip !== h.headSha) return "branch moved since the handoff";
+  if (!lexists(task.path) && !findWorktree(ctx, task.path)) return null;
+  const problems = checkoutProblems(ctx, task, taskPath(ctx, task.id));
+  if (problems.length) return problems[0];
+  if (revParse(task.path, "HEAD") !== h.headSha) {
+    return "checkout HEAD differs from the handoff";
+  }
+  if (pendingOperations(task.path).length || statusEntries(task.path).length) {
+    return "checkout has uncommitted changes";
+  }
+  return null;
+}
+
+/**
+ * Status implied by the live state: a handed-off task that drifted (new
+ * commits, dirty or moved checkout) is back to `assigned` and keeps its
+ * claims until a fresh handoff; `integrated` needs the current head merged.
+ */
+function evaluate(ctx, task, tip) {
+  if (task.status !== "ready" && task.status !== "integrated") {
+    return { status: task.status };
+  }
+  const stale = handoffDrift(ctx, task);
+  if (stale) return { status: "assigned", stale };
+  return { status: handoffIntegrated(ctx, task, tip) ? "integrated" : "ready" };
+}
+
+function refreshStatuses(ctx, registry, tip) {
   for (const task of Object.values(registry.tasks)) {
-    if (task.status === "ready" && isIntegrated(ctx, task, tip)) {
-      task.status = "integrated";
-      task.updatedAt = now();
-    }
+    const { status, stale } = evaluate(ctx, task, tip);
+    if (status === task.status) continue;
+    task.status = status;
+    task.updatedAt = now();
+    if (stale) task.stale = stale;
   }
 }
 
@@ -193,36 +228,49 @@ function addWorktree(ctx, path, branch, sha) {
     }
   }
   if (problems.length) {
-    const notes = rollbackWorktree(ctx, created);
-    throw fail("could not create worktree", [...problems, ...notes]);
+    const rollback = rollbackWorktree(ctx, created);
+    const error = fail("could not create worktree", [
+      ...problems,
+      ...rollback.notes,
+    ]);
+    Object.assign(error, { rollback });
+    throw error;
   }
   return created;
 }
 
-/** Undo addWorktree: remove only that worktree and branch, never forced. */
+/**
+ * Undo addWorktree, never forced. The branch is deleted only once no
+ * checkout or registration uses it; otherwise both are kept (`retained`).
+ */
 function rollbackWorktree(ctx, created) {
   const notes = [];
   if (findWorktree(ctx, created.path)) {
     const r = git(ctx.primaryRoot, ["worktree", "remove", created.path], {
       allowFail: true,
     });
-    if (!r.ok)
-      notes.push(
-        `rollback: remove ${created.path} by hand (${r.err.split("\n")[0]})`,
-      );
+    if (!r.ok) notes.push(`kept ${created.path}: ${r.err.split("\n")[0]}`);
   }
-  if (branchSha(ctx.primaryRoot, created.branch) === created.sha) {
+  const inUse =
+    lexists(created.path) ||
+    listWorktrees(ctx.primaryRoot).some(
+      (w) =>
+        w.branch === created.branch ||
+        (realOrNull(w.path) ?? w.path) === created.path,
+    );
+  const sha = branchSha(ctx.primaryRoot, created.branch);
+  if (inUse) {
+    if (sha) notes.push(`kept branch ${created.branch} at ${short(sha)}`);
+  } else if (sha === created.sha) {
     // Conditional delete: only if the branch still points where we created it.
     git(
       ctx.primaryRoot,
       ["update-ref", "-d", `refs/heads/${created.branch}`, created.sha],
-      {
-        allowFail: true,
-      },
+      { allowFail: true },
     );
   }
   if (!created.parentExisted) removeIfEmptyDir(ctx.worktreesDir);
-  return notes;
+  return { notes, retained: inUse };
 }
 
 function assertFreshTarget(ctx, path, branch) {
@@ -287,8 +335,8 @@ export async function init(ctx, out) {
           tasks: {},
         });
       } catch (error) {
-        rollbackWorktree(ctx, created);
-        throw error;
+        const { notes } = rollbackWorktree(ctx, created);
+        throw notes.length ? fail(error.message, notes) : error;
       }
     });
   } catch (error) {
@@ -337,7 +385,7 @@ export async function create(ctx, id, { role, brief: rawBrief }, out) {
   const task = await withLock(ctx, `create ${id}`, async () => {
     const registry = requireRegistry(ctx);
     const tip = requireIntegration(ctx, registry);
-    promoteIntegrated(ctx, registry, tip);
+    refreshStatuses(ctx, registry, tip);
     if (registry.tasks[id])
       throw new AgentsError(
         `task ${id} already exists (${registry.tasks[id].status})`,
@@ -378,30 +426,53 @@ export async function create(ctx, id, { role, brief: rawBrief }, out) {
       leasedPorts(registry),
     );
     if (!ports) throw new AgentsError("no free port block");
-    const created = addWorktree(ctx, path, branch, tip);
+    const at = now();
+    const record = {
+      id,
+      role,
+      branch,
+      path,
+      baseSha: tip,
+      status: "assigned",
+      brief,
+      ports,
+      createdAt: at,
+      updatedAt: at,
+      handoff: null,
+    };
+    let created = null;
     try {
+      created = addWorktree(ctx, path, branch, tip);
       if (process.env.AGENTS_FAULT === "create:after-worktree") {
         throw new AgentsError("injected fault after worktree add");
       }
-      const at = now();
-      registry.tasks[id] = {
-        id,
-        role,
-        branch,
-        path,
-        baseSha: tip,
-        status: "assigned",
-        brief,
-        ports,
-        createdAt: at,
-        updatedAt: at,
-        handoff: null,
-      };
+      registry.tasks[id] = record;
       writeRegistry(ctx, registry);
-      return registry.tasks[id];
+      return record;
     } catch (error) {
-      const notes = rollbackWorktree(ctx, created);
-      throw notes.length ? fail(error.message, notes) : error;
+      const rollback =
+        error.rollback ??
+        (created
+          ? rollbackWorktree(ctx, created)
+          : { notes: [], retained: false });
+      if (!rollback.retained) {
+        throw rollback.notes.length
+          ? fail(error.message, rollback.notes)
+          : error;
+      }
+      // Keep what could not be undone reserved and visible, not orphaned.
+      const notes = [...rollback.notes];
+      try {
+        record.recovery = { at: now(), error: error.message, notes };
+        registry.tasks[id] = record;
+        writeRegistry(ctx, registry);
+        notes.push(
+          `recorded ${id} for recovery: inspect it, then \`cleanup ${id}\``,
+        );
+      } catch (writeError) {
+        notes.push(`could not record recovery: ${writeError.message}`);
+      }
+      throw fail(error.message, notes);
     }
   });
 
@@ -499,7 +570,8 @@ export async function handoff(ctx, id, rawReport, out) {
     };
     task.status = report.remainingWork.length ? "assigned" : "ready";
     task.updatedAt = at;
-    promoteIntegrated(ctx, registry, integrationState(ctx, registry).tip);
+    delete task.stale;
+    refreshStatuses(ctx, registry, integrationState(ctx, registry).tip);
     writeRegistry(ctx, registry);
     return task;
   });
@@ -613,22 +685,48 @@ function planCleanup(ctx, registry, id, { discardGenerated }) {
     }
   }
 
+  // Integration is proven from the recorded handoff head, whether or not
+  // the branch still exists; nothing is archived on absence of evidence.
   const h = task.handoff;
-  if (!h) blockers.push("no handoff recorded");
-  else if (h.remainingWork.length)
-    blockers.push(
-      `handoff lists ${h.remainingWork.length} remaining work item(s)`,
-    );
   const tip = branchSha(ctx.primaryRoot, task.branch);
-  if (tip) {
-    plan.deleteBranch = true;
-    if (h && tip !== h.headSha)
-      blockers.push("branch moved since the handoff; rerun handoff");
-    if (safeAncestor(ctx.primaryRoot, tip, task.baseSha)) {
-      blockers.push("branch has no commits beyond its base");
-    } else if (!integ.tip || !safeAncestor(ctx.primaryRoot, tip, integ.tip)) {
-      blockers.push(`branch is not merged into ${INTEGRATION_BRANCH}`);
+  plan.deleteBranch = Boolean(tip);
+  if (task.recovery && !h) {
+    // A failed create holds nothing beyond its base; anything more is work.
+    if (tip && tip !== task.baseSha) {
+      blockers.push("branch has commits since the failed create; hand it off");
     }
+  } else if (!h) {
+    blockers.push("no handoff recorded, so integration cannot be proven");
+  } else {
+    if (h.remainingWork.length) {
+      blockers.push(
+        `handoff lists ${h.remainingWork.length} remaining work item(s)`,
+      );
+    }
+    if (
+      !h.commits.length ||
+      safeAncestor(ctx.primaryRoot, h.headSha, task.baseSha)
+    ) {
+      blockers.push("handoff has no commits beyond its base");
+    } else if (
+      !integ.tip ||
+      !safeAncestor(ctx.primaryRoot, h.headSha, integ.tip)
+    ) {
+      blockers.push(
+        `handoff head ${short(h.headSha)} is not merged into ${INTEGRATION_BRANCH}`,
+      );
+    }
+    if (tip && tip !== h.headSha) {
+      blockers.push("branch moved since the handoff; rerun handoff");
+    }
+  }
+  if (!tip && blockers.length) {
+    const sha = h?.headSha ?? task.baseSha;
+    blockers.push(
+      `branch ${task.branch} is missing; the registry entry is kept. Recover ` +
+        `by hand (e.g. git branch ${task.branch} ${short(sha)} if that commit ` +
+        `still exists), then rerun cleanup`,
+    );
   }
   for (const artifact of h?.artifacts ?? []) {
     const abs = resolve(ctx.primaryRoot, artifact);
@@ -753,7 +851,11 @@ function taskSummary(ctx, task, tip) {
   if (s.worktree === "present" && findWorktree(ctx, task.path)) {
     s.dirty = statusEntries(task.path).length;
   }
-  s.integrated = isIntegrated(ctx, task, tip);
+  const live = evaluate(ctx, task, tip);
+  s.integrated = live.status === "integrated";
+  if (live.status !== task.status) s.liveStatus = live.status;
+  if (live.stale ?? task.stale) s.stale = live.stale ?? task.stale;
+  if (task.recovery) s.recovery = task.recovery.error;
   if (task.handoff) {
     const { at, commits, remainingWork, session } = task.handoff;
     s.handoff = {
@@ -827,6 +929,9 @@ export function status(ctx, opts, out) {
       if (t.handoff?.remainingWork)
         bits.push(`${t.handoff.remainingWork} remaining`);
       if (t.session?.watchPath) bits.push(`watch ${t.session.watchPath}`);
+      if (t.liveStatus) bits.push(`now ${t.liveStatus}`);
+      if (t.stale) bits.push(`stale handoff: ${t.stale}`);
+      if (t.recovery) bits.push(`needs recovery: ${t.recovery}`);
     }
     out(`${t.id}: ${bits.join(", ")}`);
   }
