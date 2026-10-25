@@ -1,0 +1,34 @@
+name: مشكلة / Bug report
+description: أبلغ عن خطأ في التطبيق / Report a problem with the app
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: ماذا حدث؟ / What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: خطوات تكرار المشكلة / Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: ما المتوقع؟ / What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: الجهاز والمتصفح / Device and browser
+      placeholder: iPhone 15 Safari 18, Android Chrome 130
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: لقطة شاشة / Screenshot
+      description: اسحب الصورة إلى هنا / Drag an image here.

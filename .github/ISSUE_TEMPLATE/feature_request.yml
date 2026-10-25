@@ -1,0 +1,20 @@
+name: اقتراح / Feature request
+description: اقترح تحسينًا أو ميزة / Suggest an improvement or feature
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: ما المشكلة أو الحاجة؟ / What problem or need is this for?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: الاقتراح / Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: بدائل أخرى / Alternatives considered

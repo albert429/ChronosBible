@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: سؤال أو نقاش / Question or discussion
+    url: https://github.com/albert429/ChronosBible/discussions
+    about: اطرح أسئلتك هنا / Ask questions here.
+  - name: ثغرة أمنية / Security vulnerability
+    url: https://github.com/albert429/ChronosBible/security/advisories/new
+    about: أبلغ عن الثغرات سرًّا، لا في بلاغ عام / Report vulnerabilities privately, not in a public issue.

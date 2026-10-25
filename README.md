@@ -66,7 +66,13 @@ Recorded readings use separately hosted static audio. See the [audio guide](docs
 
 The bundled Scripture is the **Arabic Van Dyck / فان دايك, eBible.org `arb-vd` edition**. eBible.org identifies this edition as **public domain**. Translation is credited to the Syrian Mission, with the American Bible Society listed as a contributor. This project claims **no copyright over the Scripture text**. This statement applies to the identified source edition; it does not make a claim about every modern Bible edition or its editorial material. [Source and rights statement](https://ebible.org/bible/details.php?id=arb-vd).
 
-Amiri and Noto Sans Arabic are distributed under the SIL Open Font License 1.1. Application code has no open-source license grant. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the separate terms covering code, Scripture, fonts, and artwork.
+Amiri and Noto Sans Arabic are distributed under the SIL Open Font License 1.1. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the separate terms covering Scripture, fonts, and artwork.
+
+## License
+
+Copyright (C) 2026 Albert Alfred. The code and other original project content are licensed under the [GNU AGPL-3.0-or-later](LICENSE). Anyone who runs a modified version for users over a network must offer those users its source.
+
+Not covered, and keeping their own terms (see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)): the public-domain Van Dyck Scripture text and other Scripture and study sources, the fonts (SIL OFL), third-party software and marks (eBible.org, the React logo), and the church logo and reading-plan document, which are not licensed for reuse.
 
 ---
 

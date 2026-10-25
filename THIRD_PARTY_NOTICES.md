@@ -1,5 +1,7 @@
 # Third-party notices
 
+The project's own code and original content are licensed under AGPL-3.0-or-later (see [LICENSE](LICENSE)); this file lists what is not.
+
 ## Arabic Van Dyck Scripture
 
 Source: [eBible.org Arabic Van Dyck (`arb-vd`)](https://ebible.org/bible/details.php?id=arb-vd), edition last updated 2020-08-03. Translation: Syrian Mission. Contributor: American Bible Society.
@@ -10,7 +12,7 @@ Source archive: [arb-vd USFM](https://ebible.org/Scriptures/arb-vd_usfm.zip). Im
 
 ## Study data
 
-The verse study panel uses openly licensed data. It is stored in `data/study/` and split per day into `public/study/` (also shipped as [`/licenses/study-data.txt`](public/licenses/study-data.txt)). These files are licensed under the data licences below, separately from the app code, which remains all rights reserved. Changes made: extraction of the fields used, normalisation, removal of markup, re-keying by verse, and per-day splitting. Full details: [data/study/LICENSE.md](data/study/LICENSE.md).
+The verse study panel uses openly licensed data. It is stored in `data/study/` and split per day into `public/study/` (also shipped as [`/licenses/study-data.txt`](public/licenses/study-data.txt)). These files are licensed under the data licences below, separately from the app code, which is AGPL-3.0-or-later. Changes made: extraction of the fields used, normalisation, removal of markup, re-keying by verse, and per-day splitting. Full details: [data/study/LICENSE.md](data/study/LICENSE.md).
 
 - **Greek–Arabic word tags (TTAraSVD)** — STEPBible.org, CC BY-SA 4.0. The original work by STEPBible.org, and Arabic Bible Outreach Ministry, is available for free at ["STEPBible Arabic Bibles"](https://github.com/STEPBible/STEPBible-Data/tree/master/Tagged-Bibles/Arabic%20Bibles). Arabic text digitisation, formatting and diacritics by Arabic Bible Outreach Ministry (https://www.arabicbible.com/).
 - **Greek lexicon (TBESG)** — STEPBible.org, based on work at Tyndale House Cambridge, CC BY 4.0.
