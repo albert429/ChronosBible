@@ -67,13 +67,14 @@ these roles; use it only to troubleshoot a broken configuration. A normal
 session in a trusted project, optionally with `--strict-mcp-config` to ignore
 other MCP servers, discovers everything above.
 
-Checked so far: Claude Code 2.1.302 reports 9 roles and 6 skills at
-initialization, and Codex CLI 0.162.1 lists the 6 skills over `skills/list`.
-`codex debug prompt-input` shows skills but no role definition; it may not
-include agent metadata, so that is not evidence the roles failed to load. Custom
-agent discovery can differ between versions and clients, and nothing here
-guarantees every client loads every adapter. After upgrading a tool, smoke-test
-it; none of these checks needs a paid model call, and CI makes none.
+Verified native discovery: Claude Code 2.1.310 exposes all 9 `chronos-bible-`
+roles and 6 skills at initialization, alongside the unrelated `promo-video`
+agent. Codex CLI 0.162.1 lists all 6 skills over `skills/list`; its startup
+request to a local mock Responses endpoint includes all 9 custom role
+identifiers in the model-visible input. These checks establish that the native
+definitions are available; they did not execute a model or prove that an agent
+completed a task. No paid model calls were made. Discovery can differ between
+versions and clients, so smoke-test after upgrading. CI makes no model calls.
 
 Native subagents are a convenience, not a security boundary: they run with the
 permissions of the session that started them. Optional integrations (MCP
@@ -189,8 +190,8 @@ with `git add -f` using their exact paths, and leave the local exclude as is.
 
 - [AGENTS.md format](https://agents.md)
 - Codex: [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md),
-  [skills](https://developers.openai.com/codex/skills),
-  [subagents](https://developers.openai.com/codex/subagents)
+  [skills](https://learn.chatgpt.com/docs/build-skills),
+  [subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 - Claude Code: [memory and CLAUDE.md](https://code.claude.com/docs/en/memory),
   [skills](https://code.claude.com/docs/en/skills),
   [subagents](https://code.claude.com/docs/en/sub-agents)
