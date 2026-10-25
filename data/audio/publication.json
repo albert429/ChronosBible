@@ -21,6 +21,13 @@
       "host": "https://chrono-bible-git-codex-full-bible-au-c41c98-albert429s-projects.vercel.app",
       "method": "ranges",
       "files": 2435
+    },
+    {
+      "id": "r2-2026-10-25",
+      "verified": "2026-10-25T13:11:27.306367Z",
+      "host": "https://audio.chronosbible.com",
+      "method": "ranges",
+      "files": 2435
     }
   ],
   "files": {
