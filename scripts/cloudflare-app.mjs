@@ -93,7 +93,14 @@ function files(root) {
   return readdirSync(root).flatMap((name) => files(join(root, name)));
 }
 
-export function scanAssets(root, env = process.env) {
+// The committed redirect rules, or undefined in a checkout without them.
+function committedRedirects(root) {
+  const path = join(root, "hosting/cloudflare-app/_redirects");
+  return existsSync(path) ? readFileSync(path, "utf8") : undefined;
+}
+
+/** @param {string} [redirects] the committed _redirects a shipped copy must equal */
+export function scanAssets(root, env = process.env, redirects) {
   const paths = files(root);
   if (paths.length > 10_000) fail("app assets exceed the 10,000-file budget");
   let bytes = 0;
@@ -119,9 +126,14 @@ export function scanAssets(root, env = process.env) {
       !/^(?:\.html|\.json|\.js|\.css|\.txt|\.svg|\.png|\.jpe?g|\.webp|\.avif|\.ico|\.woff2?)$/i.test(
         extname(file),
       ) &&
-      relative(root, file) !== "_headers"
+      !["_headers", "_redirects"].includes(relative(root, file))
     )
       fail("unexpected file type in app assets");
+    if (
+      relative(root, file) === "_redirects" &&
+      readFileSync(file, "utf8") !== redirects
+    )
+      fail("_redirects differs from hosting/cloudflare-app/_redirects");
     if (relative(root, file).startsWith("audio/") && extname(file) !== ".json")
       fail("only generated JSON manifests may be shipped under audio/");
     const body = readFileSync(file);
@@ -208,23 +220,19 @@ export function preflight(
     effective?.name !== selected.name ||
     JSON.stringify(effective.routes) !==
       JSON.stringify([{ pattern: selected.domain, custom_domain: true }]) ||
-    effective.assets?.directory !== "./dist" ||
-    effective.assets?.binding !== "ASSETS" ||
-    JSON.stringify(effective.assets?.run_worker_first) !==
-      JSON.stringify([
-        "/audio/days/*",
-        "/audio/chapters/assets/*",
-        "/audio/clips/*",
-      ]) ||
+    JSON.stringify(effective.assets) !==
+      JSON.stringify({ directory: "./dist" }) ||
+    effective.main !== undefined ||
     effective.workers_dev !== false ||
     effective.preview_urls !== false ||
     effective.build?.command !==
       `node scripts/cloudflare-app.mjs build ${target}` ||
-    config.main !== "hosting/cloudflare-app/worker.js"
+    config.main !== undefined
   )
     fail("unexpected Worker, routes, assets, or build configuration");
-  scanAssets(join(root, "public"), env);
-  scanAssets(join(root, "dist"), env);
+  const redirects = committedRedirects(root);
+  scanAssets(join(root, "public"), env, redirects);
+  scanAssets(join(root, "dist"), env, redirects);
   return { ...selected, head };
 }
 
@@ -242,11 +250,12 @@ export function build(target) {
     ),
     stdio: "inherit",
   });
-  copyFileSync(
-    join(ROOT, "hosting/cloudflare-app/_headers"),
-    join(ROOT, "dist/_headers"),
-  );
-  scanAssets(join(ROOT, "dist"));
+  for (const name of ["_headers", "_redirects"])
+    copyFileSync(
+      join(ROOT, "hosting/cloudflare-app", name),
+      join(ROOT, "dist", name),
+    );
+  scanAssets(join(ROOT, "dist"), process.env, committedRedirects(ROOT));
   if (
     files(join(ROOT, "dist/assets")).some((file) =>
       /\/(?:AiPanel|run)-/.test(file),

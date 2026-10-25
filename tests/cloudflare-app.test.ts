@@ -150,6 +150,25 @@ test("Preflight binds environment to a clean branch, checkout root and CI commit
     writeFileSync(join(f.root, "unreviewed.txt"), "local");
     assert.throws(() => preflight("production", options), /clean checkout/);
     rmSync(join(f.root, "unreviewed.txt"));
+    type Wrangler = { main?: string; assets: Record<string, unknown> };
+    // The app is assets-only: a Worker entry point or asset binding is refused.
+    const wrangler = readFileSync(join(f.root, "wrangler.json"), "utf8");
+    for (const edit of [
+      (c: Wrangler) => (c.main = "hosting/cloudflare-app/worker.js"),
+      (c: Wrangler) => (c.assets.binding = "ASSETS"),
+      (c: Wrangler) => (c.assets.run_worker_first = ["/audio/*"]),
+    ]) {
+      const config = JSON.parse(wrangler);
+      edit(config);
+      writeFileSync(join(f.root, "wrangler.json"), JSON.stringify(config));
+      f.git("update-index", "--assume-unchanged", "wrangler.json");
+      assert.throws(
+        () => preflight("production", options),
+        /unexpected Worker, routes, assets, or build/,
+      );
+    }
+    f.git("update-index", "--no-assume-unchanged", "wrangler.json");
+    writeFileSync(join(f.root, "wrangler.json"), wrangler);
     f.git("update-ref", "refs/remotes/origin/main", "HEAD");
     f.git("checkout", "--detach");
     assert.equal(preflight("production", options).branch, "main");
@@ -273,6 +292,15 @@ test("Asset audit rejects unexpected file types, audio artifacts and oversized f
     writeFileSync(join(root, "huge.json"), "");
     truncateSync(join(root, "huge.json"), 8 * 1024 * 1024 + 1);
     assert.throws(() => scanAssets(root, {}), /budget/);
+    rmSync(join(root, "huge.json"));
+    // Redirect rules ship only exactly as committed.
+    writeFileSync(join(root, "_redirects"), "/audio/days/* /elsewhere 301\n");
+    assert.throws(() => scanAssets(root, {}), /_redirects differs/);
+    assert.throws(
+      () => scanAssets(root, {}, "/audio/days/* /other 301\n"),
+      /_redirects differs/,
+    );
+    scanAssets(root, {}, "/audio/days/* /elsewhere 301\n");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -291,6 +319,10 @@ test("Safe build runs from the selected clean checkout and never inherits privat
       writeFileSync(
         join(f.root, "hosting/cloudflare-app/_headers"),
         "/assets/*\n  Cache-Control: public\n",
+      );
+      writeFileSync(
+        join(f.root, "hosting/cloudflare-app/_redirects"),
+        "/audio/days/* https://audio.example.test/audio/days/:splat 301\n",
       );
       writeFileSync(
         join(f.root, "vite.config.ts"),
@@ -356,6 +388,10 @@ fs.writeFileSync("dist/index.html", "safe app");
       assert.match(
         readFileSync(join(f.root, "dist/_headers"), "utf8"),
         /Cache-Control/,
+      );
+      assert.equal(
+        readFileSync(join(f.root, "dist/_redirects"), "utf8"),
+        readFileSync(join(f.root, "hosting/cloudflare-app/_redirects"), "utf8"),
       );
       assert.equal(
         readFileSync(join(f.root, "public/keep.json"), "utf8"),

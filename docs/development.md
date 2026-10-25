@@ -24,7 +24,7 @@
 | `scripts/build-{readings,study,audio-index}.js`    | Split plan, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` is shared               |
 | `scripts/import*.py`, `extract-plan.py`, `usfm.py` | Source extraction and importers, with coverage gates                                                                       |
 | `scripts/{align,build}-audio.py`, `audio_text.py`  | Audio alignment and build; `scripts/tests/` holds Python tests for `audio_text.py`                                         |
-| `scripts/{prepare,verify}-audio-host.*`            | Prepare and verify the static audio host                                                                                   |
+| `scripts/verify-audio-host.py`                     | Verify a deployed audio origin against a local folder of recordings                                                        |
 | `scripts/snapshot.mjs`                             | Build-output snapshot and compare tool (`npm run snapshot`)                                                                |
 | `scripts/`                                         | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                          |
 | `tests/`                                           | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                          |
@@ -46,8 +46,6 @@
 | `npm run typecheck`                                | Type-check the app, configs, browser specs and scripts                                   |
 | `npm run snapshot -- save <dir>`                   | Record hashes of generated data and sizes of `dist/assets/`                              |
 | `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
-| `npm run audio:host:prepare`                       | Build the Cloudflare Pages audio bundle in `artifacts/pages-audio`                       |
-| `npm run audio:host:deploy`                        | Prepare, then deploy that bundle with wrangler                                           |
 | `npm run app:host:deploy`                          | Build, then deploy the app to Cloudflare Workers with wrangler                           |
 | `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                |
 | `python3 -I -m unittest discover -s scripts/tests` | Python audio hash tests (standard library only; CI also runs `py_compile`)               |
@@ -275,18 +273,19 @@ See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds
 for dependency installation and build-variable settings. Connecting these builds
 and assigning the custom domains is a one-time Cloudflare account setup step.
 
-Static files are served without running code. Only `/audio/days/*`,
-`/audio/chapters/assets/*` and `/audio/clips/*` run
-`hosting/cloudflare-app/worker.js`, which forwards GET and HEAD (including `Range`
-and conditional headers) to the `bible-reading-audio` Pages project and returns
-its answer unchanged; other methods get 405. Both environments explicitly bind
-`ASSETS` and the same media routes. Workers URLs and preview URLs are off.
-`_headers` exists only in the Cloudflare build and makes `/assets/*` immutable.
+The Cloudflare app is assets-only: `wrangler.json` has no `main`, and both
+environments serve `./dist` without running code. Workers URLs and preview URLs
+are off. `_headers` exists only in the Cloudflare build and makes `/assets/*`
+immutable. `_redirects` (copied from `hosting/cloudflare-app/` and audited to
+equal the committed file) sends the old `/audio/days/*`,
+`/audio/chapters/assets/*` and `/audio/clips/*` URLs to R2 with a 301.
 
-Cloudflare builds load audio from `https://audio.chronosbible.com`: the R2
-bucket `chronosbible-audio`, served read-only on a public custom domain with a
-Cache Rule for that hostname. The `/audio/*` worker proxy above stays for old
-pages and cached `index.html`, and is slated for removal.
+R2 at `https://audio.chronosbible.com` is the only audio host: the bucket
+`chronosbible-audio`, served read-only on a public custom domain with a Cache
+Rule for that hostname. Cloudflare builds and Vercel both load audio from it,
+and `vercel.json` redirects the same old media URLs there. The
+`bible-reading-audio` Pages project is retired. New recordings are published
+with the R2 release tooling on `dev`; see [audio delivery](audio.md).
 
 Reader progress is stored per origin, so the production, development and Vercel
 sites have independent progress. Use backup and restore when moving between them.

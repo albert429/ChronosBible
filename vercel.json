@@ -3,26 +3,24 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
+  "redirects": [
     {
       "source": "/audio/days/:file",
-      "destination": "https://bible-reading-audio.pages.dev/audio/days/:file"
+      "destination": "https://audio.chronosbible.com/audio/days/:file",
+      "permanent": true
+    },
+    {
+      "source": "/audio/chapters/assets/:file",
+      "destination": "https://audio.chronosbible.com/audio/chapters/assets/:file",
+      "permanent": true
+    },
+    {
+      "source": "/audio/clips/:file",
+      "destination": "https://audio.chronosbible.com/audio/clips/:file",
+      "permanent": true
     }
   ],
   "headers": [
-    {
-      "source": "/audio/days/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Vercel-CDN-Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
     {
       "source": "/audio/:day.json",
       "headers": [

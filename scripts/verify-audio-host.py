@@ -1,7 +1,9 @@
 """Check every deployed recording with real cold-cache range requests.
 
-Compares byte-range responses from a deployed host against the local bundle
-produced by scripts/prepare-audio-host.mjs.
+Compares byte-range responses from a deployed audio host, normally
+https://audio.chronosbible.com (the R2 bucket), against a local folder that
+holds the recordings under audio/days/ (by default public/, where
+scripts/build-audio.py writes them).
 """
 import argparse
 import json
@@ -34,13 +36,13 @@ def check(path, root, base, cookie, start=0):
             handle.seek(start)
             expected = handle.read(1024)
         assert body_path.read_bytes() == expected, path.name
-        return {"file": path.name, "cache": headers.get("x-vercel-cache"), "status": status}
+        return {"file": path.name, "cache": headers.get("cf-cache-status"), "status": status}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("base_url", help="Deployed origin, for example https://example.vercel.app")
-    parser.add_argument("--root", type=Path, default=ROOT / "artifacts/pages-audio", help="Local bundle to compare against")
+    parser.add_argument("base_url", help="Deployed audio origin, for example https://audio.chronosbible.com")
+    parser.add_argument("--root", type=Path, default=ROOT / "public", help="Local folder holding audio/days/*.m4a to compare against")
     parser.add_argument("--cookie", type=Path, help="Optional curl cookie file for protected previews")
     parser.add_argument("--output", type=Path, default=ROOT / "artifacts/audio-host-verification.json")
     args = parser.parse_args()

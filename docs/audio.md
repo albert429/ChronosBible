@@ -2,8 +2,9 @@
 
 The reader plays a single audio file for each day. All source selection, verse
 alignment, trimming, and encoding happen offline. The reader is a static frontend
-with no audio API, runtime secret, or speech model. The current Cloudflare Pages
-audio host uses a small byte-range handler for native seeking.
+with no audio API, runtime secret, or speech model. Every recording is served
+from the Cloudflare R2 bucket at `https://audio.chronosbible.com`, which answers
+byte ranges natively.
 
 ## Source and preparation
 
@@ -71,10 +72,9 @@ audio event; only the active verse marker and small player update.
 
 The delivery rules live in `src/audio/contract.ts`: the media path pattern
 `/audio/days/NNN-<hash>.m4a`, the 8 MiB size cap, the content type, the cache
-value and the Pages origin. The app validates every manifest `src` against that
-pattern, and the Pages bundle script imports it. `vercel.json` and the Cloudflare
-worker (deployed verbatim, so it cannot import) repeat the values; tests keep
-them equal to the contract.
+value, the R2 bucket and the audio origin. The app validates every manifest `src`
+against that pattern. `vercel.json` and `hosting/cloudflare-app/_redirects`
+repeat the origin (they cannot import); tests keep them equal to the contract.
 
 Each media filename contains a content fingerprint. Serve media with:
 
@@ -85,65 +85,31 @@ Cache-Control: public, max-age=31536000, immutable
 
 The host must support byte ranges and return correct `Content-Length` and
 `Content-Range` headers. Never reuse an immutable media URL for changed audio.
-Day JSON remains on Vercel with revalidation, so timing fixes take effect. `vercel.json` sets `Vercel-CDN-Cache-Control: no-store` on `/audio/days/*`, so Vercel never caches proxied media itself; the browser and Cloudflare do.
+Day JSON remains on the app hosts with revalidation, so timing fixes take effect.
 
-## Current deployment: Vercel + Cloudflare Pages
+## Current deployment: Cloudflare R2
 
-The 150 recordings live in the `bible-reading-audio` Pages project. Vercel proxies
-only `/audio/days/:file` to that host; timing manifests remain in the app build.
-The Cloudflare app worker (`hosting/cloudflare-app/`) proxies the same media
-paths for `chronosbible.com`. Set `VITE_AUDIO_BASE_URL=/` to enable the
-same-origin media route in a Git-only build. The `dev` preview is configured
-this way. Production/main must be configured
-separately when promoting the audio release. `vite.config.ts` validates the value
-and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`.
+R2 at `https://audio.chronosbible.com` is the only audio host. The bucket
+`chronosbible-audio` is public and read-only, with the same paths as the app
+(`/audio/days/NNN-<hash>.m4a`), `Content-Type: audio/mp4` and `Cache-Control:
+public, max-age=31536000, immutable`. Cloudflare builds
+(`scripts/cloudflare-app.mjs`) and Vercel (`VITE_AUDIO_BASE_URL`) both load
+audio from that origin. Timing manifests remain in the app build.
 
-### R2 (current)
+Old media URLs on the app hosts permanently redirect (301) to R2, so cached
+pages and bookmarks keep working: `hosting/cloudflare-app/_redirects` for
+`chronosbible.com` and `dev.chronosbible.com`, and `redirects` in `vercel.json`.
+Both cover `/audio/days/`, `/audio/chapters/assets/` and `/audio/clips/`. The
+Cloudflare app is assets-only (no Worker code), and the JSON manifests are not
+redirected.
 
-The recordings are also in the R2 bucket `chronosbible-audio`, served read-only
-at `https://audio.chronosbible.com` with the same paths, `Content-Type:
-audio/mp4` and `Cache-Control: public, max-age=31536000, immutable`; R2 answers
-byte ranges natively. Cloudflare builds and Vercel (`VITE_AUDIO_BASE_URL`) load
-audio from there. All 2,435 files of the full release passed byte-exact range
-checks on that host on 25 October 2026.
+The `bible-reading-audio` Cloudflare Pages project, its range handler and the
+app-side proxy are retired. New recordings are published with the R2 release
+tooling on the `dev` branch, not from this branch. `scripts/verify-audio-host.py`
+still checks any HTTPS origin against a local folder holding `audio/days/*.m4a`.
+Never reuse an immutable media URL for changed audio.
 
-This route avoids a connection timeout observed with the local DNS answers for
-the Pages domain. Downloads through it count toward Vercel's transfer allowance.
-It uses an external rewrite, without a Vercel server function.
-Browser caching stays immutable, while `Vercel-CDN-Cache-Control: no-store`
-prevents the proxy from caching a partial response and reusing it for a different
-range. Cloudflare still caches the underlying complete static asset.
-
-Pages currently returns complete `200` responses to range requests. That caused
-seeking to jump back to the beginning on a cold Vercel cache. The narrow Pages
-handler in `hosting/cloudflare-audio/worker.js` returns correct `206` responses,
-including Safari's two-byte probe, open-ended ranges, and suffix ranges. Invalid
-offsets return `416`. It reads a cached static asset internally; the app still
-uses native streaming. The preparation script caps recordings at 8 MiB to bound
-handler memory use (current files are under 5 MB).
-
-To prepare and deploy updated media from the local recordings:
-
-```sh
-npm run audio:host:prepare   # builds artifacts/pages-audio
-npm run audio:host:deploy    # prepares, then runs wrangler pages deploy
-```
-
-`audio:host:deploy` runs `npx wrangler@4 pages deploy artifacts/pages-audio
---project-name bible-reading-audio --branch main --commit-dirty=true`.
-
-Here `--branch main` selects the **audio host's** production deployment; it does
-not push or modify the application's Git branch. The bundle includes the range
-handler and `_routes.json`, so only media paths invoke it. Unchanged uploads are
-deduplicated. Do not deploy the raw media folder without the handler.
-
-Pages Functions share the Workers Free daily request allowance; this setup is
-not unlimited hosting. Check the account's usage as listening grows. See
-[Pages serving behavior](https://developers.cloudflare.com/pages/configuration/serving-pages/),
-[Pages Functions pricing](https://developers.cloudflare.com/pages/functions/pricing/),
-and [Vercel external rewrites](https://vercel.com/docs/routing/rewrites).
-
-## Alternative: Vercel + Cloudflare R2
+## Setting up an R2 audio host
 
 1. Create an R2 bucket using **Standard** storage.
 2. Upload the contents of `public/audio/days/` under the key prefix `audio/days/`.
