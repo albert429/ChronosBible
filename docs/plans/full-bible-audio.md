@@ -1,5 +1,11 @@
 # Full Arabic Bible mode and spoken passage announcements
 
+> **Archived (25 October 2026).** This plan is kept as a historical record. The
+> Vercel rewrite and the `bible-reading-audio` Pages host it describes were
+> retired: every recording is now served from R2 at
+> `https://audio.chronosbible.com`. See [docs/audio.md](../audio.md) for the
+> current deployment.
+
 Feasibility study and implementation plan, 11 October 2026. Planning only.
 
 ## Decisions and findings

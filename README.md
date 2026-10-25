@@ -4,7 +4,7 @@
 
 A calm Arabic New Testament reader built for the youth of the **Brethren Church at Kholousy**. Follow a 150-day chronological reading plan, with Scripture given almost the entire screen.
 
-[Open the app](https://sfk-bible-reading.vercel.app/) · [Development guide](docs/development.md) · [Data sources](data/SOURCES.md)
+[Open the app](https://chronosbible.com/) · [Development guide](docs/development.md) · [Data sources](data/SOURCES.md)
 
 [![Checks](https://github.com/albert429/Bible150/actions/workflows/checks.yml/badge.svg)](https://github.com/albert429/Bible150/actions/workflows/checks.yml)
 
