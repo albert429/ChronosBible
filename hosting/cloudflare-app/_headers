@@ -1,0 +1,6 @@
+# Copied into dist/ by the Cloudflare build only (see wrangler.json).
+# Workers static assets already answer "public, max-age=0, must-revalidate",
+# which is what /, /index.html, /readings/*, /study/* and /audio/<day>.json
+# need, so only the fingerprinted bundle is overridden here.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

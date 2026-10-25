@@ -35,26 +35,27 @@
 
 ## Commands
 
-| Command                                            | Purpose                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `npm run dev`                                      | Development server, port 5173; generates static data first                                  |
-| `npm run build`                                    | Generate static data, type-check the app, and build `dist/`                                 |
-| `npm start`                                        | Preview `dist/`, port 4173                                                                  |
-| `npm test`                                         | Progress, dates, loading, and exact static-data fidelity                                    |
-| `npm run test:e2e`                                 | Fixture build, then Chromium and WebKit workflows, layout and axe                           |
-| `npm run test:browser`                             | Playwright against the current `dist/` without rebuilding (set the same env as test:e2e)    |
-| `npm run ai:models`                                | Check that the configured AI models still exist and are free                                |
-| `npm run format` / `format:check`                  | Apply / verify repository formatting                                                        |
-| `npm run lint`                                     | ESLint (TypeScript, React hooks) over the whole repository                                  |
-| `npm run typecheck`                                | Type-check the app, configs, browser specs and scripts                                      |
-| `npm run snapshot -- save <dir>`                   | Record hashes of generated data and sizes of `dist/assets/`                                 |
-| `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                                 |
-| `npm run audio:host:prepare`                       | Build the Cloudflare Pages audio bundle in `artifacts/pages-audio`                          |
-| `npm run audio:host:deploy`                        | Prepare, then deploy that bundle with wrangler                                              |
-| `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                   |
-| `python3 -I -m unittest discover -s scripts/tests` | Python audio and import tests (standard library only, no ffmpeg; CI also runs `py_compile`) |
-| `npm run test:visual`                              | Save preview screenshots under `artifacts/`                                                 |
-| `npm run audit:performance`                        | Save repeatable mobile Lighthouse reports under `artifacts/`                                |
+| Command                                            | Purpose                                                                                  |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run dev`                                      | Development server, port 5173; generates static data first                               |
+| `npm run build`                                    | Generate static data, type-check the app, and build `dist/`                              |
+| `npm start`                                        | Preview `dist/`, port 4173                                                               |
+| `npm test`                                         | Progress, dates, loading, and exact static-data fidelity                                 |
+| `npm run test:e2e`                                 | Fixture build, then Chromium and WebKit workflows, layout and axe                        |
+| `npm run test:browser`                             | Playwright against the current `dist/` without rebuilding (set the same env as test:e2e) |
+| `npm run ai:models`                                | Check that the configured AI models still exist and are free                             |
+| `npm run format` / `format:check`                  | Apply / verify repository formatting                                                     |
+| `npm run lint`                                     | ESLint (TypeScript, React hooks) over the whole repository                               |
+| `npm run typecheck`                                | Type-check the app, configs, browser specs and scripts                                   |
+| `npm run snapshot -- save <dir>`                   | Record hashes of generated data and sizes of `dist/assets/`                              |
+| `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
+| `npm run audio:host:prepare`                       | Build the Cloudflare Pages audio bundle in `artifacts/pages-audio`                       |
+| `npm run audio:host:deploy`                        | Prepare, then deploy that bundle with wrangler                                           |
+| `npm run app:host:deploy`                          | Build, then deploy the app to Cloudflare Workers with wrangler                           |
+| `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                |
+| `python3 -I -m unittest discover -s scripts/tests` | Python audio hash tests (standard library only; CI also runs `py_compile`)               |
+| `npm run test:visual`                              | Save preview screenshots under `artifacts/`                                              |
+| `npm run audit:performance`                        | Save repeatable mobile Lighthouse reports under `artifacts/`                             |
 
 `tsconfig.json` only references `tsconfig.app.json` (`src/`), `tsconfig.node.json` (`vite.config.ts`, `playwright.config.ts`, the unit tests in `tests/*.test.ts` and `tests/browser/`, strict) and `tsconfig.scripts.json` (`scripts/` and `hosting/` JavaScript, checked but not strict). `build` checks only the app, so tests and scripts cannot block a deploy.
 
@@ -190,6 +191,113 @@ The `ai-chromium` Playwright project builds `dist-ai/` with a dummy key and serv
 ## Static hosting
 
 On Vercel, import the repository, use the **Vite** preset, build with **`npm run build`**, and publish **`dist`**. `vercel.json` records these settings. Pushes to the connected production branch redeploy automatically. There are no `/api` routes or database environment variables; the optional AI explanations use only the build-time variables described above.
+
+### Cloudflare
+
+Cloudflare serves two independent Workers from the same explicit `wrangler.json`:
+
+| Git branch | Worker             | Custom domain          | Deploy command                |
+| ---------- | ------------------ | ---------------------- | ----------------------------- |
+| `main`     | `chronosbible`     | `chronosbible.com`     | `npm run app:host:deploy`     |
+| `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
+
+The production branch keeps its daily-audio snapshot. The development branch
+uses its own full-Bible content and audio publication inventory; its chapter-audio
+flag is enabled only when that branch's Vite configuration supports it. These
+hosting scripts do not copy content between branches. Vercel continues using
+`npm run build` and its existing configuration.
+
+Use Node 22 and install the locked app dependencies with `npm ci --ignore-scripts`.
+Run from the repository root of a clean checkout on the target branch. A detached
+checkout is accepted only at the exact `origin/main` or `origin/dev` commit for
+that environment. Task branches and dirty checkouts fail before building or
+uploading. Workers Builds branch and commit metadata must also match when set.
+Workers Builds checks out the pushed commit detached without remote branches, so
+the wrapper also accepts it when `WORKERS_CI_BRANCH` and `WORKERS_CI_COMMIT_SHA`
+name the environment's branch and that exact commit.
+For a local check, use `node scripts/cloudflare-app.mjs preflight production`
+(or `dev`); `npm run app:host:build` and `npm run app:host:build:dev` build and audit
+without uploading.
+
+Provision Wrangler separately without changing the app lockfile, for example:
+
+```sh
+CF_CLI_DIR="$(mktemp -d)"
+npm install --prefix "$CF_CLI_DIR" --no-save --package-lock=false --ignore-scripts wrangler@4.149.0
+export CLOUDFLARE_APP_WRANGLER="$CF_CLI_DIR/node_modules/.bin/wrangler"
+```
+
+The wrapper
+uses `node_modules/.bin/wrangler`, or the absolute executable path provided in
+`CLOUDFLARE_APP_WRANGLER`. It never installs a CLI. Every deploy supplies an absolute
+`--config` path and an explicit `--env` (empty for production, `dev` for development),
+so Wrangler cannot discover another project or generate hosting configuration.
+Do not replace these commands with a bare `wrangler deploy`.
+
+The safe build rejects local `.env*` files except the committed `.env.example`,
+and rejects `.dev.vars*` files, even when Git ignores them. Vite's configuration
+calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
+`.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
+`VITE_*` values take priority. Therefore the Cloudflare build also uses a small
+environment allowlist and supplies its public settings explicitly:
+`VITE_AUDIO_BASE_URL=/`, AI disabled, no API key, and the branch-specific audio
+flag. Do not add AI or other private `VITE_*` values to Cloudflare build settings.
+AI remains disabled on both Cloudflare domains regardless of shell AI values.
+
+Before building, the wrapper scans both `public/` and any existing `dist/` for
+media binaries, symlinks, environment files, private-key files and credentials.
+Only ordinary web asset extensions are accepted, and `audio/` accepts JSON
+manifests only. Budgets are 8 MiB per file, 64 MiB total and 10,000 files, allowing
+the full Bible while rejecting accidental bulk uploads.
+It removes only this checkout's `dist/`, runs the normal data-generation and Vite
+build, copies `hosting/cloudflare-app/_headers`, and audits the output again.
+Unexpected media or credentials fail with redacted messages; local recordings
+are never deleted. An existing contaminated `dist/` must be investigated and
+removed explicitly before retrying. The build environment excludes fixture
+switches and arbitrary inherited `VITE_*` values.
+
+For Git auto-deploys with [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/),
+connect **each Worker separately** to the repository. Set its production branch
+to the corresponding table entry (`main` for `chronosbible`, `dev` for
+`chronosbible-dev`), root directory to `/` (the repository root), and disable
+preview builds. Set the build environment variable `NODE_VERSION` to `22`.
+
+Use this **build command** for both Workers to provision the pinned CLI outside
+the checkout without changing its dependencies or lockfile:
+
+```sh
+npm install --prefix /tmp/chronos-cli --no-save --package-lock=false wrangler@4.149.0
+```
+
+For `chronosbible`, use this **deploy command**:
+
+```sh
+CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy
+```
+
+For `chronosbible-dev`, use this **deploy command**:
+
+```sh
+CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy:dev
+```
+
+Wrangler runs the selected environment's safe app build before uploading.
+Pushes to `main` update the production domain, and pushes to `dev` update the
+development domain.
+See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)
+for dependency installation and build-variable settings. Connecting these builds
+and assigning the custom domains is a one-time Cloudflare account setup step.
+
+Static files are served without running code. Only `/audio/days/*`,
+`/audio/chapters/assets/*` and `/audio/clips/*` run
+`hosting/cloudflare-app/worker.js`, which forwards GET and HEAD (including `Range`
+and conditional headers) to the `bible-reading-audio` Pages project and returns
+its answer unchanged; other methods get 405. Both environments explicitly bind
+`ASSETS` and the same media routes. Workers URLs and preview URLs are off.
+`_headers` exists only in the Cloudflare build and makes `/assets/*` immutable.
+
+Reader progress is stored per origin, so the production, development and Vercel
+sites have independent progress. Use backup and restore when moving between them.
 
 Study data is generated the same way into `public/study/` and served with the same revalidating cache header. Nothing under `/study/` loads until a reader opens a verse.
 

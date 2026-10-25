@@ -1,6 +1,6 @@
 ![An open Bible and a phone reader](docs/assets/readme-banner.png)
 
-# The Holy Bible / الكتاب المقدس
+# ChronosBible / «الكتاب المقدس بالترتيب الكرونولوجي»
 
 قراءة واستماع، بالترتيب المعتاد أو الزمني.
 
