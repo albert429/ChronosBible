@@ -98,6 +98,15 @@ this way. Production/main must be configured
 separately when promoting the audio release. `vite.config.ts` validates the value
 and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`.
 
+### R2 (current)
+
+The recordings are also in the R2 bucket `chronosbible-audio`, served read-only
+at `https://audio.chronosbible.com` with the same paths, `Content-Type:
+audio/mp4` and `Cache-Control: public, max-age=31536000, immutable`; R2 answers
+byte ranges natively. Cloudflare builds and Vercel (`VITE_AUDIO_BASE_URL`) load
+audio from there. All 2,435 files of the full release passed byte-exact range
+checks on that host on 25 October 2026.
+
 This route avoids a connection timeout observed with the local DNS answers for
 the Pages domain. Downloads through it count toward Vercel's transfer allowance.
 It uses an external rewrite, without a Vercel server function.

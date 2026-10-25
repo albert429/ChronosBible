@@ -227,7 +227,7 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 `.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
 `VITE_*` values take priority. Therefore the Cloudflare build also uses a small
 environment allowlist and supplies its public settings explicitly:
-`VITE_AUDIO_BASE_URL=/`, AI disabled, no API key, and the branch-specific audio
+`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the branch-specific audio
 flag. Do not add AI or other private `VITE_*` values to Cloudflare build settings.
 AI remains disabled on both Cloudflare domains regardless of shell AI values.
 
@@ -282,6 +282,11 @@ and conditional headers) to the `bible-reading-audio` Pages project and returns
 its answer unchanged; other methods get 405. Both environments explicitly bind
 `ASSETS` and the same media routes. Workers URLs and preview URLs are off.
 `_headers` exists only in the Cloudflare build and makes `/assets/*` immutable.
+
+Cloudflare builds load audio from `https://audio.chronosbible.com`: the R2
+bucket `chronosbible-audio`, served read-only on a public custom domain with a
+Cache Rule for that hostname. The `/audio/*` worker proxy above stays for old
+pages and cached `index.html`, and is slated for removal.
 
 Reader progress is stored per origin, so the production, development and Vercel
 sites have independent progress. Use backup and restore when moving between them.
