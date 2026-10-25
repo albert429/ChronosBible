@@ -53,6 +53,9 @@ export function deployment(target) {
   return fail("choose exactly production or dev");
 }
 
+// Public, read-only R2 custom domain (bucket chronosbible-audio).
+export const AUDIO_BASE_URL = "https://audio.chronosbible.com";
+
 // Use an allowlist: Vite loads .env files AND shell VITE_* values. Neither may
 // silently enable AI, fixtures, or a future public setting in this deployment.
 export function buildEnvironment(target, source = process.env, config = "") {
@@ -72,7 +75,7 @@ export function buildEnvironment(target, source = process.env, config = "") {
     ...env,
     CI: "true",
     NODE_ENV: "production",
-    VITE_AUDIO_BASE_URL: "/",
+    VITE_AUDIO_BASE_URL: AUDIO_BASE_URL,
     VITE_AUDIO_CHAPTERS_ENABLED:
       target === "dev" && config.includes("VITE_AUDIO_CHAPTERS_ENABLED")
         ? "true"

@@ -253,6 +253,21 @@ and inlines it as `__AUDIO_BASE_URL__`, so the app never reads `import.meta.env`
 Direct `pages.dev` URLs are not promoted automatically: they time out on some
 local DNS answers, so the same-origin route stays the default.
 
+### R2 (current for Cloudflare)
+
+Cloudflare builds load every verified recording from the R2 bucket
+`chronosbible-audio`, served read-only at `https://audio.chronosbible.com` with
+the same paths (`/audio/days/…`, `/audio/chapters/assets/…`, `/audio/clips/…`).
+Objects carry `Content-Type: audio/mp4` and
+`Cache-Control: public, max-age=31536000, immutable`; R2 answers byte ranges
+natively. A new release is uploaded with `npx wrangler@4 r2 bulk put
+chronosbible-audio --filename <key/file JSON> --content-type audio/mp4
+--cache-control "public, max-age=31536000, immutable" --remote`, then verified
+with `scripts/verify-audio-host.py https://audio.chronosbible.com --inventory
+<prepared inventory>`. Objects are never overwritten or deleted: names are
+immutable hashes, and a rollback keeps the old files. Vercel still uses the
+Pages host until its `VITE_AUDIO_BASE_URL` is changed.
+
 ### Prepared is not published
 
 Two inventories are kept apart:

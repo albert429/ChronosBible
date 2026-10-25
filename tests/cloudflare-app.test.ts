@@ -14,7 +14,9 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { audioUrl } from "../src/audio/url.ts";
 import {
+  AUDIO_BASE_URL,
   buildEnvironment,
   deployArguments,
   gitEnvironment,
@@ -69,7 +71,12 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
     source,
     "VITE_AUDIO_CHAPTERS_ENABLED",
   );
-  assert.equal(env.VITE_AUDIO_BASE_URL, "/");
+  assert.equal(env.VITE_AUDIO_BASE_URL, "https://audio.chronosbible.com");
+  assert.equal(buildEnvironment("dev", {}).VITE_AUDIO_BASE_URL, AUDIO_BASE_URL);
+  assert.equal(
+    audioUrl("/audio/days/a.m4a", env.VITE_AUDIO_BASE_URL),
+    "https://audio.chronosbible.com/audio/days/a.m4a",
+  );
   assert.equal(env.VITE_AI_PROVIDERS, "");
   assert.equal(env.VITE_OPENROUTER_API_KEY, "");
   assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "false");
@@ -304,7 +311,7 @@ assert.equal(process.env.VITE_OPENROUTER_API_KEY, "");
 assert.equal(process.env.VITE_AI_PROVIDERS, "");
 assert.equal(process.env.VITE_FUTURE_KEY, undefined);
 assert.equal(process.env.AUDIO_TEST_FIXTURES, undefined);
-assert.equal(process.env.VITE_AUDIO_BASE_URL, "/");
+assert.equal(process.env.VITE_AUDIO_BASE_URL, ${JSON.stringify(AUDIO_BASE_URL)});
 assert.equal(process.env.VITE_AUDIO_CHAPTERS_ENABLED, ${JSON.stringify(target === "dev" ? "true" : "false")});
 fs.mkdirSync("dist");
 fs.writeFileSync("dist/index.html", "safe app");
