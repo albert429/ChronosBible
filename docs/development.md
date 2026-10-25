@@ -261,6 +261,11 @@ connect **each Worker separately** to the repository. Set its production branch
 to the corresponding table entry (`main` for `chronosbible`, `dev` for
 `chronosbible-dev`), root directory to `/` (the repository root), and disable
 preview builds. Set the build environment variable `NODE_VERSION` to `22`.
+Preview builds are configured on each Worker's **Settings → Builds → Previews
+Base** tab; leave **Disable builds** on the **Production** tab off. If
+`chronosbible` still builds other branches, every `dev` commit gets a failing
+"Workers Builds: chronosbible" check: the wrapper refuses to deploy production
+from `dev`, so nothing ships, but the check stays red.
 
 Use this **build command** for both Workers to provision the pinned CLI outside
 the checkout without changing its dependencies or lockfile:
