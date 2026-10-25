@@ -256,11 +256,31 @@ switches and arbitrary inherited `VITE_*` values.
 For Git auto-deploys with [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/),
 connect **each Worker separately** to the repository. Set its production branch
 to the corresponding table entry (`main` for `chronosbible`, `dev` for
-`chronosbible-dev`), root directory to the repository root, and disable preview
-builds. Keep the build command empty and set the deploy command to the exact
-command in the table; Wrangler runs the environment's safe custom build before
-uploading. Provision Wrangler separately before that command if the runner does
-not provide it. This makes pushes to `dev` update only the development domain.
+`chronosbible-dev`), root directory to `/` (the repository root), and disable
+preview builds. Set the build environment variable `NODE_VERSION` to `22`.
+
+Use this **build command** for both Workers to provision the pinned CLI outside
+the checkout without changing its dependencies or lockfile:
+
+```sh
+npm install --prefix /tmp/chronos-cli --no-save --package-lock=false wrangler@4.149.0
+```
+
+For `chronosbible`, use this **deploy command**:
+
+```sh
+CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy
+```
+
+For `chronosbible-dev`, use this **deploy command**:
+
+```sh
+CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy:dev
+```
+
+Wrangler runs the selected environment's safe app build before uploading.
+Pushes to `main` update the production domain, and pushes to `dev` update the
+development domain.
 See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)
 for dependency installation and build-variable settings. Connecting these builds
 and assigning the custom domains is a one-time Cloudflare account setup step.
