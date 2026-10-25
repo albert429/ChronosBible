@@ -8,7 +8,7 @@ import {
   Share2,
 } from "lucide-react";
 import { catalog } from "../bible/catalog";
-import { adjacentChapter, findBibleBook } from "../bible/navigation";
+import { findBibleBook } from "../bible/navigation";
 import {
   trackOf,
   type AnyReadingLocation,
@@ -16,14 +16,12 @@ import {
   type ChronologicalLocation,
   type ReadingTrack,
 } from "../bible/types";
-import { adjacentChronologicalLocation } from "../chronology/client";
 import type { ChronologyCatalog } from "../chronology/types";
 import { ar } from "../lib/format";
 import BiblePanel from "./BiblePanel";
 import type { Day } from "../plan/readings";
 import type { TrackCompletion } from "../plan/progress";
 import { shareApp } from "./share";
-import { PLAN_DAYS } from "../plan/schedule";
 import { dayLabel, readingLabel } from "../plan/labels";
 import { ChunkBoundary, Loading } from "../components/Feedback";
 import Sheet from "../components/Sheet";
@@ -47,6 +45,9 @@ const ADJACENT_LABELS = {
 type Panel = "menu" | "day" | "appearance" | "about" | "bible" | "chronology";
 type Props = {
   location: AnyReadingLocation;
+  /** The neighbouring places in this mode (see `adjacentLocation`). */
+  previous?: AnyReadingLocation;
+  next?: AnyReadingLocation;
   go: (location: AnyReadingLocation) => void;
   chooseTrack: (track: ReadingTrack) => void;
   /** The open chronology's summaries (chronological mode only). */
@@ -72,6 +73,8 @@ type Props = {
 };
 export default function Navigation({
   location,
+  previous,
+  next,
   go,
   chooseTrack,
   chronology,
@@ -96,17 +99,6 @@ export default function Navigation({
   const track = trackOf(location);
   const bible = location.mode === "bible" ? location : undefined;
   const chrono = location.mode === "chronological" ? location : undefined;
-  const adjacent = (direction: -1 | 1): AnyReadingLocation | undefined => {
-    if (bible) return adjacentChapter(catalog, bible, direction);
-    if (chrono)
-      return chronology
-        ? adjacentChronologicalLocation(chronology, chrono, direction)
-        : undefined;
-    const day = selected + direction;
-    return day >= 1 && day <= PLAN_DAYS ? { mode: "plan", day } : undefined;
-  };
-  const previous = adjacent(-1);
-  const next = adjacent(1);
   const place = bible
     ? `${findBibleBook(catalog, bible.book)!.name} ${ar(bible.chapter)}`
     : chrono

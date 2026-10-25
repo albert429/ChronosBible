@@ -1,12 +1,21 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { chapterVerse, isolate } from "../bible/reference";
 import { isBibleChapter, type ScriptureReading } from "../bible/types";
 import { ChunkBoundary, Loading } from "../components/Feedback";
 import Sheet from "../components/Sheet";
 import { verseNumberButton } from "../reader/scriptureDom";
+import type { VerseActionsProps } from "./VerseActions";
 
-export const loadStudyPanel = () => import("./StudyPanel");
-const StudyPanel = lazy(loadStudyPanel);
+const loadVerseActions = () => import("./VerseActions");
+export const loadStudyPanel = () => {
+  void loadVerseActions().catch(() => {});
+  return import("./StudyPanel");
+};
+const StudyPanel = lazy(() => import("./StudyPanel"));
+// Copy and share are a convenience: if their chunk fails, nothing shows.
+const VerseActions = lazy<ComponentType<VerseActionsProps>>(() =>
+  loadVerseActions().catch(() => ({ default: () => null })),
+);
 const CanonicalStudy = lazy(() => import("./CanonicalStudy"));
 
 export type StudyTarget = { passage: number; verse: number; el: HTMLElement };
@@ -27,16 +36,28 @@ export default function VerseStudy({
   const passage = reading.passages[target.passage];
   const verse = passage?.verses?.find((v) => v.number === target.verse);
   if (!passage || !verse) return null;
+  // Isolate chapter:verse so it keeps its order inside the Arabic title.
+  const reference = `${passage.book} ${isolate(chapterVerse(passage.chapter, verse.number))}`;
   return (
     <Sheet
       open={open}
-      // Isolate chapter:verse so it keeps its order inside the Arabic title.
-      title={`${passage.book} ${isolate(chapterVerse(passage.chapter, verse.number))}`}
+      title={reference}
       onClose={onClose}
       onAfterClose={onAfterClose}
       returnFocusTo={verseNumberButton(target.el)}
     >
       <p className="study-verse">{verse.text}</p>
+      <div className="verse-actions-slot">
+        <Suspense fallback={null}>
+          <VerseActions
+            book={passage.book}
+            chapter={passage.chapter}
+            verse={verse.number}
+            text={verse.text}
+            reference={reference}
+          />
+        </Suspense>
+      </div>
       <ChunkBoundary>
         <Suspense fallback={<Loading label="جارٍ تحميل دراسة الآية…" />}>
           {isBibleChapter(reading) ? (

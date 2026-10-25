@@ -33,6 +33,8 @@ import {
 } from "./chronology/client";
 import { useReadingLocation } from "./reader/useReadingLocation";
 import { days } from "./plan/readings";
+import { adjacentLocation } from "./navigation/adjacent";
+import { TRACK_NAMES } from "./navigation/modes";
 const Dialogs = lazy(() => import("./plan/dialogs"));
 
 export default function App() {
@@ -104,6 +106,47 @@ export default function App() {
       : location.mode === "bible"
         ? chapterReading
         : chronoReading;
+  const previous = adjacentLocation(location, -1, chronology.data);
+  const next = adjacentLocation(location, 1, chronology.data);
+  const title = readingTitle(location, chronology.data, reading.data);
+  useEffect(() => {
+    const page = view === "read" ? title : TRACK_NAMES.plan;
+    document.title = page ? `${page} · الكتاب المقدس` : "الكتاب المقدس";
+  }, [title, view]);
+  // Arrow keys page like the toolbar's chevrons (next is on the left).
+  const paging = useRef({ view, previous, next, go });
+  useLayoutEffect(() => {
+    paging.current = { view, previous, next, go };
+  });
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      const { view, previous, next, go } = paging.current;
+      const target =
+        event.key === "ArrowLeft"
+          ? next
+          : event.key === "ArrowRight"
+            ? previous
+            : undefined;
+      if (
+        !target ||
+        view !== "read" ||
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        (event.target as Element | null)?.closest?.(
+          "input, select, textarea, [contenteditable]",
+        ) ||
+        document.querySelector("dialog[open]")
+      )
+        return;
+      event.preventDefault();
+      go(target);
+    };
+    addEventListener("keydown", key);
+    return () => removeEventListener("keydown", key);
+  }, []);
 
   // A remembered or linked reading the current catalog no longer has: start
   // that chronology from its first reading instead of a dead end.
@@ -200,12 +243,14 @@ export default function App() {
     <div className="app">
       <Navigation
         location={location}
+        previous={previous}
+        next={next}
         go={go}
         chooseTrack={chooseTrack}
         chronology={chronology.data}
         chronologyError={chronology.error}
         retryChronology={chronology.retry}
-        readingTitle={readingTitle(location, chronology.data, reading.data)}
+        readingTitle={title}
         completion={completion}
         continuous={locationState.preferences.continuous}
         setContinuous={locationState.setContinuous}
@@ -247,6 +292,10 @@ export default function App() {
             key={member?.id || "guest"}
             location={location}
             navigation={locationState.navigation}
+            restore={locationState.restore}
+            previous={previous}
+            next={next}
+            onPage={go}
             continuous={locationState.preferences.continuous}
             // Continuous listening moves on without taking keyboard focus.
             onContinue={locationState.go}
