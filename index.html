@@ -12,8 +12,16 @@
       content="الكتاب المقدس: قراءة واستماع، بالترتيب المعتاد أو الزمني."
     />
     <script>
+      // The saved theme before first paint (see src/navigation/appearance.ts).
       try {
-        if (localStorage.getItem("word-dark") === "true") {
+        var theme =
+          localStorage.getItem("word-theme") ||
+          (localStorage.getItem("word-dark") === "true" ? "dark" : "auto");
+        if (
+          theme === "dark" ||
+          (theme === "auto" &&
+            matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
           document.documentElement.dataset.theme = "dark";
           document.querySelector('meta[name="theme-color"]').content =
             "#181e1a";

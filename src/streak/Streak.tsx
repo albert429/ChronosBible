@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "react";
-import { ar } from "../lib/format";
+import { ar, daysLabel } from "../lib/format";
 import { useToday } from "../lib/useToday";
 import { useProgress } from "../plan/useProgress";
 import {
@@ -17,14 +17,6 @@ export function streakLabel(n: number) {
   if (tens >= 3 && tens <= 10) return `${ar(n)} أيام متتالية`;
   if (tens >= 11) return `${ar(n)} يومًا متتاليًا`;
   return `${ar(n)} يوم متتالٍ`;
-}
-/** A plain count of days: «يوم واحد»، «يومان»، «٣ أيام»، «١٢ يومًا». */
-function daysLabel(n: number) {
-  if (n === 1) return "يوم واحد";
-  if (n === 2) return "يومان";
-  const tens = n % 100;
-  if (tens >= 3 && tens <= 10) return `${ar(n)} أيام`;
-  return `${ar(n)} ${tens >= 11 ? "يومًا" : "يوم"}`;
 }
 
 /** The active reader's (or the guest's) streak, as of today in Cairo. */

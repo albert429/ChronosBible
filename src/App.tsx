@@ -36,6 +36,11 @@ import { days } from "./plan/readings";
 import { adjacentLocation } from "./navigation/adjacent";
 import { TRACK_NAMES } from "./navigation/modes";
 const Dialogs = lazy(() => import("./plan/dialogs"));
+const DIALOG_NAMES: Record<Modal["kind"], string> = {
+  join: "القراء على هذا الجهاز",
+  settings: "إعدادات القارئ",
+  invite: "مشاركة التطبيق",
+};
 
 export default function App() {
   const progress = useProgress();
@@ -322,7 +327,7 @@ export default function App() {
       </main>
       <dialog
         className="app-dialog"
-        aria-label="القراء على هذا الجهاز"
+        aria-label={DIALOG_NAMES[modal?.kind ?? "join"]}
         ref={dialog}
         {...dialogProps}
       >

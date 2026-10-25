@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ar, dateLabel, today } from "../src/lib/format.ts";
+import { ar, dateLabel, daysLabel, today } from "../src/lib/format.ts";
 
 test("Numbers use Eastern Arabic digits without grouping", () => {
   assert.equal(ar(0), "٠");
@@ -25,4 +25,23 @@ test("Date labels are the Arabic weekday, day and month", () => {
   assert.equal(dateLabel("2026-10-01"), "الخميس، ١ أكتوبر");
   assert.equal(dateLabel("2027-02-27"), "السبت، ٢٧ فبراير");
   assert.equal(dateLabel("2028-02-29"), "الثلاثاء، ٢٩ فبراير");
+});
+
+test("Day counts agree with their number", () => {
+  assert.deepEqual(
+    [0, 1, 2, 3, 10, 11, 99, 100, 101, 103, 150].map(daysLabel),
+    [
+      "٠ يوم",
+      "يوم واحد",
+      "يومان",
+      "٣ أيام",
+      "١٠ أيام",
+      "١١ يومًا",
+      "٩٩ يومًا",
+      "١٠٠ يوم",
+      "١٠١ يوم",
+      "١٠٣ أيام",
+      "١٥٠ يومًا",
+    ],
+  );
 });

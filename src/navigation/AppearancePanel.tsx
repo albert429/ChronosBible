@@ -1,4 +1,4 @@
-import { Minus, Plus, Sun, Moon } from "lucide-react";
+import { Minus, Plus, Sun, Moon, SunMoon } from "lucide-react";
 import { ar } from "../lib/format";
 import { FONT_MIN, FONT_MAX, useAppearance } from "./appearance";
 import "./AppearancePanel.css";
@@ -10,7 +10,7 @@ export default function AppearancePanel({
   continuous: boolean;
   setContinuous: (enabled: boolean) => void;
 }) {
-  const { font, setFont, dark, setDark, diacritics, setDiacritics } =
+  const { font, setFont, theme, setTheme, diacritics, setDiacritics } =
     useAppearance();
   return (
     <>
@@ -58,8 +58,8 @@ export default function AppearancePanel({
         <button
           className="theme-option"
           aria-label="الوضع النهاري"
-          aria-pressed={!dark}
-          onClick={() => setDark(false)}
+          aria-pressed={theme === "light"}
+          onClick={() => setTheme("light")}
         >
           <Sun size={20} aria-hidden="true" />
           نهاري
@@ -67,11 +67,20 @@ export default function AppearancePanel({
         <button
           className="theme-option"
           aria-label="الوضع الليلي"
-          aria-pressed={dark}
-          onClick={() => setDark(true)}
+          aria-pressed={theme === "dark"}
+          onClick={() => setTheme("dark")}
         >
           <Moon size={20} aria-hidden="true" />
           ليلي
+        </button>
+        <button
+          className="theme-option"
+          aria-label="حسب إعداد الجهاز"
+          aria-pressed={theme === "auto"}
+          onClick={() => setTheme("auto")}
+        >
+          <SunMoon size={20} aria-hidden="true" />
+          تلقائي
         </button>
       </div>
     </>
