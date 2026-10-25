@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { stepCueIndex, type Timeline } from "./manifest";
 import appIcon from "../assets/favicon.svg";
 
@@ -42,6 +42,15 @@ export function useMediaSession({
     onClose();
   });
   const halt = useEffectEvent(pause);
+  // The system extrapolates the position from the rate, so it is reported on
+  // play, pause, rate changes and seeks, not on every time update.
+  const reported = useRef<{
+    timeline: Timeline;
+    playing: boolean;
+    rate: number;
+    position: number;
+    at: number;
+  }>(null);
 
   useEffect(() => {
     if (!("mediaSession" in navigator) || !timeline) return;
@@ -81,11 +90,24 @@ export function useMediaSession({
       }
       session.metadata = null;
       session.playbackState = "none";
+      reported.current = null;
     };
   }, [timeline, title]);
-
   useEffect(() => {
     if (!("mediaSession" in navigator) || !timeline) return;
+    const at = performance.now();
+    const last = reported.current;
+    if (
+      last &&
+      last.timeline === timeline &&
+      last.playing === playing &&
+      last.rate === rate &&
+      Math.abs(
+        last.position + (playing ? ((at - last.at) / 1000) * rate : 0) - time,
+      ) < 1.5
+    )
+      return;
+    reported.current = { timeline, playing, rate, position: time, at };
     navigator.mediaSession.playbackState = playing ? "playing" : "paused";
     try {
       navigator.mediaSession.setPositionState({

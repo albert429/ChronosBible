@@ -1,4 +1,5 @@
 import { createJsonClient } from "../lib/jsonClient.ts";
+import { dataUrl } from "../lib/dataVersion.ts";
 import { catalog } from "./catalog.ts";
 import { findBibleBook, validBibleLocation } from "./navigation.ts";
 import { readingKey, type BibleChapter, type BibleLocation } from "./types.ts";
@@ -95,7 +96,7 @@ export function createBibleClient(
       url: (key) => {
         const location = chapterLocation(key);
         if (!location) throw new Error("Invalid canonical chapter key");
-        return `/bible/${location.book}/${location.chapter}.json`;
+        return dataUrl(`/bible/${location.book}/${location.chapter}.json`);
       },
       validate: validBibleChapter,
       message: () => "تعذر تحميل الإصحاح. تحقق من الاتصال وحاول مرة أخرى.",

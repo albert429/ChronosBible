@@ -1,4 +1,5 @@
 import { createJsonClient } from "../lib/jsonClient.ts";
+import { dataUrl } from "../lib/dataVersion.ts";
 import { PLAN_DAYS, isPlanDay } from "./schedule.ts";
 
 export type Verse = { number: number; text: string; heading?: string };
@@ -26,7 +27,7 @@ export function createReadingsClients(
 ) {
   const planIndex = createJsonClient<PlanEntry[]>(
     {
-      url: () => "/readings/plan.json",
+      url: () => dataUrl("/readings/plan.json"),
       validate: (data): data is PlanEntry[] =>
         Array.isArray(data) &&
         data.length === PLAN_DAYS &&
@@ -38,7 +39,7 @@ export function createReadingsClients(
   );
   const dayClient = createJsonClient<Day>(
     {
-      url: (key) => `/readings/${key}.json`,
+      url: (key) => dataUrl(`/readings/${key}.json`),
       validate: (data, key): data is Day =>
         validEntry(data as Day) && (data as Day).day === Number(key),
       message: () => "تعذر تحميل القراءة. تحقق من الاتصال وحاول مرة أخرى.",

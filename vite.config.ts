@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from "vite";
-import { existsSync, readFileSync, rmSync } from "node:fs";
-import { resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { audioUrl } from "./src/audio/url.ts";
 import { aiBuildConfig } from "./src/ai/config.ts";
@@ -13,6 +14,38 @@ import { catalog } from "./src/bible/catalog.ts";
 
 const json = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 const optional = (path: string) => (existsSync(path) ? json(path) : undefined);
+
+/** Generated Scripture data the app fetches with a content version. */
+export const DATA_FOLDERS = ["bible", "readings", "chronology", "study"];
+
+/**
+ * A short content hash of each generated data folder under public/: the
+ * client names files with it, so hosting can cache them for good. A missing
+ * folder has no version and its files are fetched by their plain address.
+ */
+export function dataVersions(root = "public"): Record<string, string> {
+  const versions: Record<string, string> = {};
+  for (const folder of DATA_FOLDERS) {
+    const base = join(root, folder);
+    if (!existsSync(base)) continue;
+    const files = (
+      readdirSync(base, { recursive: true, withFileTypes: true }) as {
+        isFile(): boolean;
+        name: string;
+        parentPath: string;
+      }[]
+    )
+      .filter((entry) => entry.isFile())
+      .map((entry) => join(entry.parentPath, entry.name))
+      .sort();
+    if (!files.length) continue;
+    const hash = createHash("sha256");
+    for (const file of files)
+      hash.update(relative(base, file)).update("\0").update(readFileSync(file));
+    versions[folder] = hash.digest("hex").slice(0, 10);
+  }
+  return versions;
+}
 
 /** Never ship a manifest for audio this build does not advertise. */
 function removeUnpublishedManifests(paths: string[]): Plugin {
@@ -77,8 +110,18 @@ export default defineConfig(({ mode }) => {
   // Optional AI explanations: off unless VITE_AI_PROVIDERS is set. Values are
   // inlined as constants so a disabled build drops every AI module.
   const ai = aiBuildConfig(env);
+  const versions = dataVersions();
   return {
-    plugins: [react(), removeUnpublishedManifests(unpublished)],
+    plugins: [
+      react(),
+      removeUnpublishedManifests(unpublished),
+      {
+        // The preload script in index.html names files as the app does.
+        name: "data-versions-html",
+        transformIndexHtml: (html) =>
+          html.replace("__DATA_VERSIONS_JSON__", JSON.stringify(versions)),
+      },
+    ],
     define: {
       __AUDIO_BASE_URL__: JSON.stringify(VITE_AUDIO_BASE_URL),
       __AUDIO_DAYS__: JSON.stringify(advertised.days),
@@ -86,6 +129,7 @@ export default defineConfig(({ mode }) => {
         chapterAvailability(catalog, advertised.chapters),
       ),
       __AUDIO_READINGS__: JSON.stringify(advertised.readings),
+      __DATA_VERSIONS__: JSON.stringify(versions),
       __AI_ENABLED__: JSON.stringify(ai !== null),
       __AI_DAILY_CAP__: JSON.stringify(ai?.dailyCap ?? 0),
       __AI_ATTEMPT_CAP__: JSON.stringify(ai?.attemptCap ?? 0),

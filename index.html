@@ -28,6 +28,63 @@
         }
       } catch {}
     </script>
+    <script>
+      // Fetch the reading the app will open alongside its code, not after it
+      // (see src/reader/preload.ts); a wrong guess costs one small request.
+      try {
+        (function (versions) {
+          var query = new URLSearchParams(location.search);
+          var mode = query.get("mode");
+          var paths;
+          if (mode === "bible")
+            paths = [
+              "/bible/" +
+                query.get("book") +
+                "/" +
+                query.get("chapter") +
+                ".json",
+            ];
+          else if (mode === "chronological")
+            paths = [
+              "/chronology/" + query.get("testament") + ".json",
+              "/chronology/" +
+                query.get("testament") +
+                "/" +
+                query.get("reading") +
+                ".json",
+            ];
+          else if (mode) paths = [];
+          else if (query.has("day"))
+            paths = ["/readings/" + query.get("day") + ".json"];
+          else {
+            var saved = localStorage.getItem("bible-reader-preload-v1");
+            // A fresh reader opens Genesis 1; an older one, their own place.
+            paths = saved
+              ? JSON.parse(saved)
+              : localStorage.getItem("bible-reader-state-v2") ||
+                  localStorage.getItem("bible-reader-location-v1") ||
+                  localStorage.getItem("nt-reading-progress-v1")
+                ? []
+                : ["/bible/GEN/1.json"];
+          }
+          paths.forEach(function (path) {
+            if (
+              !/^\/(bible|readings|chronology)\/[\w-]+(\/[\w-]+)?\.json$/.test(
+                path,
+              )
+            )
+              return;
+            var version = versions[path.split("/")[1]];
+            var link = document.createElement("link");
+            link.rel = "preload";
+            link.as = "fetch";
+            link.crossOrigin = "anonymous";
+            link.href = version ? path + "?v=" + version : path;
+            document.head.appendChild(link);
+          });
+        })(__DATA_VERSIONS_JSON__);
+      } catch {}
+    </script>
     <link
       rel="icon"
       type="image/png"

@@ -112,3 +112,25 @@ test("vercel.json redirects the same namespaces permanently", () => {
       prefix,
     );
 });
+
+test("Versioned Scripture data is immutable on both hosts; the shell revalidates", () => {
+  const immutable = "public, max-age=31536000, immutable";
+  const cloudflare = readFileSync(
+    new URL("../hosting/cloudflare-app/_headers", import.meta.url),
+    "utf8",
+  );
+  const { headers } = json("vercel.json");
+  const vercel = (source: string) =>
+    headers.find((rule: { source: string }) => rule.source === source)
+      ?.headers[0].value;
+  for (const folder of ["assets", "bible", "chronology", "readings", "study"]) {
+    assert.match(
+      cloudflare,
+      new RegExp(`^/${folder}/\\*\\n  Cache-Control: ${immutable}$`, "m"),
+    );
+    assert.equal(vercel(`/${folder}/(.*)`), immutable, folder);
+  }
+  // Pages and audio manifests keep their default revalidation.
+  assert.doesNotMatch(cloudflare, /^\/(audio|index\.html|sw\.js)/m);
+  assert.equal(vercel("/"), "public, max-age=0, must-revalidate");
+});

@@ -156,7 +156,7 @@ test("continuous listening keeps one audio element through a cold chapter load a
     "REV:22": { opening: 0.3, verse: 0.1 },
   });
   const gate = createGate();
-  await page.route("**/bible/REV/22.json", async (route) => {
+  await page.route("**/bible/REV/22.json*", async (route) => {
     await gate.opened;
     await route.continue();
   });

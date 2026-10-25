@@ -208,7 +208,7 @@ test("a failed study request offers a retry that recovers", async ({
 }) => {
   await seed(page);
   let fail = true;
-  await page.route("**/study/10.json", (route) =>
+  await page.route("**/study/10.json*", (route) =>
     fail ? route.fulfill({ status: 503, body: "down" }) : route.fallback(),
   );
   await page.goto("/");

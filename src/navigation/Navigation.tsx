@@ -1,4 +1,11 @@
-import { lazy, Suspense, useRef, useState, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import {
   Menu,
   ChevronLeft,
@@ -18,7 +25,6 @@ import {
 } from "../bible/types";
 import type { ChronologyCatalog } from "../chronology/types";
 import { ar } from "../lib/format";
-import BiblePanel from "./BiblePanel";
 import type { Day } from "../plan/readings";
 import type { TrackCompletion } from "../plan/progress";
 import { shareApp } from "./share";
@@ -26,15 +32,28 @@ import { dayLabel, readingLabel } from "../plan/labels";
 import { ChunkBoundary, Loading } from "../components/Feedback";
 import Sheet from "../components/Sheet";
 import { passageElement } from "../reader/scriptureDom";
-import MenuPanel from "./MenuPanel";
-import DayPanel, { loadDayJumper } from "./DayPanel";
-import AppearancePanel from "./AppearancePanel";
 import { TRACK_NAMES, TRACK_SHORT_NAMES } from "./modes";
+import { connectionAllowsPrefetch } from "../lib/network";
+import MenuPanel from "./MenuPanel";
 import logo from "../assets/favicon.svg";
 import "./Navigation.css";
 const About = lazy(() => import("./About"));
+// Sheet contents load apart from the reader: warmed when the page is idle,
+// and by pressing or focusing their button, so opening one does not wait.
+// The menu, every reader's way around, stays in the main bundle.
 const loadChronologyPanel = () => import("./ChronologyPanel");
 const ChronologyPanel = lazy(loadChronologyPanel);
+const loadBiblePanel = () => import("./BiblePanel");
+const BiblePanel = lazy(loadBiblePanel);
+const loadDayPanel = () =>
+  Promise.all([import("./DayPanel"), import("./DayJumper")]).then(
+    ([panel]) => panel,
+  );
+const DayPanel = lazy(loadDayPanel);
+const loadAppearancePanel = () => import("./AppearancePanel");
+const AppearancePanel = lazy(loadAppearancePanel);
+const warm = (load: () => Promise<unknown>) => () =>
+  void load().catch(() => {});
 
 export type View = "read" | "calendar";
 const ADJACENT_LABELS = {
@@ -145,6 +164,28 @@ export default function Navigation({
       target?.scrollIntoView({ block: "start", behavior: "instant" });
     });
   }
+  // After the page settles, fetch the sheets this reader is likely to open.
+  const picker = chrono
+    ? loadChronologyPanel
+    : bible
+      ? loadBiblePanel
+      : loadDayPanel;
+  useEffect(() => {
+    if (!connectionAllowsPrefetch()) return;
+    const loads = [loadAppearancePanel, picker];
+    const run = () => loads.forEach((load) => warm(load)());
+    let idle = 0;
+    const timer = setTimeout(() => {
+      idle =
+        typeof requestIdleCallback === "function"
+          ? requestIdleCallback(run, { timeout: 3000 })
+          : (run(), 0);
+    }, 2000);
+    return () => {
+      clearTimeout(timer);
+      if (idle) cancelIdleCallback(idle);
+    };
+  }, [picker]);
   const titles: Record<Panel, string> = {
     menu: "القائمة",
     bible: TRACK_NAMES.bible,
@@ -188,13 +229,8 @@ export default function Navigation({
                   aria-haspopup="dialog"
                   aria-expanded={open && panel === pickerPanel}
                   data-track={track}
-                  onPointerDown={
-                    chrono
-                      ? () => void loadChronologyPanel()
-                      : !bible
-                        ? () => void loadDayJumper()
-                        : undefined
-                  }
+                  onPointerDown={warm(picker)}
+                  onFocus={warm(picker)}
                   onClick={(event) => show(pickerPanel, event.currentTarget)}
                 >
                   <span className="toolbar-place">
@@ -221,6 +257,8 @@ export default function Navigation({
             aria-label="إعدادات القراءة"
             aria-haspopup="dialog"
             aria-expanded={open && panel === "appearance"}
+            onPointerDown={warm(loadAppearancePanel)}
+            onFocus={warm(loadAppearancePanel)}
             onClick={(event) => show("appearance", event.currentTarget)}
           >
             <Settings size={20} aria-hidden="true" />
@@ -251,29 +289,29 @@ export default function Navigation({
           action?.();
         }}
       >
-        {panel === "menu" ? (
-          <MenuPanel
-            track={view === "read" ? track : undefined}
-            chooseTrack={chooseTrack}
-            readers={readers}
-            notify={notify}
-            close={close}
-            about={() => {
-              const trigger = sheetTrigger;
-              close(() => {
-                if (trigger) show("about", trigger);
-              });
-            }}
-          />
-        ) : panel === "bible" && bible ? (
-          <BiblePanel
-            location={bible}
-            go={go as (location: BibleLocation) => void}
-            close={close}
-          />
-        ) : panel === "chronology" && chrono ? (
-          <ChunkBoundary>
-            <Suspense fallback={<Loading label="جارٍ فتح الفهرس…" />}>
+        <ChunkBoundary key={panel}>
+          <Suspense fallback={<Loading label="جارٍ الفتح…" />}>
+            {panel === "menu" ? (
+              <MenuPanel
+                track={view === "read" ? track : undefined}
+                chooseTrack={chooseTrack}
+                readers={readers}
+                notify={notify}
+                close={close}
+                about={() => {
+                  const trigger = sheetTrigger;
+                  close(() => {
+                    if (trigger) show("about", trigger);
+                  });
+                }}
+              />
+            ) : panel === "bible" && bible ? (
+              <BiblePanel
+                location={bible}
+                go={go as (location: BibleLocation) => void}
+                close={close}
+              />
+            ) : panel === "chronology" && chrono ? (
               <ChronologyPanel
                 chronology={chronology}
                 error={chronologyError}
@@ -283,31 +321,27 @@ export default function Navigation({
                 go={go as (location: ChronologicalLocation) => void}
                 close={close}
               />
-            </Suspense>
-          </ChunkBoundary>
-        ) : panel === "day" ? (
-          <DayPanel
-            selected={selected}
-            reading={reading}
-            readingError={readingError}
-            retryReading={retryReading}
-            go={goDay}
-            navigate={navigate}
-            close={close}
-            jump={jump}
-          />
-        ) : panel === "appearance" ? (
-          <AppearancePanel
-            continuous={continuous}
-            setContinuous={setContinuous}
-          />
-        ) : panel === "about" ? (
-          <ChunkBoundary>
-            <Suspense fallback={<Loading label="جارٍ فتح معلومات التطبيق…" />}>
+            ) : panel === "day" ? (
+              <DayPanel
+                selected={selected}
+                reading={reading}
+                readingError={readingError}
+                retryReading={retryReading}
+                go={goDay}
+                navigate={navigate}
+                close={close}
+                jump={jump}
+              />
+            ) : panel === "appearance" ? (
+              <AppearancePanel
+                continuous={continuous}
+                setContinuous={setContinuous}
+              />
+            ) : panel === "about" ? (
               <About />
-            </Suspense>
-          </ChunkBoundary>
-        ) : null}
+            ) : null}
+          </Suspense>
+        </ChunkBoundary>
       </Sheet>
     </>
   );

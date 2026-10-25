@@ -71,12 +71,12 @@ test.describe("loading and caching", () => {
   }) => {
     let failDay = true;
     let failPlan = true;
-    await page.route("**/readings/1.json", (route) =>
+    await page.route("**/readings/1.json*", (route) =>
       failDay
         ? route.fulfill({ status: 503, body: "failed" })
         : route.continue(),
     );
-    await page.route("**/readings/plan.json", (route) =>
+    await page.route("**/readings/plan.json*", (route) =>
       failPlan
         ? route.fulfill({ status: 503, body: "failed" })
         : route.continue(),
@@ -102,24 +102,78 @@ test.describe("loading and caching", () => {
     page,
   }) => {
     const gate = createGate();
-    await page.route("**/readings/2.json", async (route) => {
+    await page.route("**/readings/2.json*", async (route) => {
       await gate.opened;
       await route.continue();
     });
     await page.goto("/?day=1");
     await ready(page);
-    const requested = page.waitForRequest("**/readings/2.json");
+    const requested = page.waitForRequest("**/readings/2.json*");
     await nextDay(page).click();
     await requested;
     await nextDay(page).click();
     await ready(page);
-    const response = page.waitForResponse("**/readings/2.json");
+    const response = page.waitForResponse("**/readings/2.json*");
     gate.open();
     await response;
     await expect(page.getByRole("article")).toHaveAttribute("data-day", "3");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "اليوم ٣",
     );
+  });
+});
+
+test.describe("first reading", () => {
+  const preloads = (page: import("@playwright/test").Page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('link[rel="preload"][as="fetch"]')].map(
+        (link) =>
+          new URL((link as HTMLLinkElement).href).pathname +
+          new URL((link as HTMLLinkElement).href).search,
+      ),
+    );
+
+  test("the reading's text is fetched with the page, once, by its versioned address", async ({
+    page,
+  }) => {
+    await stubConnection(page, { saveData: true });
+    const urls: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (url.pathname.startsWith("/bible/"))
+        urls.push(url.pathname + url.search);
+    });
+    await page.goto("/");
+    await ready(page);
+    const [first] = await preloads(page);
+    expect(first).toMatch(/^\/bible\/GEN\/1\.json\?v=[0-9a-f]{10}$/);
+    await page.waitForLoadState("networkidle");
+    // The app's own request reuses the preload.
+    expect(urls).toEqual([first]);
+    // The next launch starts with the reading open at the end of this one.
+    await page
+      .getByRole("button", { name: "الإصحاح التالي", exact: true })
+      .click();
+    await ready(page);
+    await page.reload();
+    await ready(page);
+    expect(await preloads(page)).toEqual([
+      first.replace("/GEN/1.json", "/GEN/2.json"),
+    ]);
+  });
+
+  test("a returning reader from before preloading, and links, get no wrong guess", async ({
+    page,
+  }) => {
+    await seed(page);
+    await page.goto("/");
+    await ready(page);
+    expect(await preloads(page)).toEqual([]);
+    await page.goto("/?mode=bible&book=JHN&chapter=3");
+    await ready(page);
+    expect(await preloads(page)).toEqual([
+      expect.stringMatching(/^\/bible\/JHN\/3\.json\?v=/),
+    ]);
   });
 });
 
@@ -138,7 +192,7 @@ test.describe("prefetch", () => {
       "/readings/1.json",
     ]);
     expect(requests.some((url) => url.includes("church-logo-192"))).toBe(false);
-    const prefetched = page.waitForResponse("**/readings/2.json");
+    const prefetched = page.waitForResponse("**/readings/2.json*");
     fonts.open();
     await ready(page);
     await (await prefetched).finished();
@@ -182,12 +236,12 @@ test.describe("prefetch", () => {
     page,
   }) => {
     let attempts = 0;
-    await page.route("**/readings/2.json", (route) =>
+    await page.route("**/readings/2.json*", (route) =>
       ++attempts === 1
         ? route.fulfill({ status: 503, body: "failed" })
         : route.continue(),
     );
-    const failed = page.waitForResponse("**/readings/2.json");
+    const failed = page.waitForResponse("**/readings/2.json*");
     await page.goto("/?day=1");
     await ready(page);
     await (await failed).finished();

@@ -280,13 +280,13 @@ test("an older chronology choice still loading never overrides a later choice", 
   // Later routes run first and fall back to the fixture.
   await stubChronology(page);
   const gate = createGate();
-  await page.route("**/chronology/OT.json", async (route) => {
+  await page.route("**/chronology/OT.json*", async (route) => {
     await gate.opened;
     await route.fallback();
   });
   await page.goto("/?day=1");
   await ready(page);
-  const requested = page.waitForRequest("**/chronology/OT.json");
+  const requested = page.waitForRequest("**/chronology/OT.json*");
   await chooseFromMenu(page, MODES.ot);
   await requested;
   // The catalog is still pending: the plan day stays on screen.
@@ -294,7 +294,7 @@ test("an older chronology choice still loading never overrides a later choice", 
   await chooseFromMenu(page, MODES.bible);
   await ready(page);
   await expect(article(page)).toHaveAttribute("data-reading", "bible:GEN:1");
-  const response = page.waitForResponse("**/chronology/OT.json");
+  const response = page.waitForResponse("**/chronology/OT.json*");
   gate.open();
   await response;
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 100)));
@@ -314,7 +314,7 @@ test("a catalog failure is reported without leaving the current reading", async 
 }) => {
   await stubChronology(page);
   let fail = true;
-  await page.route("**/chronology/NT.json", (route) =>
+  await page.route("**/chronology/NT.json*", (route) =>
     fail ? route.fulfill({ status: 503, body: "down" }) : route.fallback(),
   );
   await page.goto("/");

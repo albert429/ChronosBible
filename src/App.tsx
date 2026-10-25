@@ -34,6 +34,7 @@ import {
 import { useReadingLocation } from "./reader/useReadingLocation";
 import { days } from "./plan/readings";
 import { adjacentLocation } from "./navigation/adjacent";
+import { readingPaths, rememberPreload } from "./reader/preload";
 import { TRACK_NAMES } from "./navigation/modes";
 const Dialogs = lazy(() => import("./plan/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
@@ -114,6 +115,13 @@ export default function App() {
   const previous = adjacentLocation(location, -1, chronology.data);
   const next = adjacentLocation(location, 1, chronology.data);
   const title = readingTitle(location, chronology.data, reading.data);
+  // Once the text is shown, the next launch fetches it alongside the app.
+  const shownKey = reading.data ? readingKey(reading.data) : "";
+  useEffect(() => {
+    if (shownKey && shownKey === readingKey(location))
+      rememberPreload(readingPaths(location, reading.data));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownKey]);
   useEffect(() => {
     const page = view === "read" ? title : TRACK_NAMES.plan;
     document.title = page ? `${page} · الكتاب المقدس` : "الكتاب المقدس";

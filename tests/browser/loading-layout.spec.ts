@@ -6,7 +6,7 @@ test.describe("loading layout", () => {
     page,
   }) => {
     const gate = createGate();
-    await page.route("**/bible/GEN/1.json", async (route) => {
+    await page.route("**/bible/GEN/1.json*", async (route) => {
       await gate.opened;
       await route.continue();
     });
@@ -29,7 +29,7 @@ test.describe("loading layout", () => {
       "true",
     );
     await expect(page.locator(".reading-completion")).toHaveCount(0);
-    const response = page.waitForResponse("**/bible/GEN/1.json");
+    const response = page.waitForResponse("**/bible/GEN/1.json*");
     gate.open();
     await response;
     await ready(page);

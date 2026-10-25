@@ -646,3 +646,19 @@ test("an earlier v2 guest without completion still loads", () => {
     loadProgress(storage({ [STATE_KEY]: JSON.stringify(corrupt) })),
   );
 });
+
+test("saving a place that has not changed writes nothing", () => {
+  const s = storage();
+  const place = withPlace(loadProgress(s).guest, ot("ot-001"));
+  saveReaderPlaces(s, "", place);
+  const stored = s.values.get(STATE_KEY);
+  // A full store would reject a write; an unchanged save does not need one.
+  s.failWrites = 1;
+  saveReaderPlaces(s, "", place);
+  assert.equal(s.failWrites, 1);
+  assert.equal(s.values.get(STATE_KEY), stored);
+  // A real change is still written, and a failed write is still reported.
+  assert.throws(() =>
+    saveReaderPlaces(s, "", withPlace(loadProgress(s).guest, ot("ot-002"))),
+  );
+});
