@@ -250,7 +250,7 @@ test("an answer streams in, then the card reports it once and counts it", async 
     authorization: `Bearer ${AI_KEY}`,
     "content-type": "application/json",
     "http-referer": `${AI_URL}/`,
-    "x-openrouter-title": "Bible150",
+    "x-openrouter-title": "ChronosBible",
     "x-openrouter-app-visibility": "hidden",
   });
   expect(request1.headers.cookie).toBeUndefined();

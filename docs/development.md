@@ -149,7 +149,7 @@ When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/ai/chips.
    read -rs KEY   # paste the key; it is not echoed or saved in history
    curl -sSN https://openrouter.ai/api/v1/chat/completions \
      -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-     -H "HTTP-Referer: https://sfk-bible-reading.vercel.app/" -H "X-OpenRouter-Title: Bible150" \
+     -H "HTTP-Referer: https://chronosbible.com/" -H "X-OpenRouter-Title: ChronosBible" \
      -H "X-OpenRouter-App-Visibility: hidden" \
      -d '{"models":["google/gemma-4-31b-it:free","google/gemma-4-26b-a4b-it:free","openrouter/free"],"messages":[{"role":"user","content":"اشرح يوحنا 3:16 في جملتين."}],"stream":true,"max_tokens":2000,"temperature":0.3,"reasoning":{"exclude":true}}'
    curl -sS https://openrouter.ai/api/v1/key -H "Authorization: Bearer $KEY"
