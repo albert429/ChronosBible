@@ -18,6 +18,21 @@ Check the change as a reader on a phone would meet it. Prefer observing it in a 
 
 ## Evidence
 
-Use the existing tooling: `tests/browser/` Playwright specs (with axe) and `npm run test:visual` against a running preview on your own `PW_PORT`. Save screenshots under the shared `.agents/artifacts/` and cite them in the handoff. Add or extend a browser spec only for behaviour that could regress; a purely cosmetic tweak does not need a new test.
+Use the existing tooling: `tests/browser/` Playwright specs (with axe) and the visual capture script. With `PW_PORT` set to your assigned port, build and start your preview:
+
+```sh
+npm run build
+npm start -- --host 127.0.0.1 --port "$PW_PORT" --strictPort
+```
+
+In another terminal in the same worktree, set `PW_PORT` to that assigned port and run:
+
+```sh
+PREVIEW_URL="http://127.0.0.1:$PW_PORT" npm run test:visual
+```
+
+The capture script reads `PREVIEW_URL`; setting `PW_PORT` alone does not select its target. It writes screenshots to the worktree's `artifacts/screenshots/` and metrics to `artifacts/preview-report.json`. Copy the evidence you need into the primary checkout's shared `.agents/artifacts/<task-id>/` before handoff, and cite those shared paths. Capture any required widths or states that the script does not cover separately.
+
+Add or extend a browser spec only for behaviour that could regress; a purely cosmetic tweak does not need a new test.
 
 Report each defect with the width or theme where it appears. Fix it only if the assignment allows UI edits; otherwise hand it to the ui-ux role.
