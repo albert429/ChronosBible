@@ -79,7 +79,12 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
   );
   assert.equal(env.VITE_AI_PROVIDERS, "");
   assert.equal(env.VITE_OPENROUTER_API_KEY, "");
-  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "false");
+  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
+  assert.equal(
+    buildEnvironment("production", source, "older config")
+      .VITE_AUDIO_CHAPTERS_ENABLED,
+    "false",
+  );
   for (const key of ["VITE_FUTURE_KEY", "AUDIO_TEST_FIXTURES", "NODE_OPTIONS"])
     assert.equal(env[key as keyof typeof env], undefined);
   assert.equal(
@@ -344,7 +349,7 @@ assert.equal(process.env.VITE_AI_PROVIDERS, "");
 assert.equal(process.env.VITE_FUTURE_KEY, undefined);
 assert.equal(process.env.AUDIO_TEST_FIXTURES, undefined);
 assert.equal(process.env.VITE_AUDIO_BASE_URL, ${JSON.stringify(AUDIO_BASE_URL)});
-assert.equal(process.env.VITE_AUDIO_CHAPTERS_ENABLED, ${JSON.stringify(target === "dev" ? "true" : "false")});
+assert.equal(process.env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
 fs.mkdirSync("dist");
 fs.writeFileSync("dist/index.html", "safe app");
 `,

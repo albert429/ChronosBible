@@ -201,9 +201,9 @@ Cloudflare serves two independent Workers from the same explicit `wrangler.json`
 | `main`     | `chronosbible`     | `chronosbible.com`     | `npm run app:host:deploy`     |
 | `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
-The production branch keeps its daily-audio snapshot. The development branch
-uses its own full-Bible content and audio publication inventory; its chapter-audio
-flag is enabled only when that branch's Vite configuration supports it. These
+Both environments build the same way from their own branch, using that
+branch's full-Bible content and audio publication inventory. The chapter-audio
+flag is enabled whenever the branch's Vite configuration supports it. These
 hosting scripts do not copy content between branches. Vercel continues using
 `npm run build` and its existing configuration.
 
