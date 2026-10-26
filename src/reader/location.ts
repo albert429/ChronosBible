@@ -125,8 +125,8 @@ export const sameLocation = (a?: AnyReadingLocation, b?: AnyReadingLocation) =>
 /**
  * The address for a place reached inside the app. Canonical chapters get a
  * shareable static link. Plan days stay at the bare app URL, so a home-screen
- * shortcut (the app has no web manifest) cannot pin one day; the stored place
- * reopens it instead. An explicit ?day= link is kept while it is current.
+ * shortcut cannot pin one day; the stored place reopens it instead. An
+ * explicit ?day= link is kept while it is current.
  */
 export const locationSearch = (location: AnyReadingLocation) =>
   location.mode === "plan" ? "" : readingSearch(location);

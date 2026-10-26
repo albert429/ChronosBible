@@ -36,6 +36,7 @@ import { days } from "./plan/readings";
 import { adjacentLocation } from "./navigation/adjacent";
 import { readingPaths, rememberPreload } from "./reader/preload";
 import { TRACK_NAMES } from "./navigation/modes";
+import UpdateNotice from "./pwa/UpdateNotice";
 const Dialogs = lazy(() => import("./plan/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
   join: "القراء على هذا الجهاز",
@@ -369,6 +370,7 @@ export default function App() {
           </div>
         )}
       </dialog>
+      <UpdateNotice />
       {notice && !modal && (
         <div className="toast" role="status">
           <Check size={19} />

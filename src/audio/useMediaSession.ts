@@ -63,7 +63,12 @@ export function useMediaSession({
       title,
       artist: "ترجمة فان دايك · Faith Comes By Hearing",
       album: "الكتاب المقدس · ترجمة فان دايك",
-      artwork: [{ src: appIcon, sizes: "any", type: "image/svg+xml" }],
+      // Lock screens show PNGs (public/icons, the installed app's icons).
+      artwork: [
+        { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+        { src: appIcon, sizes: "any", type: "image/svg+xml" },
+      ],
     });
     const handlers: Partial<
       Record<MediaSessionAction, MediaSessionActionHandler>

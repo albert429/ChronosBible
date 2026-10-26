@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, type Plugin } from "vite";
+import { build, defineConfig, loadEnv, type Plugin } from "vite";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -11,12 +11,10 @@ import {
   manifestOutputPath,
 } from "./src/audio/publication.ts";
 import { catalog } from "./src/bible/catalog.ts";
+import { DATA_FOLDERS } from "./src/pwa/rules.ts";
 
 const json = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 const optional = (path: string) => (existsSync(path) ? json(path) : undefined);
-
-/** Generated Scripture data the app fetches with a content version. */
-export const DATA_FOLDERS = ["bible", "readings", "chronology", "study"];
 
 /**
  * A short content hash of each generated data folder under public/: the
@@ -47,6 +45,70 @@ export function dataVersions(root = "public"): Record<string, string> {
   return versions;
 }
 
+/**
+ * Build /sw.js once the app's files are known: a separate classic script
+ * (src/pwa/sw.ts), so it never imports a chunk the page shares. It caches
+ * the page, every hashed file, the manifest and its icons.
+ */
+function serviceWorker(versions: Record<string, string>): Plugin {
+  let outDir = "dist";
+  let root = process.cwd();
+  return {
+    name: "service-worker",
+    apply: "build",
+    configResolved(config) {
+      root = config.root;
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    async writeBundle(_options, bundle) {
+      const icons = existsSync(resolve(root, "public/icons"))
+        ? readdirSync(resolve(root, "public/icons")).map((f) => `/icons/${f}`)
+        : [];
+      const files = [
+        "/",
+        "/manifest.json",
+        ...icons,
+        ...Object.keys(bundle)
+          .filter((file) => file.startsWith("assets/"))
+          .map((file) => `/${file}`),
+      ].sort();
+      // The page itself is not fingerprinted: its text marks the build too.
+      // The page, manifest and icons are not fingerprinted: their bytes mark
+      // the build too, so changing only them still offers an update.
+      const page = bundle["index.html"];
+      const hash = createHash("sha256")
+        .update(JSON.stringify([files, versions]))
+        .update(page?.type === "asset" ? page.source : "");
+      for (const file of ["/manifest.json", ...icons])
+        if (existsSync(resolve(root, `public${file}`)))
+          hash.update(readFileSync(resolve(root, `public${file}`)));
+      const build_ = hash.digest("hex").slice(0, 10);
+      await build({
+        configFile: false,
+        root,
+        logLevel: "warn",
+        publicDir: false,
+        define: {
+          __SW_SHELL__: JSON.stringify(files),
+          __SW_BUILD__: JSON.stringify(build_),
+          __DATA_VERSIONS__: JSON.stringify(versions),
+        },
+        build: {
+          outDir,
+          emptyOutDir: false,
+          copyPublicDir: false,
+          lib: {
+            entry: resolve(root, "src/pwa/sw.ts"),
+            formats: ["iife"],
+            name: "sw",
+            fileName: () => "sw.js",
+          },
+        },
+      });
+    },
+  };
+}
+
 /** Never ship a manifest for audio this build does not advertise. */
 function removeUnpublishedManifests(paths: string[]): Plugin {
   let outDir = "dist";
@@ -62,7 +124,7 @@ function removeUnpublishedManifests(paths: string[]): Plugin {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const { VITE_AUDIO_BASE_URL = "", VITE_AUDIO_CHAPTERS_ENABLED = "" } = env;
   if (VITE_AUDIO_BASE_URL)
@@ -115,6 +177,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       removeUnpublishedManifests(unpublished),
+      serviceWorker(versions),
       {
         // The preload script in index.html names files as the app does.
         name: "data-versions-html",
@@ -130,6 +193,8 @@ export default defineConfig(({ mode }) => {
       ),
       __AUDIO_READINGS__: JSON.stringify(advertised.readings),
       __DATA_VERSIONS__: JSON.stringify(versions),
+      // Registered from production builds only (src/pwa/register.ts).
+      __SERVICE_WORKER__: JSON.stringify(command === "build"),
       __AI_ENABLED__: JSON.stringify(ai !== null),
       __AI_DAILY_CAP__: JSON.stringify(ai?.dailyCap ?? 0),
       __AI_ATTEMPT_CAP__: JSON.stringify(ai?.attemptCap ?? 0),
