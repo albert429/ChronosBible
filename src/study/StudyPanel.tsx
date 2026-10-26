@@ -1,71 +1,54 @@
 import "./study.css";
 import { lazy, Suspense } from "react";
-import { ChunkBoundary, Loading, LoadError } from "../components/Feedback";
+import { catalog } from "../bible/catalog";
+import { ChunkBoundary, Loading } from "../components/Feedback";
 import type { Passage, Verse } from "../plan/readings";
-import { studyCore } from "./client";
-import GreekWords from "./GreekWords";
+import OriginalWords from "./OriginalWords";
 import AiSpark from "./AiSpark";
 import OtherTranslation from "./OtherTranslation";
 import Section from "./Section";
-import { useResource } from "../lib/useResource";
 import { verseId } from "../bible/verse";
 
-// Optional AI explanations: without the build flag this branch, the lazy
-// import and every AI module are left out of the bundle.
+// The disabled production build never includes the AI provider or panel chunks.
 const AiPanel = __AI_ENABLED__ ? lazy(() => import("./AiPanel")) : null;
 
 export default function StudyPanel({
-  day,
-  passageIndex,
   passage,
   verse,
+  usfm,
 }: {
-  day: number;
-  passageIndex: number;
   passage: Passage;
   verse: Verse;
+  usfm?: string;
 }) {
-  // The core file gives each section's contents and counts; sections start
-  // collapsed; the translations section loads its own file when first opened.
-  const core = useResource(studyCore, String(day));
-  const usfm = core.data?.p[passageIndex] ?? "";
-  const id = verseId(usfm, passage.chapter, verse.number);
-
-  const entry = core.data?.verses[id];
+  const book = catalog.find((item) =>
+    usfm ? item.usfm === usfm : item.name === passage.book,
+  );
+  if (!book) return <p className="study-empty">لا تتوفر دراسة لهذه الآية.</p>;
+  const id = verseId(book.usfm, passage.chapter, verse.number);
   return (
     <div className="study">
-      {core.error ? (
-        <LoadError message={core.error} retry={core.retry} />
-      ) : !core.data ? (
-        <Loading label="جارٍ تحميل دراسة الآية…" />
-      ) : !entry ? (
-        <p className="study-empty">لا تتوفر دراسة لهذه الآية.</p>
-      ) : (
-        <div className="study-sections">
-          <OtherTranslation day={day} id={id} />
-          {AiPanel && (
-            <Section
-              key={id}
-              title="اسأل الذكاء الاصطناعي"
-              hint="شرح الآية وخلفيتها ومعاني كلماتها، أو سؤالك"
-              icon={<AiSpark />}
-            >
-              <ChunkBoundary>
-                <Suspense fallback={<Loading label="جارٍ التحميل…" />}>
-                  <AiPanel
-                    day={day}
-                    id={id}
-                    passage={passage}
-                    verse={verse}
-                    g={entry.g}
-                  />
-                </Suspense>
-              </ChunkBoundary>
-            </Section>
-          )}
-          <GreekWords text={verse.text} g={entry.g} />
-        </div>
-      )}
+      <div className="study-sections" key={id}>
+        <OtherTranslation id={id} />
+        {AiPanel && (
+          <Section
+            title="اسأل الذكاء الاصطناعي"
+            hint="شرح الآية وخلفيتها ومعاني كلماتها، أو سؤالك"
+            icon={<AiSpark />}
+          >
+            <ChunkBoundary>
+              <Suspense fallback={<Loading label="جارٍ التحميل…" />}>
+                <AiPanel id={id} passage={passage} verse={verse} />
+              </Suspense>
+            </ChunkBoundary>
+          </Section>
+        )}
+        <OriginalWords
+          id={id}
+          text={verse.text}
+          oldTestament={book.testament === "OT"}
+        />
+      </div>
     </div>
   );
 }

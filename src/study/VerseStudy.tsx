@@ -3,11 +3,12 @@ import { chapterVerse, isolate } from "../bible/reference";
 import { isBibleChapter, type ScriptureReading } from "../bible/types";
 import { ChunkBoundary, Loading } from "../components/Feedback";
 import Sheet from "../components/Sheet";
+import { displayArabic } from "../lib/arabicDisplay";
+import { useAppearance } from "../navigation/appearance";
 import { verseNumberButton } from "../reader/scriptureDom";
 
 export const loadStudyPanel = () => import("./StudyPanel");
 const StudyPanel = lazy(loadStudyPanel);
-const CanonicalStudy = lazy(() => import("./CanonicalStudy"));
 
 export type StudyTarget = { passage: number; verse: number; el: HTMLElement };
 
@@ -24,6 +25,7 @@ export default function VerseStudy({
   onClose: () => void;
   onAfterClose: () => void;
 }) {
+  const { diacritics } = useAppearance();
   const passage = reading.passages[target.passage];
   const verse = passage?.verses?.find((v) => v.number === target.verse);
   if (!passage || !verse) return null;
@@ -36,19 +38,14 @@ export default function VerseStudy({
       onAfterClose={onAfterClose}
       returnFocusTo={verseNumberButton(target.el)}
     >
-      <p className="study-verse">{verse.text}</p>
+      <p className="study-verse">{displayArabic(verse.text, diacritics)}</p>
       <ChunkBoundary>
         <Suspense fallback={<Loading label="جارٍ تحميل دراسة الآية…" />}>
-          {isBibleChapter(reading) ? (
-            <CanonicalStudy reading={reading} verse={verse} />
-          ) : (
-            <StudyPanel
-              day={reading.day}
-              passageIndex={target.passage}
-              passage={passage}
-              verse={verse}
-            />
-          )}
+          <StudyPanel
+            usfm={isBibleChapter(reading) ? reading.usfm : undefined}
+            passage={passage}
+            verse={verse}
+          />
         </Suspense>
       </ChunkBoundary>
     </Sheet>

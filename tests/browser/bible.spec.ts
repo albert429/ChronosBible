@@ -221,7 +221,7 @@ test("rapid chapter and mode changes ignore stale text; failed chapters retry", 
   );
 });
 
-test("canonical NT resolves real study data while OT presents no invented original language", async ({
+test("canonical OT and NT study load independently without the daily plan", async ({
   page,
 }) => {
   await stubConnection(page, { saveData: true });
@@ -234,13 +234,17 @@ test("canonical NT resolves real study data while OT presents no invented origin
   await expect(page.locator(".verse-text h3")).toContainText("البدء");
   await page.locator(".verse-number").first().focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog")).toContainText(
-    "لا تتوفر دراسة لهذه الآية حاليًا.",
-  );
+  await expect(
+    page.getByRole("button", { name: /^الكلمات العبرية والآرامية/ }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /الكلمات اليونانية/ }),
   ).toHaveCount(0);
   expect(requests).toEqual([]);
+  await page
+    .getByRole("button", { name: /^الكلمات العبرية والآرامية/ })
+    .click();
+  await expect(page.locator('dialog bdi[lang="he"]').first()).toBeVisible();
   await closeSheet(page);
   await chooseChapter(page, "JHN", "يوحنا ١", "NT");
   await page.locator(".verse-number").first().focus();
@@ -251,8 +255,12 @@ test("canonical NT resolves real study data while OT presents no invented origin
   await expect(
     page.getByRole("button", { name: /^ترجمات أخرى/ }),
   ).toBeVisible();
-  expect(requests).toContain("/readings/plan.json");
-  expect(requests.some((path) => /^\/study\/\d+\.json$/.test(path))).toBe(true);
+  await page.getByRole("button", { name: /^الكلمات اليونانية/ }).click();
+  await expect(page.locator('dialog bdi[lang="grc"]').first()).toBeVisible();
+  expect(requests).not.toContain("/readings/plan.json");
+  expect(requests.some((path) => /^\/study\/v2\/JHN\/1\//.test(path))).toBe(
+    true,
+  );
   await closeSheet(page);
   await chooseChapter(page, "PSA", "المزامير ٣");
   await expect(page.locator(".scripture-superscription")).toBeVisible();

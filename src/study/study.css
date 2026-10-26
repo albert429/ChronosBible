@@ -176,3 +176,13 @@
   padding: 16px 8px;
   gap: 12px;
 }
+
+/* Hebrew vowel points and cantillation need room above and below each line. */
+.greek-word:is([lang="he"], [lang="arc"]) {
+  font-family: "Times New Roman", serif;
+  font-size: 21px;
+  line-height: 2;
+}
+.study-strong {
+  font-variant-numeric: tabular-nums;
+}

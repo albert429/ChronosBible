@@ -1,6 +1,17 @@
 import type { Passage, Verse } from "../plan/readings.ts";
-import type { GreekToken, LexDay, VerseText } from "../study/types.ts";
-import { gloss, greekWord, keyGroups, span } from "../study/verse.ts";
+import type {
+  GreekToken,
+  LexDay,
+  VerseText,
+  WordToken,
+} from "../study/types.ts";
+import {
+  gloss,
+  originalWord,
+  wordGroups,
+  wordsTitle,
+  span,
+} from "../study/verse.ts";
 import type { AiRequest, ChipId } from "./types.ts";
 
 import { QUESTION_MAX, cleanQuestion } from "./chips.ts";
@@ -21,18 +32,18 @@ const TASKS: Record<Exclude<ChipId, "ask">, string> = {
   explain:
     "اشرح معنى الآية في سياقها: ماذا تقول، ولماذا وردت في هذا الموضع، وما فكرتها الرئيسية. اختم بجملة واحدة عمّا تعنيه للقارئ اليوم.",
   words:
-    "اشرح أهم كلمات الآية (ست كلمات على الأكثر) مستعينًا بالكلمات اليونانية وتعريفاتها المرفقة. لكل كلمة نقطة تبدأ بالكلمة العربية، ثم الكلمة اليونانية بين قوسين، ثم معناها وما يضيفه لفهم الآية.",
+    "اشرح أهم كلمات الآية (ست كلمات على الأكثر) مستعينًا بكلمات اللغات الأصلية وتعريفاتها المرفقة. لكل كلمة نقطة تبدأ بالكلمة العربية، ثم الكلمة الأصلية بين قوسين، ثم معناها وما يضيفه لفهم الآية.",
   background:
     "اشرح الخلفية التاريخية والثقافية للآية وموقعها في الفقرة: من المتكلم ولمن، وأين ومتى بقدر ما يمكن معرفته، وما العادات أو المفاهيم التي تساعد على فهمها.",
 };
 
-export const SYSTEM_PROMPT = `أنت مساعد لدراسة الكتاب المقدس، تساعد مجموعة من شباب كنيسة في مصر على فهم آية من العهد الجديد.
+export const SYSTEM_PROMPT = `أنت مساعد لدراسة الكتاب المقدس، تساعد القارئ على فهم آية من الكتاب المقدس.
 
 التزم بما يلي:
 ١. اكتب بالعربية الفصحى البسيطة فقط، بأسلوب واضح ومحترم، وابدأ بالإجابة مباشرة دون مقدمة.
-٢. اعتمد على المادة المرفقة: نص الآية وسياقها والترجمات والكلمات اليونانية إن وُجدت. ويجوز أن تضيف معلومات تاريخية وثقافية عامة ثابتة ومعروفة عن زمن العهد الجديد.
+٢. اعتمد على المادة المرفقة: نص الآية وسياقها والترجمات وكلمات اللغات الأصلية إن وُجدت. ويجوز أن تضيف معلومات تاريخية وثقافية عامة ثابتة ومعروفة عن زمن النص.
 ٣. لا تذكر أي شاهد أو مرجع كتابي غير الآيات المرفقة، ولا تنسب أقوالًا إلى أشخاص أو كتب أو آباء الكنيسة.
-٤. لا تخترع معاني للكلمات اليونانية؛ استخدم المعاني المرفقة، واكتب الكلمة اليونانية كما وردت.
+٤. لا تخترع معاني للكلمات الأصلية؛ استخدم المعاني المرفقة، واكتب الكلمة الأصلية كما وردت.
 ٥. إذا لم تكن متأكدًا من معلومة فقل ذلك صراحة، ولا تخمّن.
 ٦. في المسائل العقائدية المختلف عليها بين الكنائس اذكر ذلك باختصار وحياد دون ترجيح.
 ٧. لا تقارن بأديان أو طوائف أخرى ولا تنتقدها، ولا تتناول السياسة أو أشخاصًا معاصرين، ولا تقدّم نصائح طبية أو قانونية.
@@ -45,7 +56,9 @@ export type Material = {
   book: string;
   passage: Passage;
   verse: Verse;
-  g: GreekToken[];
+  /** Legacy NT material remains accepted for existing integrations. */
+  g?: GreekToken[];
+  words?: WordToken[];
   /** كتاب الحياة (n) and KJV (e); omitted when the file failed to load. */
   tr?: { n?: VerseText; e?: VerseText };
   lex?: LexDay["lex"];
@@ -87,8 +100,12 @@ const clip = (text: string, max = VERSE_CHARS) =>
 const textOf = (value: VerseText) =>
   typeof value === "string" ? value : `(الآيات ${value.b}) ${value.t}`;
 
-function greekBlock(material: Material, definitions: boolean) {
-  const groups = keyGroups(material.g).slice(0, 10);
+function materialWords(material: Material): WordToken[] {
+  return material.words ?? (material.g ?? []).map((word) => [...word, "grc"]);
+}
+
+function originalBlock(material: Material, definitions: boolean) {
+  const groups = wordGroups(materialWords(material)).slice(0, 10);
   if (!groups.length)
     return "لا توجد كلمات مفتاحية معلمة؛ اشرح الكلمات العربية المهمة في الآية.";
   const lines: string[] = [];
@@ -97,11 +114,11 @@ function greekBlock(material: Material, definitions: boolean) {
       group.a0 !== null && group.a1 !== null
         ? plainArabic(span(material.verse.text, group.a0, group.a1))
         : "(بلا مقابل مباشر)";
-    const greek = group.tokens.map((t) => greekWord(t[0])).join(" ");
+    const original = group.tokens.map(originalWord).join(" ");
     const details = group.tokens
       .map((t) => `${t[1]}، ${t[2]}: ${material.lex?.[t[2]]?.g || gloss(t[4])}`)
       .join("؛ ");
-    lines.push(`- ${arabic} ← ${greek} (${details})`);
+    lines.push(`- ${arabic} ← ${original} (${details})`);
     if (definitions)
       for (const t of group.tokens) {
         const entry = material.lex?.[t[2]];
@@ -152,7 +169,7 @@ export function buildPrompt(
   if (tr?.e) blocks.push(`الترجمة الإنجليزية (KJV):\n${clip(textOf(tr.e))}`);
   if (chip === "words" || chip === "ask")
     blocks.push(
-      `الكلمات اليونانية المهمة:\n${greekBlock(material, chip === "words")}`,
+      `${materialWords(material).length ? wordsTitle(materialWords(material)) : "الكلمات الأصلية"} المهمة:\n${originalBlock(material, chip === "words")}`,
     );
   const task =
     chip === "ask"

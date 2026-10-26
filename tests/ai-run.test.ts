@@ -131,3 +131,67 @@ test("An already-stopped request fetches nothing; abortable cleans up", async ()
   assert.equal(await abortable(Promise.resolve(1), controller.signal), 1);
   assert.equal(getEventListeners(controller.signal, "abort").length, 0);
 });
+
+test("canonical OT questions load Hebrew words and shared lexicon definitions", async () => {
+  Object.assign(study, {
+    "v2/GEN/1/index.json": {
+      v: 2,
+      book: "GEN",
+      chapter: 1,
+      ranges: [{ start: 1, end: 31, key: "1-31" }],
+    },
+    "v2/GEN/1/1-31.tr.json": {
+      v: 2,
+      book: "GEN",
+      chapter: 1,
+      start: 1,
+      end: 31,
+      verses: { 1: { e: "In the beginning God created" } },
+    },
+    "v2/GEN/1/1-31.words.json.gz": {
+      v: 2,
+      book: "GEN",
+      chapter: 1,
+      start: 1,
+      end: 31,
+      verses: {
+        1: {
+          w: [["בָּרָא", "bara", "H1254A", "HVqp3ms", "create", 2, 2, "he"]],
+        },
+      },
+    },
+    "v2/lex/H12.json": {
+      v: 2,
+      shard: "H12",
+      lex: { H1254A: { l: "בָּרָא", g: "to create", d: "" } },
+    },
+  });
+  requests.length = 0;
+  const verse = { number: 1, text: "في البدء خلق" };
+  await ask(
+    {
+      chip: "words",
+      id: "GEN.1.1",
+      material: {
+        book: "التكوين",
+        passage: {
+          book: "التكوين",
+          chapter: 1,
+          start: 1,
+          end: 1,
+          verses: [verse],
+        },
+        verse,
+      },
+    },
+    new AbortController().signal,
+    quiet,
+  );
+  assert.ok(requests.includes("/study/v2/GEN/1/1-31.words.json.gz"));
+  assert.ok(requests.includes("/study/v2/lex/H12.json"));
+  const prompt = requests.find((r) => r.startsWith("المرجع"))!;
+  assert.match(prompt, /الكلمات العبرية المهمة/);
+  assert.match(prompt, /H1254A: to create/);
+  assert.doesNotMatch(prompt, /الكلمات اليونانية/);
+  assert.ok(!requests.some((r) => /study\/\d+\./.test(r)));
+});
