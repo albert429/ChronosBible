@@ -5,6 +5,7 @@ import { gzipSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { verseId } from "../src/bible/verse.ts";
 import { usfmByName } from "./lib/books.js";
+import { buildCanonicalStudy } from "./build-study-canonical.js";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 
@@ -88,5 +89,6 @@ export function buildStudy({ out, root = ROOT }) {
       max[kind] = Math.max(max[kind], size);
     }
   }
-  return `Generated ${plan.length} study days (max gzip: core ${max.core} B, lex ${max.lex} B, translations ${max.tr} B).`;
+  const canonical = buildCanonicalStudy({ out, root });
+  return `Canonical study: ${JSON.stringify(canonical)}. Generated ${plan.length} study days (max gzip: core ${max.core} B, lex ${max.lex} B, translations ${max.tr} B).`;
 }

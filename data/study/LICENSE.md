@@ -54,3 +54,34 @@ Copyright © 1988, 1997, 2012 Biblica, Inc.®
   Biblica® trademark is not used to label it; the app calls it «كتاب الحياة».
 - “Biblica” is a trademark registered in the United States Patent and Trademark Office by
   Biblica, Inc.
+
+## Canonical full-Bible resources
+
+`canonical.json.gz`, its generated `/study/v2/` resources, and provenance files
+combine the following separately licensed data; this aggregation does not change
+any source's licence. Source hashes and immutable URLs are recorded in
+`canonical-sources.json`. See [CANONICAL.md](CANONICAL.md) for exact transformations
+and source exceptions.
+
+- **OT words and Arabic mappings — CC BY-SA 4.0:** TTAraSVD OT 4.0.1, STEPBible
+  commit `be4191f0082aeedddb0eff0c02c966292b2bd641`. The original work by
+  STEPBible.org and Arabic Bible Outreach Ministry is available free at
+  [STEPBible Arabic Bibles](https://github.com/STEPBible/STEPBible-Data/tree/master/Tagged-Bibles/Arabic%20Bibles).
+  Underlying Hebrew/Aramaic data is from TAHOT, STEPBible.org (CC BY 4.0).
+  Changes: separate prefixes/suffixes, normalize source markers, split two
+  combined verse blocks, exclude verified Psalm superscriptions from verse
+  lists, remap only verified Arabic spans, and omit two missing written forms.
+- **Hebrew/Aramaic lemma and gloss metadata — CC BY 4.0:** TBESH, STEPBible.org,
+  based on work at Tyndale House Cambridge, at the same pinned commit. The
+  definition column is **not imported or redistributed** because its source
+  header additionally requests permission from Online Bible for those
+  definitions. English meanings use STEP glosses and tagged-source glosses.
+- **Full-Bible كتاب الحياة — CC BY-SA 4.0:** the same Biblica source, copyright,
+  attribution and derivative-work terms documented above for `nav.json`.
+- **Full-Bible KJV:** the same public-domain/Crown-rights notice documented
+  above for `kjv.json`.
+- **NT words and lexicon:** unchanged existing TTAraSVD/TBESG data and licences.
+
+Canonical resources are reorganized by book, chapter and verse range, with
+shared lexicon shards and gzip storage for word files. Scripture wording is
+preserved. Translation bridge labels explicitly identify numbering differences.

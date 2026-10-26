@@ -10,6 +10,7 @@ import {
 import { extname, isAbsolute, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { gunzipSync } from "node:zlib";
 
 export const ROOT = realpathSync(
   fileURLToPath(new URL("../", import.meta.url)),
@@ -99,6 +100,52 @@ function committedRedirects(root) {
   return existsSync(path) ? readFileSync(path, "utf8") : undefined;
 }
 
+const studyBooks = new Set(
+  JSON.parse(
+    readFileSync(new URL("../data/books.json", import.meta.url), "utf8"),
+  ).map((book) => book[0]),
+);
+const studyWordsPath =
+  /^study\/v2\/([1-3]?[A-Z]{2,3})\/([1-9]\d*)\/([1-9]\d*)-([1-9]\d*)\.words\.json\.gz$/;
+
+/** Only the generated study word format may use compressed app assets. */
+function studyWordsBody(body, match) {
+  if (body.length > 30_000)
+    fail("compressed study words exceed request budget");
+  let decoded, data;
+  try {
+    decoded = gunzipSync(body, { maxOutputLength: 256 * 1024 });
+    data = JSON.parse(decoded.toString("utf8"));
+  } catch {
+    fail("invalid or oversized compressed study words");
+  }
+  const [, book, chapter, start, end] = match;
+  if (
+    !data ||
+    !studyBooks.has(book) ||
+    data.v !== 2 ||
+    data.book !== book ||
+    data.chapter !== Number(chapter) ||
+    data.start !== Number(start) ||
+    data.end !== Number(end) ||
+    data.end < data.start ||
+    !data.verses ||
+    typeof data.verses !== "object" ||
+    Array.isArray(data.verses) ||
+    Object.keys(data.verses).length !== data.end - data.start + 1 ||
+    Object.entries(data.verses).some(
+      ([number, entry]) =>
+        !/^[1-9]\d*$/.test(number) ||
+        Number(number) < data.start ||
+        Number(number) > data.end ||
+        !entry ||
+        !Array.isArray(entry.w),
+    )
+  )
+    fail("compressed study words do not match their asset identity");
+  return decoded;
+}
+
 /** @param {string} [redirects] the committed _redirects a shipped copy must equal */
 export function scanAssets(root, env = process.env, redirects) {
   const paths = files(root);
@@ -122,7 +169,11 @@ export function scanAssets(root, env = process.env, redirects) {
       /\.(?:pem|key)$/i.test(file)
     )
       fail("environment or private-key files are forbidden in app assets");
+    const studyMatch = studyWordsPath.exec(
+      relative(root, file).replaceAll("\\", "/"),
+    );
     if (
+      !studyMatch &&
       !/^(?:\.html|\.json|\.js|\.css|\.txt|\.svg|\.png|\.jpe?g|\.webp|\.avif|\.ico|\.woff2?)$/i.test(
         extname(file),
       ) &&
@@ -136,7 +187,8 @@ export function scanAssets(root, env = process.env, redirects) {
       fail("_redirects differs from hosting/cloudflare-app/_redirects");
     if (relative(root, file).startsWith("audio/") && extname(file) !== ".json")
       fail("only generated JSON manifests may be shipped under audio/");
-    const body = readFileSync(file);
+    const raw = readFileSync(file);
+    const body = studyMatch ? studyWordsBody(raw, studyMatch) : raw;
     if (
       secrets.some((value) => body.includes(value)) ||
       /sk-or-v1-[a-zA-Z0-9]{16,}|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/.test(
