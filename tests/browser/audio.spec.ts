@@ -157,9 +157,14 @@ test("direct speed, close, study pause and highlights remain accessible on phone
   ).toHaveCount(0);
   const speed = page.getByRole("button", { name: /^سرعة القراءة:/ });
   await speed.focus();
-  for (const rate of [1.25, 1.5, 0.75, 1]) {
+  for (const [rate, label] of [
+    [1.25, "١٫٢٥×"],
+    [1.5, "١٫٥×"],
+    [0.75, "٠٫٧٥×"],
+    [1, "١×"],
+  ] as const) {
     await page.keyboard.press("Enter");
-    await expect(speed).toHaveText(`${rate}×`);
+    await expect(speed).toHaveText(label);
     await expect
       .poll(() =>
         page
@@ -174,15 +179,15 @@ test("direct speed, close, study pause and highlights remain accessible on phone
       .toBe(false);
   }
   await expect(page.locator("dialog[open]")).toHaveCount(0);
-  // A verse is highlighted before the study sheet pauses playback.
+  // A verse is highlighted; studying a verse leaves the recording playing.
   await expect(page.locator("[data-listening]")).toHaveCount(1);
   await page.locator(".verse-number").first().focus();
   await page.keyboard.press("Enter");
-  await expect
-    .poll(() =>
-      page.locator("audio").evaluate((el: HTMLAudioElement) => el.paused),
-    )
-    .toBe(true);
+  await expect(page.locator("dialog[open]")).toHaveCount(1);
+  await page.waitForTimeout(300);
+  expect(
+    await page.locator("audio").evaluate((el: HTMLAudioElement) => el.paused),
+  ).toBe(false);
   await closeSheet(page);
   for (const theme of ["الوضع النهاري", "الوضع الليلي"]) {
     await page
@@ -352,4 +357,32 @@ test("slow or failed player code gives visible feedback and navigation recovers"
   await page.getByRole("button", { name: "اليوم التالي", exact: true }).click();
   await expect(page.getByRole("article")).toHaveAttribute("data-day", "2");
   await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("with «متابعة», a finished day continues to the next day's recording", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.AUDIO_TEST_FIXTURES !== "1",
+    "Needs the accelerated fixture recordings",
+  );
+  await openPlayer(page);
+  const end = page.getByRole("button", { name: /^عند الانتهاء:/ });
+  await end.click();
+  await expect(end).toHaveAccessibleName("عند الانتهاء: متابعة إلى التالي");
+  await page.locator("audio").evaluate((el: HTMLAudioElement) => {
+    el.currentTime = el.duration - 0.15;
+  });
+  await expect(page.getByRole("article")).toHaveAttribute("data-day", "2", {
+    timeout: 10000,
+  });
+  await expect(page.locator("audio")).toHaveAttribute(
+    "src",
+    /\/audio\/days\/002-.+\.m4a/,
+  );
+  await expect
+    .poll(() =>
+      page.locator("audio").evaluate((el: HTMLAudioElement) => el.paused),
+    )
+    .toBe(false);
 });

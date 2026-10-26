@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ar, dateLabel, daysLabel, today } from "../src/lib/format.ts";
+import { ar, clock, dateLabel, daysLabel, today } from "../src/lib/format.ts";
 
 test("Numbers use Eastern Arabic digits without grouping", () => {
   assert.equal(ar(0), "٠");
@@ -44,4 +44,12 @@ test("Day counts agree with their number", () => {
       "١٥٠ يومًا",
     ],
   );
+});
+
+test("Recording times read as minutes and seconds in Arabic digits", () => {
+  assert.equal(clock(0), "٠:٠٠");
+  assert.equal(clock(65.9), "١:٠٥");
+  assert.equal(clock(600), "١٠:٠٠");
+  assert.equal(clock(3725), "١:٠٢:٠٥");
+  assert.equal(clock(Number.NaN), "٠:٠٠");
 });

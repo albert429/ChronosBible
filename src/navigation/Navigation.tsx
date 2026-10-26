@@ -269,6 +269,7 @@ export default function Navigation({
         open={open}
         returnFocusTo={sheetTrigger}
         title={titles[panel]}
+        keepsAudio={panel === "appearance"}
         headerActions={
           panel === "menu" ? (
             <button

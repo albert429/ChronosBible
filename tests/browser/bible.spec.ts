@@ -276,9 +276,7 @@ test("Bible navigation and picker fit phones, dark maximum text and 200% reflow"
     exact: true,
   });
   while (await increase.isEnabled()) await increase.click();
-  await settings
-    .getByRole("checkbox", { name: "استماع متواصل للإصحاحات" })
-    .check();
+  await settings.getByRole("checkbox", { name: "استماع متواصل" }).check();
   await closeSheet(page);
   for (const width of [320, 360, 390, 430, 195]) {
     await page.setViewportSize({ width, height: width === 195 ? 422 : 844 });
@@ -317,6 +315,6 @@ test("Bible navigation and picker fit phones, dark maximum text and 200% reflow"
   await ready(page);
   const reloaded = await openAppearance(page);
   await expect(
-    reloaded.getByRole("checkbox", { name: "استماع متواصل للإصحاحات" }),
+    reloaded.getByRole("checkbox", { name: "استماع متواصل" }),
   ).toBeChecked();
 });

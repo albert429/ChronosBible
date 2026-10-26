@@ -67,7 +67,7 @@ test.describe("إظهار التشكيل", () => {
     // The other controls are untouched.
     const settings = page.getByRole("dialog", { name: "إعدادات القراءة" });
     await expect(
-      settings.getByRole("checkbox", { name: "استماع متواصل للإصحاحات" }),
+      settings.getByRole("checkbox", { name: "استماع متواصل" }),
     ).toBeVisible();
     await expect(
       settings.getByRole("button", { name: "تكبير الخط" }),

@@ -8,7 +8,7 @@ import {
 } from "react";
 import { readingHasAudio } from "../audio/availability";
 import { catalog } from "../bible/catalog";
-import { adjacentChapter, findBibleBook } from "../bible/navigation";
+import { findBibleBook } from "../bible/navigation";
 import {
   isChronologicalReading,
   readingKey,
@@ -17,7 +17,6 @@ import {
   type BibleChapter,
   type ScriptureReading,
 } from "../bible/types";
-import { adjacentChronologicalLocation } from "../chronology/client";
 import type { ChronologyCatalog } from "../chronology/types";
 import { ar } from "../lib/format";
 import { readingLabel } from "../plan/labels";
@@ -32,6 +31,7 @@ import {
 } from "./useAdjacentPrefetch";
 import { useVerseTap } from "./useVerseTap";
 import { useSwipePaging } from "./useSwipePaging";
+import { useEndAction } from "../audio/endAction";
 import {
   clearSelected,
   markSelected,
@@ -64,6 +64,7 @@ type Props = {
   done: boolean;
   complete: () => void;
   continuous: boolean;
+  setContinuous: (enabled: boolean) => void;
   onContinue: (location: AnyReadingLocation) => void;
 };
 type Listening = {
@@ -132,6 +133,7 @@ export default function Reader({
   done,
   complete,
   continuous,
+  setContinuous,
   onContinue,
 }: Props) {
   const identity = readingKey(location);
@@ -203,18 +205,11 @@ export default function Reader({
     };
   }, [current, identity, location.verse, navigation, restore]);
   const audio = readingHasAudio(location);
-  // The next canonical/chronological place, only when continuous listening is
-  // on and its recording is published; never crosses into another mode.
-  const nextLocation = (() => {
-    if (!continuous) return undefined;
-    const next =
-      location.mode === "bible"
-        ? adjacentChapter(catalog, location, 1)
-        : location.mode === "chronological" && chronology
-          ? adjacentChronologicalLocation(chronology, location, 1)
-          : undefined;
-    return next && readingHasAudio(next) ? next : undefined;
-  })();
+  const [endAction, setEndAction] = useEndAction(continuous, setContinuous);
+  // With «متابعة», listening moves on to the next day, chapter or reading in
+  // this mode when its recording is published; it never crosses modes.
+  const nextLocation =
+    endAction === "next" && next && readingHasAudio(next) ? next : undefined;
   const playerReading = listening && (current || listening.reading);
   function ended() {
     if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
@@ -264,6 +259,10 @@ export default function Reader({
               <AudioPlayer
                 reading={playerReading}
                 next={nextLocation}
+                endAction={endAction}
+                onEndAction={setEndAction}
+                done={done}
+                onComplete={complete}
                 initialTime={(source) =>
                   listening.continuing ? 0 : playbackPosition(source)
                 }

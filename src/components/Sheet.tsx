@@ -17,6 +17,8 @@ type Props = {
   onAfterClose?: () => void;
   returnFocusTo?: HTMLElement | null;
   headerActions?: ReactNode;
+  /** Listening continues while this sheet is open (see usePauseOnDialog). */
+  keepsAudio?: boolean;
   children: ReactNode;
 };
 
@@ -29,6 +31,7 @@ export default function Sheet({
   returnFocusTo,
   children,
   headerActions,
+  keepsAudio,
 }: Props) {
   const surface = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -100,6 +103,7 @@ export default function Sheet({
       className="reader-sheet"
       aria-labelledby={titleId}
       data-closing={closing ? "true" : undefined}
+      data-keeps-audio={keepsAudio || undefined}
       {...dialogProps}
     >
       <div

@@ -135,8 +135,8 @@ const sameElement = (page: Page) =>
 const audio = (page: Page) => page.locator("audio");
 const progress = (page: Page) =>
   page
-    .getByRole("progressbar", { name: "تقدم التسجيل" })
-    .evaluate((el: HTMLProgressElement) => el.value);
+    .getByRole("slider", { name: "موضع التسجيل" })
+    .evaluate((el: HTMLInputElement) => Number(el.value));
 const button = (page: Page, name: string) =>
   page.getByRole("button", { name, exact: true });
 const listen = (page: Page) =>
@@ -309,7 +309,7 @@ test("the next playlist's timing is prefetched as metadata only", async ({
   await open(page, "gen-1-1");
   const settings = await openAppearance(page);
   await settings
-    .getByRole("checkbox", { name: "استماع متواصل للإصحاحات" })
+    .getByRole("checkbox", { name: "استماع متواصل" })
     .setChecked(true);
   await closeSheet(page);
   await listen(page).click();
@@ -343,7 +343,7 @@ for (const connection of [
     await open(page, "gen-1-1");
     const settings = await openAppearance(page);
     await settings
-      .getByRole("checkbox", { name: "استماع متواصل للإصحاحات" })
+      .getByRole("checkbox", { name: "استماع متواصل" })
       .setChecked(true);
     await closeSheet(page);
     await listen(page).click();

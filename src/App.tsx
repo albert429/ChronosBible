@@ -310,6 +310,7 @@ export default function App() {
             next={next}
             onPage={go}
             continuous={locationState.preferences.continuous}
+            setContinuous={locationState.setContinuous}
             // Continuous listening moves on without taking keyboard focus.
             onContinue={locationState.go}
             reading={reading.data}

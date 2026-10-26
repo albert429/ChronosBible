@@ -46,6 +46,7 @@ export default function VerseStudy({
     <Sheet
       open={open}
       title={reference}
+      keepsAudio
       onClose={onClose}
       onAfterClose={onAfterClose}
       returnFocusTo={verseNumberButton(target.el)}

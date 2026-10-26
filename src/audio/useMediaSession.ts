@@ -36,6 +36,10 @@ export function useMediaSession({
   const scrub = useEffectEvent((timeline: Timeline, seconds: number) =>
     seekTo(Math.max(0, Math.min(seconds, timeline.duration))),
   );
+  /** Lock-screen and headset skips: ten seconds unless the system says. */
+  const skip = useEffectEvent((timeline: Timeline, seconds: number) =>
+    scrub(timeline, time + seconds),
+  );
   const resume = useEffectEvent(() => void play());
   const stop = useEffectEvent(() => {
     pause();
@@ -68,6 +72,8 @@ export function useMediaSession({
       pause: () => halt(),
       previoustrack: () => stepCue(timeline, -1),
       nexttrack: () => stepCue(timeline, 1),
+      seekbackward: (details) => skip(timeline, -(details.seekOffset || 10)),
+      seekforward: (details) => skip(timeline, details.seekOffset || 10),
       seekto: (details) => {
         if (details.seekTime !== undefined) scrub(timeline, details.seekTime);
       },

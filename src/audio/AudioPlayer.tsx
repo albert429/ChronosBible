@@ -8,6 +8,7 @@ import { chapterVerse } from "../bible/reference";
 import { dayLabel } from "../plan/labels";
 import { ar } from "../lib/format";
 import AudioControls from "./AudioControls";
+import { nextEndAction, type EndAction } from "./endAction";
 import {
   activeCueIndex,
   announcementAt,
@@ -35,6 +36,10 @@ export default function AudioPlayer({
   initialTime = 0,
   onPosition,
   next,
+  endAction,
+  onEndAction,
+  done,
+  onComplete,
 }: {
   reading: AnyScriptureReading;
   onClose: () => void;
@@ -44,9 +49,20 @@ export default function AudioPlayer({
   onPosition?: (seconds: number, source: string) => void;
   /** The continuation target, whose timing JSON may be fetched once playing. */
   next?: AnyReadingLocation;
+  /** What happens when the recording ends (see endAction.ts). */
+  endAction: EndAction;
+  onEndAction: (action: EndAction) => void;
+  /** Whether the reading is already marked done. */
+  done: boolean;
+  onComplete: () => void;
 }) {
   const { timeline, error: loadError, retry } = useAudioManifest(reading);
-  const media = useMediaElement(timeline, { initialTime, onEnded, onPosition });
+  const media = useMediaElement(timeline, {
+    initialTime,
+    onEnded,
+    onPosition,
+    repeat: endAction === "repeat",
+  });
   const { playing, waiting, time, rate, play, pause, seekTo } = media;
   useNextManifest(next, playing);
   const index = timeline ? activeCueIndex(timeline, time) : -1;
@@ -80,7 +96,7 @@ export default function AudioPlayer({
   };
 
   usePauseOnDialog(pause);
-  useVerseHighlight(cue, playing);
+  const { detached, follow, resume } = useVerseHighlight(cue, playing);
   useMediaSession({
     timeline,
     title: label,
@@ -115,10 +131,18 @@ export default function AudioPlayer({
       duration={timeline?.duration ?? 0}
       error={media.error || loadError || ""}
       waiting={waiting}
+      blocked={media.blocked}
+      endAction={endAction}
+      offerComplete={media.ended && endAction === "stop" && !done}
+      detached={detached}
+      onFollow={follow}
       onPrevious={() => step(-1)}
       onToggle={() => (playing || waiting ? pause() : void play())}
       onNext={() => step(1)}
+      onSeek={seekTo}
       onRate={() => media.setRate(nextRate(rate))}
+      onEndAction={() => onEndAction(nextEndAction(endAction))}
+      onComplete={onComplete}
       onRetry={() => {
         if (timeline) void play();
         else {
@@ -128,7 +152,14 @@ export default function AudioPlayer({
       }}
       onClose={onClose}
     >
-      <audio {...media.audioProps} />
+      <audio
+        {...media.audioProps}
+        onSeeking={() => {
+          media.audioProps.onSeeking();
+          // A jump (slider, verse skip, lock screen) follows the text again.
+          resume();
+        }}
+      />
     </AudioControls>
   );
 }

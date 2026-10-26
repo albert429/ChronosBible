@@ -45,7 +45,7 @@ async function open(page: Page, book: string, chapter: number) {
 async function setContinuous(page: Page, enabled: boolean) {
   const settings = await openAppearance(page);
   await settings
-    .getByRole("checkbox", { name: "استماع متواصل للإصحاحات" })
+    .getByRole("checkbox", { name: "استماع متواصل" })
     .setChecked(enabled);
   await closeSheet(page);
 }
@@ -509,5 +509,95 @@ test("an announced plan day shows each spoken reference, highlights no verse dur
   await expect(
     page.locator('#passage-0 .verse[data-v="1"][data-listening]'),
   ).toHaveCount(1);
+  expect(external).toEqual([]);
+});
+
+test("the end choice repeats a chapter, and «stop» offers to mark it read", async ({
+  page,
+}) => {
+  await stubConnection(page, { saveData: true });
+  const { external } = await routeChapterAudio(page, {
+    "OBA:1": { duration: 0.8 },
+  });
+  await open(page, "OBA", 1);
+  await listen(page).click();
+  // Stopping at the end offers completion; it is never assumed.
+  await expect(player(page)).toContainText("هل أتممت هذه القراءة؟", {
+    timeout: 10000,
+  });
+  await button(page, "نعم، تمت").click();
+  await expect(page.getByRole("button", { name: "تراجع" })).toBeVisible();
+  await expect(player(page)).not.toContainText("هل أتممت هذه القراءة؟");
+  // stop → next → repeat, named by what happens at the end.
+  const end = player(page).getByRole("button", { name: /^عند الانتهاء:/ });
+  await expect(end).toHaveAccessibleName("عند الانتهاء: إيقاف");
+  await end.click();
+  await expect(end).toHaveAccessibleName("عند الانتهاء: متابعة إلى التالي");
+  await end.click();
+  await expect(end).toHaveAccessibleName("عند الانتهاء: إعادة القراءة");
+  const starts = await page.evaluate(() => {
+    const el = document.querySelector("audio")!;
+    (window as unknown as { __plays: number }).__plays = 0;
+    el.addEventListener("playing", () => {
+      (window as unknown as { __plays: number }).__plays++;
+    });
+    return 0;
+  });
+  await button(page, "تشغيل التسجيل").click();
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => (window as unknown as { __plays: number }).__plays),
+      { timeout: 10000 },
+    )
+    .toBeGreaterThan(starts + 1);
+  await expect(article(page)).toHaveAttribute("data-reading", "bible:OBA:1");
+  await expect(player(page)).not.toContainText("انتهى التسجيل");
+  // The choice is kept, and the settings checkbox agrees with it.
+  await page.reload();
+  await ready(page);
+  const settings = await openAppearance(page);
+  await expect(
+    settings.getByRole("checkbox", { name: "استماع متواصل" }),
+  ).not.toBeChecked();
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("bible-reader-audio-repeat-v1"),
+    ),
+  ).toBe("true");
+  expect(external).toEqual([]);
+});
+
+test("listening continues under the reading settings; speed and seeking persist", async ({
+  page,
+}) => {
+  await stubConnection(page, { saveData: true });
+  const { external } = await routeChapterAudio(page, {
+    "GEN:1": { duration: 30 },
+  });
+  await open(page, "GEN", 1);
+  await listen(page).click();
+  await expect.poll(() => currentTime(page)).toBeGreaterThan(0);
+  await openAppearance(page);
+  const before = await currentTime(page);
+  await expect.poll(() => currentTime(page)).toBeGreaterThan(before + 0.3);
+  expect(await audio(page).evaluate((el: HTMLAudioElement) => el.paused)).toBe(
+    false,
+  );
+  await closeSheet(page);
+  // The slider seeks the recording.
+  const seek = player(page).getByRole("slider", { name: "موضع التسجيل" });
+  await seek.fill("20");
+  await expect.poll(() => currentTime(page)).toBeGreaterThanOrEqual(20);
+  await button(page, "سرعة القراءة: ١×").click();
+  await expect(button(page, "سرعة القراءة: ١٫٢٥×")).toBeVisible();
+  await button(page, "إغلاق المشغل").click();
+  await expect(audio(page)).toHaveCount(0);
+  await expect(listen(page)).toBeFocused();
+  await listen(page).click();
+  await expect(button(page, "سرعة القراءة: ١٫٢٥×")).toBeVisible();
+  await expect
+    .poll(() => audio(page).evaluate((el: HTMLAudioElement) => el.playbackRate))
+    .toBe(1.25);
   expect(external).toEqual([]);
 });
