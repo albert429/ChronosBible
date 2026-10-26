@@ -50,7 +50,7 @@ export default function About() {
         على النص الكتابي.
       </p>
       <p className="about-rights">
-        دراسة الآيات: الكلمات اليونانية والقاموس من{" "}
+        دراسة الآيات: الكلمات الأصلية باليونانية والعبرية والآرامية والقاموس من{" "}
         <a
           href="https://github.com/STEPBible/STEPBible-Data"
           target="_blank"
