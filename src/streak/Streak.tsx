@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from "react";
-import { ar, daysLabel } from "../lib/format";
+import { ar } from "../lib/format";
+import { daysLabel } from "../lib/days";
 import { useToday } from "../lib/useToday";
 import { useProgress } from "../plan/useProgress";
 import {

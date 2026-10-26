@@ -234,26 +234,3 @@ body:has(.audio-player) .toast {
 .verse-actions-status:empty {
   display: none;
 }
-/* A new build is ready (src/pwa/UpdateNotice.tsx). */
-.update-notice {
-  position: fixed;
-  inset-inline: 16px;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  z-index: 90;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  max-width: 420px;
-  margin-inline: auto;
-  padding-block: 4px;
-  padding-inline: 16px 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--paper);
-  box-shadow: 0 8px 32px #0002;
-  font-size: 13px;
-}
-body:has(.audio-player) .update-notice {
-  bottom: calc(var(--player-height, 96px) + 12px);
-}

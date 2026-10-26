@@ -10,7 +10,8 @@ import {
   SkipForward,
   X,
 } from "lucide-react";
-import { ar, clock } from "../lib/format";
+import { ar } from "../lib/format";
+import { clock } from "./clock";
 import { END_ACTION_LABELS, type EndAction } from "./endAction";
 import "./audio.css";
 

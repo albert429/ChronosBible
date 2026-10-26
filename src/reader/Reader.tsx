@@ -21,7 +21,7 @@ import type { ChronologyCatalog } from "../chronology/types";
 import { ar } from "../lib/format";
 import { readingLabel } from "../plan/labels";
 import { Loading, LoadError, ChunkBoundary } from "../components/Feedback";
-import VerseStudy, { type StudyTarget } from "../study/VerseStudy";
+import { loadVerseStudy, type StudyTarget } from "../study/load";
 import CompletionBar from "./CompletionBar";
 import Scripture from "./Scripture";
 import {
@@ -31,7 +31,6 @@ import {
 } from "./useAdjacentPrefetch";
 import { useVerseTap } from "./useVerseTap";
 import { useSwipePaging } from "./useSwipePaging";
-import { useEndAction } from "../audio/endAction";
 import {
   clearSelected,
   markSelected,
@@ -46,6 +45,7 @@ import {
 } from "./location";
 import "./Reader.css";
 const AudioPlayer = lazy(() => import("../audio/AudioPlayer"));
+const VerseStudy = lazy(loadVerseStudy);
 
 type Props = {
   location: AnyReadingLocation;
@@ -205,15 +205,12 @@ export default function Reader({
     };
   }, [current, identity, location.verse, navigation, restore]);
   const audio = readingHasAudio(location);
-  const [endAction, setEndAction] = useEndAction(continuous, setContinuous);
-  // With «متابعة», listening moves on to the next day, chapter or reading in
-  // this mode when its recording is published; it never crosses modes.
-  const nextLocation =
-    endAction === "next" && next && readingHasAudio(next) ? next : undefined;
+  // Where «متابعة» may continue: the next place in this mode whose recording
+  // is published. The player decides whether to (its «عند الانتهاء»).
+  const listenNext = next && readingHasAudio(next) ? next : undefined;
   const playerReading = listening && (current || listening.reading);
-  function ended() {
+  function ended(next?: AnyReadingLocation) {
     if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
-    const next = nextLocation;
     if (!playerReading) return;
     if (!next) return;
     setListening({
@@ -258,9 +255,9 @@ export default function Reader({
             <Suspense fallback={<Loading label="جارٍ فتح المشغل…" />}>
               <AudioPlayer
                 reading={playerReading}
-                next={nextLocation}
-                endAction={endAction}
-                onEndAction={setEndAction}
+                next={listenNext}
+                continuous={continuous}
+                setContinuous={setContinuous}
                 done={done}
                 onComplete={complete}
                 initialTime={(source) =>
@@ -285,13 +282,17 @@ export default function Reader({
         </div>
       )}
       {study && (
-        <VerseStudy
-          open={tap.open}
-          reading={study.reading}
-          target={study.target}
-          onClose={tap.close}
-          onAfterClose={tap.afterClose}
-        />
+        <ChunkBoundary>
+          <Suspense fallback={null}>
+            <VerseStudy
+              open={tap.open}
+              reading={study.reading}
+              target={study.target}
+              onClose={tap.close}
+              onAfterClose={tap.afterClose}
+            />
+          </Suspense>
+        </ChunkBoundary>
       )}
       {current && (
         <CompletionBar

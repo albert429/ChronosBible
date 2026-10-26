@@ -8,7 +8,7 @@ import { chapterVerse } from "../bible/reference";
 import { dayLabel } from "../plan/labels";
 import { ar } from "../lib/format";
 import AudioControls from "./AudioControls";
-import { nextEndAction, type EndAction } from "./endAction";
+import { nextEndAction, useEndAction } from "./endAction";
 import {
   activeCueIndex,
   announcementAt,
@@ -36,35 +36,40 @@ export default function AudioPlayer({
   initialTime = 0,
   onPosition,
   next,
-  endAction,
-  onEndAction,
+  continuous,
+  setContinuous,
   done,
   onComplete,
 }: {
   reading: AnyScriptureReading;
   onClose: () => void;
-  /** Only the parent may opt into an ended handoff; manual navigation unmounts. */
-  onEnded?: () => void;
+  /**
+   * The natural end, with the place to continue to under «متابعة». Only the
+   * parent may hand off; manual navigation unmounts the player.
+   */
+  onEnded?: (next?: AnyReadingLocation) => void;
   initialTime?: number | ((source: string) => number);
   onPosition?: (seconds: number, source: string) => void;
-  /** The continuation target, whose timing JSON may be fetched once playing. */
+  /** Where «متابعة» would continue: the next place with a recording. */
   next?: AnyReadingLocation;
-  /** What happens when the recording ends (see endAction.ts). */
-  endAction: EndAction;
-  onEndAction: (action: EndAction) => void;
+  /** The «متابعة» preference behind «عند الانتهاء» (see endAction.ts). */
+  continuous: boolean;
+  setContinuous: (enabled: boolean) => void;
   /** Whether the reading is already marked done. */
   done: boolean;
   onComplete: () => void;
 }) {
   const { timeline, error: loadError, retry } = useAudioManifest(reading);
+  const [endAction, setEndAction] = useEndAction(continuous, setContinuous);
+  const continuation = endAction === "next" ? next : undefined;
   const media = useMediaElement(timeline, {
     initialTime,
-    onEnded,
+    onEnded: () => onEnded?.(continuation),
     onPosition,
     repeat: endAction === "repeat",
   });
   const { playing, waiting, time, rate, play, pause, seekTo } = media;
-  useNextManifest(next, playing);
+  useNextManifest(continuation, playing);
   const index = timeline ? activeCueIndex(timeline, time) : -1;
   const cue = timeline?.cues[index];
   const announcement = timeline && announcementAt(timeline, time);
@@ -141,7 +146,7 @@ export default function AudioPlayer({
       onNext={() => step(1)}
       onSeek={seekTo}
       onRate={() => media.setRate(nextRate(rate))}
-      onEndAction={() => onEndAction(nextEndAction(endAction))}
+      onEndAction={() => setEndAction(nextEndAction(endAction))}
       onComplete={onComplete}
       onRetry={() => {
         if (timeline) void play();

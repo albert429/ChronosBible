@@ -7,20 +7,14 @@ import { verseNumberButton } from "../reader/scriptureDom";
 import { displayArabic } from "../lib/arabicDisplay";
 import { useDiacritics } from "../navigation/appearance";
 import type { VerseActionsProps } from "./VerseActions";
+import type { StudyTarget } from "./load";
 
-const loadVerseActions = () => import("./VerseActions");
-export const loadStudyPanel = () => {
-  void loadVerseActions().catch(() => {});
-  return import("./StudyPanel");
-};
 const StudyPanel = lazy(() => import("./StudyPanel"));
 // Copy and share are a convenience: if their chunk fails, nothing shows.
 const VerseActions = lazy<ComponentType<VerseActionsProps>>(() =>
-  loadVerseActions().catch(() => ({ default: () => null })),
+  import("./VerseActions").catch(() => ({ default: () => null })),
 );
 const CanonicalStudy = lazy(() => import("./CanonicalStudy"));
-
-export type StudyTarget = { passage: number; verse: number; el: HTMLElement };
 
 export default function VerseStudy({
   open,

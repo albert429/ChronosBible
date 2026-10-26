@@ -38,6 +38,11 @@ export function registerServiceWorker() {
     if (!worker || !navigator.serviceWorker.controller) return;
     waiting = worker;
     set({ update: true });
+    // The notice is its own small chunk and root, outside the reader.
+    void import("./UpdateNotice").then(
+      (module) => module.showUpdateNotice(),
+      () => {},
+    );
   };
   const start = () =>
     navigator.serviceWorker.register("/sw.js").then(

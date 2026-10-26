@@ -1,6 +1,6 @@
 import { ArrowLeft, Upload } from "lucide-react";
 import type { FormEvent } from "react";
-import { daysLabel } from "../../lib/format";
+import { daysLabel } from "../../lib/days";
 import { useToday } from "../../lib/useToday";
 import { useProgress } from "../useProgress";
 import RestoreButton from "./RestoreButton";

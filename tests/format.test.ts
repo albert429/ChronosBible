@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ar, clock, dateLabel, daysLabel, today } from "../src/lib/format.ts";
+import { ar, dateLabel, today } from "../src/lib/format.ts";
+import { daysLabel } from "../src/lib/days.ts";
+import { clock } from "../src/audio/clock.ts";
 
 test("Numbers use Eastern Arabic digits without grouping", () => {
   assert.equal(ar(0), "٠");

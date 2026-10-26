@@ -34,9 +34,7 @@ import {
 import { useReadingLocation } from "./reader/useReadingLocation";
 import { days } from "./plan/readings";
 import { adjacentLocation } from "./navigation/adjacent";
-import { readingPaths, rememberPreload } from "./reader/preload";
 import { TRACK_NAMES } from "./navigation/modes";
-import UpdateNotice from "./pwa/UpdateNotice";
 const Dialogs = lazy(() => import("./plan/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
   join: "القراء على هذا الجهاز",
@@ -119,8 +117,14 @@ export default function App() {
   // Once the text is shown, the next launch fetches it alongside the app.
   const shownKey = reading.data ? readingKey(reading.data) : "";
   useEffect(() => {
-    if (shownKey && shownKey === readingKey(location))
-      rememberPreload(readingPaths(location, reading.data));
+    if (!shownKey || shownKey !== readingKey(location)) return;
+    const [place, data] = [location, reading.data];
+    // Not needed until the next launch: its small module loads apart.
+    void import("./reader/preload").then(
+      ({ readingPaths, rememberPreload }) =>
+        rememberPreload(readingPaths(place, data)),
+      () => {},
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownKey]);
   useEffect(() => {
@@ -370,7 +374,6 @@ export default function App() {
           </div>
         )}
       </dialog>
-      <UpdateNotice />
       {notice && !modal && (
         <div className="toast" role="status">
           <Check size={19} />

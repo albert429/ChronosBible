@@ -1,7 +1,7 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import type { AnyScriptureReading } from "../bible/types";
 import { connectionAllowsPrefetch } from "../lib/network";
-import { loadStudyPanel, type StudyTarget } from "../study/VerseStudy";
+import { loadStudyPanel, type StudyTarget } from "../study/load";
 import {
   clearSelected,
   closestVerse,
