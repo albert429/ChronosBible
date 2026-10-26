@@ -18,7 +18,7 @@ const options: OpenRouterOptions = {
   models: ["google/gemma-4-31b-it:free", "openrouter/free"],
   baseUrl: "https://openrouter.ai/api/v1",
   referer: "https://example.app/",
-  title: "Bible150",
+  title: "ChronosBible",
 };
 const request: AiRequest = {
   system: "نظام",
@@ -72,7 +72,7 @@ test("Sends one ASCII-only streaming request with the free model list", async ()
     assert.match(value, /^[\x20-\x7E]+$/, name);
   }
   assert.equal(init.headers.Authorization, "Bearer sk-or-v1-test");
-  assert.equal(init.headers["X-OpenRouter-Title"], "Bible150");
+  assert.equal(init.headers["X-OpenRouter-Title"], "ChronosBible");
   assert.equal(init.headers["X-OpenRouter-App-Visibility"], "hidden");
   assert.equal(init.headers["HTTP-Referer"], "https://example.app/");
   const body = JSON.parse(init.body);

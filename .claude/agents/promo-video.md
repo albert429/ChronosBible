@@ -326,7 +326,7 @@ crossfades minus offsets).
 
 ## Bible150 facts (fallback if the app or its notes are unreachable)
 
-- **App.** «العهد الجديد بالترتيب الزمني», sfk-bible-reading.vercel.app, by
+- **App.** «العهد الجديد بالترتيب الزمني», chronosbible.com, by
   Albert Alfred for the Brethren Church at Kholousy (كنيسة الإخوة بخلوصي).
   Scripture is Arabic Van Dyck, public domain, via eBible.org.
 - **Tokens (light / dark):**

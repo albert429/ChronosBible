@@ -10,7 +10,7 @@ The four-mode release is live at [chronosbible.com](https://chronosbible.com/), 
 
 [Open the app](https://chronosbible.com/) · [Development guide](docs/development.md) · [Data sources](data/SOURCES.md)
 
-[![Checks](https://github.com/albert429/Bible150/actions/workflows/checks.yml/badge.svg)](https://github.com/albert429/Bible150/actions/workflows/checks.yml)
+[![Checks](https://github.com/albert429/ChronosBible/actions/workflows/checks.yml/badge.svg)](https://github.com/albert429/ChronosBible/actions/workflows/checks.yml)
 
 ## Reading experience
 
