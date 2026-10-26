@@ -149,7 +149,7 @@ When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/ai/chips.
    read -rs KEY   # paste the key; it is not echoed or saved in history
    curl -sSN https://openrouter.ai/api/v1/chat/completions \
      -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-     -H "HTTP-Referer: https://sfk-bible-reading.vercel.app/" -H "X-OpenRouter-Title: Bible150" \
+     -H "HTTP-Referer: https://chronosbible.com/" -H "X-OpenRouter-Title: ChronosBible" \
      -H "X-OpenRouter-App-Visibility: hidden" \
      -d '{"models":["google/gemma-4-31b-it:free","google/gemma-4-26b-a4b-it:free","openrouter/free"],"messages":[{"role":"user","content":"اشرح يوحنا 3:16 في جملتين."}],"stream":true,"max_tokens":2000,"temperature":0.3,"reasoning":{"exclude":true}}'
    curl -sS https://openrouter.ai/api/v1/key -H "Authorization: Bearer $KEY"
@@ -171,6 +171,8 @@ When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/ai/chips.
 **Rotate the key:** create a new key, update the Vercel variable, redeploy, then delete the old key.
 
 **Kill switch:** remove `VITE_AI_PROVIDERS` in Vercel and redeploy. The card disappears.
+
+**Cloudflare:** production never enables AI. The dev Worker (dev.chronosbible.com) can, through its Workers Builds build variables; see [AI on the dev Worker](#ai-on-the-dev-worker).
 
 ### Tests
 
@@ -201,9 +203,9 @@ Cloudflare serves two independent Workers from the same explicit `wrangler.json`
 | `main`     | `chronosbible`     | `chronosbible.com`     | `npm run app:host:deploy`     |
 | `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
-The production branch keeps its daily-audio snapshot. The development branch
-uses its own full-Bible content and audio publication inventory; its chapter-audio
-flag is enabled only when that branch's Vite configuration supports it. These
+Both environments build the same way from their own branch, using that
+branch's full-Bible content and audio publication inventory. The chapter-audio
+flag is enabled whenever the branch's Vite configuration supports it. These
 hosting scripts do not copy content between branches. Vercel continues using
 `npm run build` and its existing configuration.
 
@@ -241,8 +243,37 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 `VITE_*` values take priority. Therefore the Cloudflare build also uses a small
 environment allowlist and supplies its public settings explicitly:
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the branch-specific audio
-flag. Do not add AI or other private `VITE_*` values to Cloudflare build settings.
-AI remains disabled on both Cloudflare domains regardless of shell AI values.
+flag. Do not add other private `VITE_*` values to Cloudflare build settings.
+AI is always disabled on the production Worker, whatever the shell sets. The
+**dev Worker only** may enable it; see [AI on the dev Worker](#ai-on-the-dev-worker).
+
+#### AI on the dev Worker
+
+To try the AI explanations on dev.chronosbible.com, set these **build
+variables** on the `chronosbible-dev` Worker in Workers Builds (Settings →
+Builds → Variables and secrets), then redeploy:
+
+| Variable                  | Notes                                                                |
+| ------------------------- | -------------------------------------------------------------------- |
+| `VITE_AI_PROVIDERS`       | `openrouter` turns AI on; empty or unset keeps it off                |
+| `VITE_OPENROUTER_API_KEY` | Add it as a **secret**. Use the dedicated key with a $0 credit limit |
+| `VITE_OPENROUTER_MODELS`  | Optional, up to two `:free` models                                   |
+| `VITE_AI_DAILY_CAP`       | Optional, 1-100                                                      |
+
+The build wrapper passes only these four values through, and only for `dev`
+when `VITE_AI_PROVIDERS` is set. It never passes `VITE_OPENROUTER_BASE_URL` or
+`VITE_AI_ALLOW_LOCAL`, which exist for tests. The asset audit then allows AI
+chunks and that exact key value; any other `sk-or-v1-...` string, private key
+or secret-looking environment value still fails the build. The build ends with
+`Cloudflare dev: assets verified; AI enabled (openrouter).` or `...; AI disabled.`
+Production keeps failing on AI chunks and on any key.
+
+Only free models are accepted (see [AI explanations](#ai-explanations-optional)), and the
+key must be a dedicated OpenRouter key with a $0 credit limit. It is compiled
+into the dev site's public JavaScript by design, so anyone can read it.
+
+**Kill switch:** remove `VITE_AI_PROVIDERS` from the dev Worker's build
+variables and redeploy. The next build contains no AI code.
 
 Before building, the wrapper scans both `public/` and any existing `dist/` for
 media binaries, symlinks, environment files, private-key files and credentials.

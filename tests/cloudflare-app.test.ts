@@ -85,7 +85,12 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
   );
   assert.equal(env.VITE_AI_PROVIDERS, "");
   assert.equal(env.VITE_OPENROUTER_API_KEY, "");
-  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "false");
+  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
+  assert.equal(
+    buildEnvironment("production", source, "older config")
+      .VITE_AUDIO_CHAPTERS_ENABLED,
+    "false",
+  );
   for (const key of ["VITE_FUTURE_KEY", "AUDIO_TEST_FIXTURES", "NODE_OPTIONS"])
     assert.equal(env[key as keyof typeof env], undefined);
   assert.equal(
@@ -97,6 +102,99 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
     buildEnvironment("dev", {}, "older config").VITE_AUDIO_CHAPTERS_ENABLED,
     "false",
   );
+});
+
+const DUMMY_KEY = "sk-or-v1-0123456789abcdef0123456789abcdef";
+const OTHER_KEY = "sk-or-v1-fedcba9876543210fedcba9876543210";
+const AI_ENV = {
+  PATH: "/bin",
+  VITE_AI_PROVIDERS: "openrouter",
+  VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+  VITE_OPENROUTER_MODELS: "google/gemma-4-31b-it:free",
+  VITE_AI_DAILY_CAP: "5",
+  VITE_OPENROUTER_BASE_URL: "http://127.0.0.1:4175",
+  VITE_AI_ALLOW_LOCAL: "1",
+};
+
+test("Production ignores AI settings; dev without them stays off", () => {
+  for (const [target, source] of [
+    ["production", AI_ENV],
+    ["dev", { PATH: "/bin" }],
+    ["dev", { ...AI_ENV, VITE_AI_PROVIDERS: " " }],
+  ] as const) {
+    const env = buildEnvironment(target, source);
+    assert.equal(env.VITE_AI_PROVIDERS, "");
+    assert.equal(env.VITE_OPENROUTER_API_KEY, "");
+    for (const key of [
+      "VITE_OPENROUTER_MODELS",
+      "VITE_AI_DAILY_CAP",
+      "VITE_OPENROUTER_BASE_URL",
+      "VITE_AI_ALLOW_LOCAL",
+    ])
+      assert.equal(env[key as keyof typeof env], undefined);
+  }
+});
+
+test("Dev passes exactly four AI settings and never the test-only switches", () => {
+  const env = buildEnvironment("dev", AI_ENV);
+  assert.equal(env.VITE_AI_PROVIDERS, "openrouter");
+  assert.equal(env.VITE_OPENROUTER_API_KEY, DUMMY_KEY);
+  assert.equal(env.VITE_OPENROUTER_MODELS, "google/gemma-4-31b-it:free");
+  assert.equal(env.VITE_AI_DAILY_CAP, "5");
+  assert.equal(env.VITE_OPENROUTER_BASE_URL, undefined);
+  assert.equal(env.VITE_AI_ALLOW_LOCAL, undefined);
+  // Optional values that are not set stay unset.
+  const minimal = buildEnvironment("dev", {
+    VITE_AI_PROVIDERS: "openrouter",
+    VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+  });
+  assert.equal(minimal.VITE_OPENROUTER_MODELS, undefined);
+  assert.equal(minimal.VITE_AI_DAILY_CAP, undefined);
+});
+
+test("Dev audit accepts only the configured key and AI only when enabled", () => {
+  const root = mkdtempSync(join(tmpdir(), "cloudflare-ai-assets-test-"));
+  const env = { VITE_OPENROUTER_API_KEY: DUMMY_KEY };
+  try {
+    writeFileSync(join(root, "app.js"), `const k="${DUMMY_KEY}";`);
+    // Production and dev without AI reject the key, even the same value.
+    assert.throws(() => scanAssets(root, env), /credential/);
+    assert.throws(() => scanAssets(root, {}), /credential/);
+    scanAssets(root, env, undefined, DUMMY_KEY);
+    // A different key, alone or beside the configured one, still fails.
+    writeFileSync(join(root, "app.js"), `"${DUMMY_KEY}","${OTHER_KEY}"`);
+    assert.throws(
+      () => scanAssets(root, env, undefined, DUMMY_KEY),
+      /credential/,
+    );
+    writeFileSync(join(root, "app.js"), `"${OTHER_KEY}"`);
+    assert.throws(
+      () => scanAssets(root, env, undefined, DUMMY_KEY),
+      /credential/,
+    );
+    // Other secret env values and private keys still fail in a dev AI build.
+    writeFileSync(join(root, "app.js"), `${DUMMY_KEY} other-secret-value-123`);
+    assert.throws(
+      () =>
+        scanAssets(
+          root,
+          { ...env, SOME_TOKEN: "other-secret-value-123" },
+          undefined,
+          DUMMY_KEY,
+        ),
+      /credential/,
+    );
+    writeFileSync(
+      join(root, "app.js"),
+      `${DUMMY_KEY}-----BEGIN PRIVATE KEY-----`,
+    );
+    assert.throws(
+      () => scanAssets(root, env, undefined, DUMMY_KEY),
+      /credential/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("Deploy CLI always selects an explicit config and environment", () => {
@@ -312,8 +410,78 @@ test("Asset audit rejects unexpected file types, audio artifacts and oversized f
   }
 });
 
-test("Safe build runs from the selected clean checkout and never inherits private settings", () => {
-  for (const target of ["production", "dev"]) {
+// Each case runs the real wrapper against a fixture checkout whose build script
+// asserts the exact environment it receives and writes the given extra assets.
+const buildCases = [
+  {
+    name: "production ignores AI env",
+    target: "production",
+    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    expectAi: false,
+    assets: {},
+    fails: undefined,
+  },
+  {
+    name: "production rejects AI chunks",
+    target: "production",
+    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    expectAi: false,
+    assets: { "assets/AiPanel-abc.js": "chunk" },
+    fails: /AI chunks are forbidden/,
+  },
+  {
+    name: "production rejects the key",
+    target: "production",
+    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    expectAi: false,
+    assets: { "assets/app.js": DUMMY_KEY },
+    fails: /credential/,
+  },
+  {
+    name: "dev without AI env stays off",
+    target: "dev",
+    ai: {},
+    expectAi: false,
+    assets: {},
+    fails: undefined,
+  },
+  {
+    name: "dev without AI env rejects AI chunks",
+    target: "dev",
+    ai: {},
+    expectAi: false,
+    assets: { "assets/run-abc.js": "chunk" },
+    fails: /AI chunks are forbidden/,
+  },
+  {
+    name: "dev with AI env passes the settings and the audit",
+    target: "dev",
+    ai: {
+      VITE_AI_PROVIDERS: "openrouter",
+      VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+      VITE_OPENROUTER_MODELS: "google/gemma-4-31b-it:free",
+      VITE_AI_DAILY_CAP: "5",
+    },
+    expectAi: true,
+    assets: {
+      "assets/AiPanel-abc.js": "chunk",
+      "assets/run-abc.js": `fetch("x",{headers:{Authorization:"Bearer ${DUMMY_KEY}"}})`,
+    },
+    fails: undefined,
+  },
+  {
+    name: "dev with AI env rejects a different key",
+    target: "dev",
+    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    expectAi: true,
+    assets: { "assets/run-abc.js": `"${DUMMY_KEY}","${OTHER_KEY}"` },
+    fails: /credential/,
+  },
+] as const;
+
+for (const testCase of buildCases) {
+  test(`Safe build: ${testCase.name}`, () => {
+    const { target, ai, expectAi, assets, fails } = testCase;
     const f = checkout(target === "production" ? "main" : "dev");
     try {
       mkdirSync(join(f.root, "scripts"));
@@ -344,15 +512,26 @@ test("Safe build runs from the selected clean checkout and never inherits privat
         join(f.root, "scripts/fixture-build.cjs"),
         `
 const fs = require("node:fs");
+const path = require("node:path");
 const assert = require("node:assert/strict");
-assert.equal(process.env.VITE_OPENROUTER_API_KEY, "");
-assert.equal(process.env.VITE_AI_PROVIDERS, "");
+const expectAi = ${JSON.stringify(expectAi)};
+assert.equal(
+  process.env.VITE_OPENROUTER_API_KEY,
+  expectAi ? ${JSON.stringify(DUMMY_KEY)} : "",
+);
+assert.equal(process.env.VITE_AI_PROVIDERS, expectAi ? "openrouter" : "");
+assert.equal(process.env.VITE_OPENROUTER_BASE_URL, undefined);
+assert.equal(process.env.VITE_AI_ALLOW_LOCAL, undefined);
 assert.equal(process.env.VITE_FUTURE_KEY, undefined);
 assert.equal(process.env.AUDIO_TEST_FIXTURES, undefined);
 assert.equal(process.env.VITE_AUDIO_BASE_URL, ${JSON.stringify(AUDIO_BASE_URL)});
-assert.equal(process.env.VITE_AUDIO_CHAPTERS_ENABLED, ${JSON.stringify(target === "dev" ? "true" : "false")});
+assert.equal(process.env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
 fs.mkdirSync("dist");
 fs.writeFileSync("dist/index.html", "safe app");
+for (const [name, body] of Object.entries(${JSON.stringify(assets)})) {
+  fs.mkdirSync(path.dirname(path.join("dist", name)), { recursive: true });
+  fs.writeFileSync(path.join("dist", name), body);
+}
 `,
       );
       f.git("add", ".");
@@ -378,15 +557,32 @@ fs.writeFileSync("dist/index.html", "safe app");
           cwd: f.root,
           env: {
             ...gitEnvironment(),
-            VITE_OPENROUTER_API_KEY: "private-test-key-123",
-            VITE_AI_PROVIDERS: "openrouter",
+            ...ai,
+            VITE_OPENROUTER_BASE_URL: "http://127.0.0.1:4175",
+            VITE_AI_ALLOW_LOCAL: "1",
             VITE_FUTURE_KEY: "private-test-key-123",
             AUDIO_TEST_FIXTURES: "1",
           },
           encoding: "utf8",
         },
       );
-      assert.equal(result.status, 0, result.stderr + result.stdout);
+      const output = result.stdout + result.stderr;
+      for (const secret of ["private-test-key-123", DUMMY_KEY, OTHER_KEY])
+        assert.ok(!output.includes(secret));
+      if (fails) {
+        assert.equal(result.status, 1, output);
+        assert.match(result.stderr, fails);
+        return;
+      }
+      assert.equal(result.status, 0, output);
+      assert.match(
+        result.stdout,
+        expectAi
+          ? new RegExp(
+              `Cloudflare ${target}: assets verified; AI enabled \\(openrouter\\)\\.`,
+            )
+          : new RegExp(`Cloudflare ${target}: assets verified; AI disabled\\.`),
+      );
       assert.equal(
         readFileSync(join(f.root, "dist/index.html"), "utf8"),
         "safe app",
@@ -407,12 +603,11 @@ fs.writeFileSync("dist/index.html", "safe app");
         () => readFileSync(join(f.root, "dist/stale.txt")),
         /ENOENT/,
       );
-      assert.ok(!result.stdout.includes("private-test-key-123"));
     } finally {
       f.close();
     }
-  }
-});
+  });
+}
 
 test(
   "Inherited Git hook context cannot change the outer HEAD, index or config",

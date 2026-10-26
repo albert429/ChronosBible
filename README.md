@@ -6,11 +6,11 @@
 
 An Arabic Bible reader with Scripture given almost the entire screen. Originally built for the youth of the **Brethren Church at Kholousy**, the app offers four reading choices: the whole Bible, self-paced Old and New Testament chronologies, and the 150-day youth plan.
 
-The four-mode release is available as a [development preview](https://dev.chronosbible.com/); the release is available on `dev`, and `main` (production) is unchanged. See the [product guide](docs/product.md) for reading choices and compatibility, and the [chronology guide](docs/chronology.md) for the reviewed source audit.
+The four-mode release is live at [chronosbible.com](https://chronosbible.com/), and [dev.chronosbible.com](https://dev.chronosbible.com/) previews the `dev` branch. See the [product guide](docs/product.md) for reading choices and compatibility, and the [chronology guide](docs/chronology.md) for the reviewed source audit.
 
 [Open the app](https://chronosbible.com/) · [Development guide](docs/development.md) · [Data sources](data/SOURCES.md)
 
-[![Checks](https://github.com/albert429/Bible150/actions/workflows/checks.yml/badge.svg)](https://github.com/albert429/Bible150/actions/workflows/checks.yml)
+[![Checks](https://github.com/albert429/ChronosBible/actions/workflows/checks.yml/badge.svg)](https://github.com/albert429/ChronosBible/actions/workflows/checks.yml)
 
 ## Reading experience
 
