@@ -12,8 +12,14 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
-// Offline support loads apart from the reader; it registers once idle.
-void import("./pwa/register").then(
-  (module) => module.registerServiceWorker(),
-  () => {},
+// Offline support loads after the page, apart from the reader, and registers
+// its worker once idle.
+addEventListener(
+  "load",
+  () =>
+    void import("./pwa/register").then(
+      (module) => module.registerServiceWorker(),
+      () => {},
+    ),
+  { once: true },
 );
