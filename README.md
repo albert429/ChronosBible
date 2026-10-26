@@ -21,6 +21,7 @@ The four-mode release is live at [chronosbible.com](https://chronosbible.com/), 
 - A fresh reader opens Genesis 1. Guests and named readers have independent places and explicit completion for each mode; passage links override saved places and support Back/Forward.
 - The youth plan keeps its personal start date and 150-day calendar; its day menu jumps to any of the 150 days. Version 2 JSON backups retain places and progress, with migration and import support for version 1 youth-plan data.
 - A reading streak counts consecutive days with a completed reading in any track, forgiving one missed day a week. It is shown in the menu, the plan's day menu and calendar, and under a completed reading, with light, motion-safe milestone moments.
+- Full-Bible verse study in all four modes: كتاب الحياة and KJV translations, Greek words in the New Testament, and Hebrew/Aramaic words in the Old Testament, loaded when their sections open. [Study sources and coverage](data/study/CANONICAL.md).
 - Static frontend hosting, daily reading caches, nearby readings prepared in the background, and secondary screens loaded on demand.
 - Optional listening through one native audio player, using 48 kbps mono AAC chapters, daily tracks, and chronology playlists. Nothing audio is fetched until the reader taps Listen; files are immutable and reused by the browser, and a clip shared by several readings is stored once.
 

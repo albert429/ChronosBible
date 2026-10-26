@@ -14,7 +14,7 @@
 | `src/navigation/`                                               | Toolbar, menu, day details, appearance panel and preferences, share, About                                                 |
 | `src/components/`                                               | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles              |
 | `src/audio/`                                                    | Player and controls, manifests (v1 days, v2 days/chapters), media element, Media Session, highlighting, contract, flags    |
-| `src/study/`                                                    | Lazy verse study sheet: translations, Greek key words, and AI explanations panel                                           |
+| `src/study/`                                                    | Lazy full-Bible study: translations, Greek/Hebrew/Aramaic words, and optional AI explanations                              |
 | `src/ai/`                                                       | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting |
 | `src/styles/`                                                   | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                 |
 | `data/`                                                         | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)   |
@@ -83,9 +83,13 @@ Schedules use Cairo dates. Catch-up and advance reading do not move a reader's s
 
 While reading, adjacent days are prepared 500ms after the selected day and its fonts settle. Save-Data and reported slow-2g, 2g, or 3g connections suppress this background work; browsers without connection information allow it. Navigation cancels queued work, while already-started requests remain shared with foreground loading. Speculative failures are silent and do not prevent a later retry.
 
-Tapping a verse opens its study sheet; a text selection, a press longer than 500ms, or a movement over 10px does not. The verse number is a button for keyboard and screen-reader users. The first press on the reading warms the study code chunk (skipped under Save-Data or slow connections); opening a verse fetches that day's `{day}.json`. The sheet shows the verse above two collapsed cards, in this order: «ترجمات أخرى» and «الكلمات اليونانية» (and a third, «اسأل الذكاء الاصطناعي», when the optional AI explanations are enabled). Each card is a heading button with a short hint and, where useful, a count; its content mounts the first time it opens, loading `{day}.tr.json` (New Arabic Version and KJV) for translations, and the sheet scrolls just enough to show it. The study sheet stays mounted after first use.
+Tapping a verse opens its study sheet in all four reading modes; a text selection, a press longer than 500ms, or a movement over 10px does not. The verse number is a button for keyboard and screen-reader users. The first press on the reading warms the study code chunk (skipped under Save-Data or slow connections). The sheet shows the verse above collapsed sections: «ترجمات أخرى», the optional «اسأل الذكاء الاصطناعي», and the original-language words, whose title reflects Greek, Hebrew, Aramaic, or mixed Hebrew/Aramaic. Each section is a heading button with a short hint and, where useful, a count. Its content mounts the first time it opens, and the sheet scrolls just enough to show it. Opening the sheet fetches no study data until a section needs it.
 
-The Greek list shows key words only: nouns, verbs, adjectives and interjections, each Greek word once per verse, as Arabic ← Greek with transliteration and gloss. Articles, pronouns, prepositions, conjunctions, particles and adverbs stay in the data but are not listed.
+Study uses canonical `BOOK.CHAPTER.VERSE` identities in every mode. `src/study/canonicalClient.ts` first loads `/study/v2/BOOK/CHAPTER/index.json`, then the bounded verse range containing the requested verse. Translations (`RANGE.tr.json`) and words (`RANGE.words.json.gz`) load independently; shared lexicon shards (`/study/v2/lex/Gxx.json` or `Hxx.json`) load only when AI word context needs them. Requests are deduplicated and cached by chapter, range, and shard, with limits of 24 chapter indexes and 12 entries for each other cache. Failed requests remain retryable. Legacy per-day files are still generated for compatibility but are not the current reader's study path.
+
+Word resources are limited to 30,000 compressed bytes and 256 KiB decoded; translation ranges have a 30,000-byte gzip budget and lexicon shards a 35,000-byte gzip budget. The decoder checks the gzip signature because hosting may already have decoded the response. Compressed responses use the browser's native `DecompressionStream("gzip")`, with bounded reads before and after decompression. For compressed responses, browsers without it show an update-browser message for words while translations remain available. [Canonical study data](../data/study/CANONICAL.md) documents source pins, regeneration, exact coverage, reviewed exceptions, and publication budgets.
+
+The Greek list shows key words only: nouns, verbs, adjectives and interjections, each Greek word once per verse, as Arabic ← Greek with transliteration and gloss. Articles, pronouns, prepositions, conjunctions, particles and adverbs stay in the data but are not listed. Hebrew/Aramaic lists retain all meaningful source elements, including prefixes and suffixes. Consecutive elements sharing a verified Arabic span are grouped; words without a verified span still display their original form and gloss without an invented Arabic mapping. Original words have their own language and text direction.
 
 Closed sheets keep only their native dialog shell mounted. Their content mounts on opening and stays mounted through the exit animation. Opening takes 150ms and closing takes 100ms, with animation completion and a CSS-duration fallback coordinating queued actions. Reduced motion closes immediately. Scripture and font-size changes are not animated.
 
@@ -109,7 +113,7 @@ For local testing, put the values in `.env.development.local`. `npm run dev` rea
 
 ### Loading
 
-`StudyPanel.tsx` imports the card only when `__AI_ENABLED__` is true; otherwise Rollup drops it. The `AiPanel-*` chunk (interface, chip labels, cache, formatting) loads when the card first opens. The `run-*` chunk (prompt, streaming, the provider and the key) loads on the first request that the on-device cache cannot answer. That request also loads the day's `{day}.tr.json`, plus `{day}.lex.json` for «معاني الكلمات» and typed questions, through the same cache as the study cards. «إيقاف» takes effect at once, even while these are still loading, and a daily attempt counts only once the request is actually sent. The main `index-*` chunk is the same either way.
+`StudyPanel.tsx` imports the card only when `__AI_ENABLED__` is true; otherwise Rollup drops it. The `AiPanel-*` chunk (interface, chip labels, cache, formatting) loads when the card first opens. The `run-*` chunk (prompt, streaming, the provider and the key) loads on the first request that the on-device cache cannot answer. That request also loads the canonical translation range and, for «معاني الكلمات» and typed questions, the word range and shared lexicon shards, through the same caches as the study sections. Study context is optional: a failed resource does not prevent a request using the remaining material. «إيقاف» takes effect at once, even while these are still loading, and a daily attempt counts only once the request is actually sent. The main `index-*` chunk is the same either way.
 
 ### What is sent
 
@@ -119,7 +123,7 @@ Each request is one POST to `/chat/completions`. It carries:
 - the reference and section heading;
 - the verse and up to three verses either side, in Van Dyck without diacritics;
 - the verse in كتاب الحياة and the KJV;
-- the key Greek words with their lexicon meanings, for «معاني الكلمات» and typed questions, plus lexicon definitions (references removed) for «معاني الكلمات» only;
+- the original Greek, Hebrew, or Aramaic words with their glosses, for «معاني الكلمات» and typed questions, plus available Greek lexicon definitions (references removed) for «معاني الكلمات» only; TBESH definitions are excluded from the data;
 - the task, or the reader's question.
 
 It never carries the reader's name, plan day, dates or progress. The headers are the key, `HTTP-Referer` (the site origin), `X-OpenRouter-Title: Bible150` and `X-OpenRouter-App-Visibility: hidden`, and the request sends no cookies.
@@ -359,7 +363,9 @@ Expected coverage: **150 days, 537 passages, 7,966 verse occurrences, 7,959 uniq
 
 ### Study data regeneration
 
-Download the sources into a new, empty directory outside the repository and run the importer with isolated Python (standard library only):
+For full-Bible study, follow [Canonical study data](../data/study/CANONICAL.md): the pinned importer adds OT word tags, Hebrew/Aramaic lemma/gloss metadata, and full-Bible translations to the existing NT inputs. Ordinary builds verify committed source and Bible checksums and publish bounded canonical ranges and shared lexicon shards without source downloads or Python. TBESH definitions are excluded.
+
+The following procedure regenerates the legacy NT inputs and daily resources, which remain compatibility outputs. Download the sources into a new, empty directory outside the repository and run the importer with isolated Python (standard library only):
 
 ```sh
 S=/path/to/empty/sources
@@ -395,6 +401,6 @@ The focused responsiveness pass was compared against `781e060`, with three runs 
 
 The verse study panel was compared against `81c73c4` with six runs per build (two rounds of three) under the same mobile Lighthouse throttling: median performance **91.5 → 91**, accessibility **100 → 100**, LCP **3,080 → 3,154ms**, CLS **0.08742 → 0.08742**, and total transfer **490.8 → 491.6KB**. Simulated LCP took only two values in both builds, about 3,005 or 3,155ms (one round trip apart); the baseline landed on the higher value in 3 of 6 runs and the new build in 5 of 6. Initial JavaScript grew by **0.72KB** and CSS by **0.09KB** gzipped; study code (3.4KB) and styles (0.7KB) load only after a reader first presses the text. The first verse still starts at about **162px** at 390×844.
 
-The optional AI explanations leave the default build's sizes unchanged: `index` 82.0KB and `StudyPanel` 3.7KB gzipped, with no AI chunks or text. In an AI build, `StudyPanel` grows by 0.5KB. The card's own chunk (`AiPanel`, 6.2KB plus 0.65KB CSS) loads when the card first opens, and the request chunk (`run`, 5.2KB) loads on the first request. Lighthouse was not re-run, because nothing that loads before a reader opens a verse changed.
+At the original NT study release, optional AI explanations left the default build's sizes unchanged: `index` 82.0KB and `StudyPanel` 3.7KB gzipped, with no AI chunks or text. In an AI build, `StudyPanel` grows by 0.5KB. The card's own chunk (`AiPanel`, 6.2KB plus 0.65KB CSS) loads when the card first opens, and the request chunk (`run`, 5.2KB) loads on the first request. Lighthouse was not re-run, because nothing that loads before a reader opens a verse changed.
 
 Reading streaks and the plan day grid were compared against `dev` (`3d0b296`) with nine runs per build (three rounds of three) under the same mobile Lighthouse throttling: median performance **92 → 92**, accessibility **100 → 100**, LCP **3,154 → 3,155ms**, CLS **0.00105 → 0.00105**, and total transfer **505.9 → 506.4KB**. Simulated LCP again took about 3,005, 3,155 or 3,680–3,760ms; the baseline landed on the slow values in 3 of 9 runs and the new build in 4 of 9. Initial JavaScript grew by **0.49KB** and CSS by **0.06KB** gzipped, within the snapshot budget with about 20 bytes to spare. The streak UI (2.5KB plus 1.1KB CSS) and day grid (0.9KB plus 0.6KB CSS) load on demand.
