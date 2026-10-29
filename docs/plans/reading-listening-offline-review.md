@@ -65,7 +65,18 @@ Work in a fresh checkout (`git fetch origin && git switch feature/reading-listen
 
 ## 6. Measurements and known risks
 
-Measurements (cloud, local preview, simulated mobile Lighthouse; see `docs/development.md` for the final table): _pending: the cloud session adds them in a follow-up commit; if they are missing, §4.7 measures them._
+Measurements in the cloud session (local `vite preview` builds of `aa4f366` and this branch; details in `docs/development.md`, "Verification baseline"):
+
+| Measure                                                                 | `aa4f366`     | This branch                      |
+| ----------------------------------------------------------------------- | ------------- | -------------------------------- |
+| Lighthouse mobile performance (median of 9)                             | 89            | 88                               |
+| Lighthouse simulated LCP (median of 9)                                  | 3,606 ms      | 3,679 ms (3,606 without preload) |
+| Lighthouse CLS / accessibility                                          | 0.00105 / 100 | 0.00106 / 100                    |
+| Measured LCP, first visit (7 fresh loads, 150 ms RTT, 1.6 Mbps, 4× CPU) | 2,312 ms      | 2,148–2,220 ms                   |
+| Measured LCP, return visit                                              | 736 ms        | 352 ms (from the worker)         |
+| Initial JS / CSS gzip                                                   | 96.9 / 4.5 KB | 98.1 / 4.2 KB                    |
+
+The simulated LCP and the measured LCP disagree about the inline first-reading preload (`index.html`): Lighthouse's model charges it for sharing bandwidth with the script, while applied throttling shows the text arriving about 100–170 ms sooner. It was kept. Re-check on a real phone (§4.7); if a physical device agrees with the simulation, removing that one inline script restores 3,606 ms without affecting anything else.
 
 Risks to keep an eye on:
 
