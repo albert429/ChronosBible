@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { initAppearance } from "./navigation/appearance";
+import { afterStartup } from "./lib/afterStartup";
 
 initAppearance();
 createRoot(document.getElementById("root")!).render(
@@ -12,14 +13,11 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
-// Offline support loads after the page, apart from the reader, and registers
-// its worker once idle.
-addEventListener(
-  "load",
+// Offline support loads apart from the reader, once the page has settled.
+afterStartup(
   () =>
     void import("./pwa/register").then(
       (module) => module.registerServiceWorker(),
       () => {},
     ),
-  { once: true },
 );

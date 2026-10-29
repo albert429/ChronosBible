@@ -17,9 +17,9 @@ function set(patch: Partial<State>) {
 }
 
 /**
- * Register /sw.js (src/pwa/sw.ts) once the page has loaded and is idle, so
- * it never competes with the first reading. A new build installs in the
- * background and waits for the reader to choose «تحديث».
+ * Register /sw.js (src/pwa/sw.ts); main.tsx calls this once the page has
+ * settled, so it never competes with the first reading. A new build
+ * installs in the background and waits for the reader to choose «تحديث».
  */
 export function registerServiceWorker() {
   // Chromium's own install prompt is replaced by the menu's button.
@@ -47,6 +47,8 @@ export function registerServiceWorker() {
   const start = () =>
     navigator.serviceWorker.register("/sw.js").then(
       (registration) => {
+        // Undefined where registration is blocked (automated browsers).
+        if (!registration) return;
         offer(registration.waiting);
         registration.addEventListener("updatefound", () => {
           const worker = registration.installing;
@@ -62,12 +64,8 @@ export function registerServiceWorker() {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (updating) location.reload();
   });
-  const idle = () =>
-    typeof requestIdleCallback === "function"
-      ? requestIdleCallback(start, { timeout: 5000 })
-      : setTimeout(start, 1000);
-  if (document.readyState === "complete") idle();
-  else addEventListener("load", idle, { once: true });
+  // main.tsx loads this module only once the page has settled.
+  void start();
 }
 
 /** Switch to the waiting build; the page reloads once it takes over. */

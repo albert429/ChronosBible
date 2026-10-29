@@ -155,6 +155,14 @@ test.describe("first reading", () => {
       .getByRole("button", { name: "الإصحاح التالي", exact: true })
       .click();
     await ready(page);
+    // Written once the page has settled, never during the first screen.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => localStorage.getItem("bible-reader-preload-v1")),
+        { timeout: 10000 },
+      )
+      .toBe('["/bible/GEN/2.json"]');
     await page.reload();
     await ready(page);
     expect(await preloads(page)).toEqual([

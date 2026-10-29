@@ -23,6 +23,7 @@ import { chapters } from "./bible/client";
 import {
   readingKey,
   type AnyReadingLocation,
+  type AnyScriptureReading,
   type ReadingTrack,
 } from "./bible/types";
 import {
@@ -34,6 +35,7 @@ import {
 import { useReadingLocation } from "./reader/useReadingLocation";
 import { days } from "./plan/readings";
 import { adjacentLocation } from "./navigation/adjacent";
+import { afterStartup } from "./lib/afterStartup";
 import { TRACK_NAMES } from "./navigation/modes";
 const Dialogs = lazy(() => import("./plan/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
@@ -116,14 +118,20 @@ export default function App() {
   const title = readingTitle(location, chronology.data, reading.data);
   // Once the text is shown, the next launch fetches it alongside the app.
   const shownKey = reading.data ? readingKey(reading.data) : "";
+  const shown = useRef<[AnyReadingLocation, AnyScriptureReading?]>(null);
   useEffect(() => {
     if (!shownKey || shownKey !== readingKey(location)) return;
-    const [place, data] = [location, reading.data];
-    // Not needed until the next launch: its small module loads apart.
-    void import("./reader/preload").then(
-      ({ readingPaths, rememberPreload }) =>
-        rememberPreload(readingPaths(place, data)),
-      () => {},
+    shown.current = [location, reading.data];
+    // Not needed until the next launch: its small module loads apart, after
+    // the first screen, and records whatever is shown by then.
+    afterStartup(
+      () =>
+        void import("./reader/preload").then(
+          ({ readingPaths, rememberPreload }) => {
+            if (shown.current) rememberPreload(readingPaths(...shown.current));
+          },
+          () => {},
+        ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownKey]);
