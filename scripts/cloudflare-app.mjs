@@ -56,8 +56,29 @@ export function deployment(target) {
 // Public, read-only R2 custom domain (bucket chronosbible-audio).
 export const AUDIO_BASE_URL = "https://audio.chronosbible.com";
 
+// AI explanations are allowed on the dev Worker only, and only when its build
+// variables set VITE_AI_PROVIDERS. Production never enables them.
+const AI_SETTINGS = [
+  "VITE_AI_PROVIDERS",
+  "VITE_OPENROUTER_API_KEY",
+  "VITE_OPENROUTER_MODELS",
+  "VITE_AI_DAILY_CAP",
+];
+export function aiSettings(target, source = process.env) {
+  deployment(target);
+  const providers = source.VITE_AI_PROVIDERS?.trim();
+  if (target !== "dev" || !providers) return undefined;
+  return {
+    providers,
+    // The app trims the key at build time, so that is the value it compiles in.
+    key: source.VITE_OPENROUTER_API_KEY?.trim() || undefined,
+  };
+}
+
 // Use an allowlist: Vite loads .env files AND shell VITE_* values. Neither may
 // silently enable AI, fixtures, or a future public setting in this deployment.
+// Test-only switches (VITE_OPENROUTER_BASE_URL, VITE_AI_ALLOW_LOCAL) never pass.
+/** @returns {Record<string, string | undefined>} */
 export function buildEnvironment(target, source = process.env, config = "") {
   deployment(target);
   const env = {};
@@ -71,6 +92,14 @@ export function buildEnvironment(target, source = process.env, config = "") {
     "LANG",
   ])
     if (source[key] !== undefined) env[key] = source[key];
+  const ai = aiSettings(target, source)
+    ? Object.fromEntries(
+        AI_SETTINGS.filter((key) => source[key] !== undefined).map((key) => [
+          key,
+          source[key],
+        ]),
+      )
+    : { VITE_AI_PROVIDERS: "", VITE_OPENROUTER_API_KEY: "" };
   return {
     ...env,
     CI: "true",
@@ -79,8 +108,7 @@ export function buildEnvironment(target, source = process.env, config = "") {
     VITE_AUDIO_CHAPTERS_ENABLED: config.includes("VITE_AUDIO_CHAPTERS_ENABLED")
       ? "true"
       : "false",
-    VITE_AI_PROVIDERS: "",
-    VITE_OPENROUTER_API_KEY: "",
+    ...ai,
   };
 }
 
@@ -98,15 +126,20 @@ function committedRedirects(root) {
   return existsSync(path) ? readFileSync(path, "utf8") : undefined;
 }
 
-/** @param {string} [redirects] the committed _redirects a shipped copy must equal */
-export function scanAssets(root, env = process.env, redirects) {
+/**
+ * @param {string} [redirects] the committed _redirects a shipped copy must equal
+ * @param {string} [allowedKey] the one OpenRouter key a dev build may contain
+ */
+export function scanAssets(root, env = process.env, redirects, allowedKey) {
   const paths = files(root);
   if (paths.length > 10_000) fail("app assets exceed the 10,000-file budget");
   let bytes = 0;
   const secrets = Object.entries(env)
     .filter(
       ([key, value]) =>
-        /KEY|TOKEN|SECRET|PASSWORD/i.test(key) && value?.length >= 12,
+        /KEY|TOKEN|SECRET|PASSWORD/i.test(key) &&
+        value?.length >= 12 &&
+        (!allowedKey || value.trim() !== allowedKey),
     )
     .map(([, value]) => value);
   for (const file of paths) {
@@ -136,10 +169,13 @@ export function scanAssets(root, env = process.env, redirects) {
     if (relative(root, file).startsWith("audio/") && extname(file) !== ".json")
       fail("only generated JSON manifests may be shipped under audio/");
     const body = readFileSync(file);
+    // Remove the allowed key (exact match) before looking for any other.
+    const text = body.toString("utf8");
+    const rest = allowedKey ? text.split(allowedKey).join("") : text;
     if (
       secrets.some((value) => body.includes(value)) ||
       /sk-or-v1-[a-zA-Z0-9]{16,}|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/.test(
-        body.toString("utf8"),
+        rest,
       )
     )
       fail("a credential was detected in app assets (value redacted)");
@@ -230,8 +266,9 @@ export function preflight(
   )
     fail("unexpected Worker, routes, assets, or build configuration");
   const redirects = committedRedirects(root);
-  scanAssets(join(root, "public"), env, redirects);
-  scanAssets(join(root, "dist"), env, redirects);
+  const allowedKey = aiSettings(target, env)?.key;
+  scanAssets(join(root, "public"), env, redirects, allowedKey);
+  scanAssets(join(root, "dist"), env, redirects, allowedKey);
   return { ...selected, head };
 }
 
@@ -240,6 +277,7 @@ export function build(target) {
   // Only this checkout's dist can be removed. Public/generated source data is
   // preserved; unexpected local media is rejected above, never deleted.
   rmSync(join(ROOT, "dist"), { recursive: true, force: true });
+  const ai = aiSettings(target, process.env);
   execFileSync("npm", ["run", "build"], {
     cwd: ROOT,
     env: buildEnvironment(
@@ -254,14 +292,24 @@ export function build(target) {
       join(ROOT, "hosting/cloudflare-app", name),
       join(ROOT, "dist", name),
     );
-  scanAssets(join(ROOT, "dist"), process.env, committedRedirects(ROOT));
+  scanAssets(
+    join(ROOT, "dist"),
+    process.env,
+    committedRedirects(ROOT),
+    ai?.key,
+  );
   if (
+    !ai &&
     files(join(ROOT, "dist/assets")).some((file) =>
       /\/(?:AiPanel|run)-/.test(file),
     )
   )
-    fail("AI chunks are forbidden in Cloudflare builds");
-  console.log(`Cloudflare ${target}: assets verified; AI disabled.`);
+    fail("AI chunks are forbidden unless the dev build enables AI");
+  console.log(
+    `Cloudflare ${target}: assets verified; ${
+      ai ? `AI enabled (${ai.providers})` : "AI disabled"
+    }.`,
+  );
 }
 
 export function deployArguments(target, root = ROOT) {
