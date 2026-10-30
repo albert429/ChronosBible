@@ -113,6 +113,9 @@ export function readingTitle(
   );
 }
 
+/** What a reader does to move the page themselves. */
+const INPUT_EVENTS = ["pointerdown", "wheel", "keydown"] as const;
+
 const DONE_LABELS = {
   plan: "تمت قراءة هذا اليوم",
   bible: "تمت قراءة هذا الإصحاح",
@@ -208,18 +211,26 @@ export default function Reader({
       document.addEventListener("pointerdown", clear, { once: true });
     }
     // The text can arrive before its fonts (it is fetched with the page), and
-    // their swap moves it: place it again once they settle, unless the reader
-    // has scrolled since.
+    // their swap reflows it: place it again once they settle, unless the
+    // reader has touched the page since. The swap itself can move the scroll
+    // (a shorter page clamps it), so only the reader's own input counts.
     const placed = target;
-    const at = window.scrollY;
     let active = true;
-    if (document.fonts?.status === "loading")
-      void document.fonts.ready.then(() => {
-        if (active && Math.abs(window.scrollY - at) < 2)
-          scrollToVerse(placed, offset);
-      });
-    return () => {
+    const stop = () => {
       active = false;
+      for (const type of INPUT_EVENTS)
+        removeEventListener(type, stop, { capture: true });
+    };
+    if (document.fonts?.status === "loading") {
+      for (const type of INPUT_EVENTS)
+        addEventListener(type, stop, { capture: true, passive: true });
+      void document.fonts.ready.then(() => {
+        if (active) scrollToVerse(placed, offset);
+        stop();
+      });
+    }
+    return () => {
+      stop();
       if (clear) {
         document.removeEventListener("pointerdown", clear);
         clear();
