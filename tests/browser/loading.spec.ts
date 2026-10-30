@@ -124,12 +124,11 @@ test.describe("loading and caching", () => {
 });
 
 test.describe("first reading", () => {
+  /** What index.html started fetching before the app ran. */
   const preloads = (page: import("@playwright/test").Page) =>
     page.evaluate(() =>
-      [...document.querySelectorAll('link[rel="preload"][as="fetch"]')].map(
-        (link) =>
-          new URL((link as HTMLLinkElement).href).pathname +
-          new URL((link as HTMLLinkElement).href).search,
+      Object.keys(
+        (window as unknown as { __earlyData?: object }).__earlyData ?? {},
       ),
     );
 

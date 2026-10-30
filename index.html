@@ -31,6 +31,8 @@
     <script>
       // Fetch the reading the app will open alongside its code, not after it
       // (see src/reader/preload.ts); a wrong guess costs one small request.
+      // The app takes these responses over (src/lib/jsonClient.ts): unlike a
+      // <link rel=preload>, a fetch started here is reused by every browser.
       try {
         (function (versions) {
           var query = new URLSearchParams(location.search);
@@ -67,6 +69,7 @@
                 ? []
                 : ["/bible/GEN/1.json"];
           }
+          var early = (window.__earlyData = {});
           paths.forEach(function (path) {
             if (
               !/^\/(bible|readings|chronology)\/[\w-]+(\/[\w-]+)?\.json$/.test(
@@ -75,12 +78,13 @@
             )
               return;
             var version = versions[path.split("/")[1]];
-            var link = document.createElement("link");
-            link.rel = "preload";
-            link.as = "fetch";
-            link.crossOrigin = "anonymous";
-            link.href = version ? path + "?v=" + version : path;
-            document.head.appendChild(link);
+            var href = version ? path + "?v=" + version : path;
+            early[href] = fetch(href).then(
+              function (response) {
+                return response.ok ? response : undefined;
+              },
+              function () {},
+            );
           });
         })(__DATA_VERSIONS_JSON__);
       } catch {}

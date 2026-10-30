@@ -174,34 +174,56 @@ export default function Reader({
     tap.reset();
   }
   useLayoutEffect(() => {
+    let target: HTMLElement | null;
+    let offset: number | undefined;
+    let clear: (() => void) | undefined;
     if (!location.verse) {
       const saved = restore && current && readingPosition(identity);
-      const target = saved && verseElement(saved.passage, saved.verse);
-      if (target) scrollToVerse(target, saved.offset);
-      else window.scrollTo({ top: 0, behavior: "instant" });
-      return;
+      target = saved ? verseElement(saved.passage, saved.verse) : null;
+      offset = saved ? saved.offset : undefined;
+      if (!target) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+        return;
+      }
+      scrollToVerse(target, offset);
+    } else {
+      if (!current) return;
+      // A chronological link names a verse number but not its occurrence: the
+      // first passage that contains it (canonical links have one passage).
+      const verse = location.verse;
+      const passage = Math.max(
+        0,
+        current.passages.findIndex(
+          (item) => verse >= item.start && verse <= item.end,
+        ),
+      );
+      target = verseElement(passage, verse);
+      if (!target) return;
+      verseNumberButton(target)?.focus({ preventScroll: true });
+      scrollToVerse(target);
+      // The linked verse stays marked until the reader next touches the page.
+      const marked = target;
+      markSelected(marked);
+      clear = () => clearSelected(marked);
+      document.addEventListener("pointerdown", clear, { once: true });
     }
-    if (!current) return;
-    // A chronological link names a verse number but not its occurrence: the
-    // first passage that contains it (canonical links have one passage).
-    const verse = location.verse;
-    const passage = Math.max(
-      0,
-      current.passages.findIndex(
-        (item) => verse >= item.start && verse <= item.end,
-      ),
-    );
-    const target = verseElement(passage, verse);
-    if (!target) return;
-    verseNumberButton(target)?.focus({ preventScroll: true });
-    scrollToVerse(target);
-    // The linked verse stays marked until the reader next touches the page.
-    markSelected(target);
-    const clear = () => clearSelected(target);
-    document.addEventListener("pointerdown", clear, { once: true });
+    // The text can arrive before its fonts (it is fetched with the page), and
+    // their swap moves it: place it again once they settle, unless the reader
+    // has scrolled since.
+    const placed = target;
+    const at = window.scrollY;
+    let active = true;
+    if (document.fonts?.status === "loading")
+      void document.fonts.ready.then(() => {
+        if (active && Math.abs(window.scrollY - at) < 2)
+          scrollToVerse(placed, offset);
+      });
     return () => {
-      document.removeEventListener("pointerdown", clear);
-      clear();
+      active = false;
+      if (clear) {
+        document.removeEventListener("pointerdown", clear);
+        clear();
+      }
     };
   }, [current, identity, location.verse, navigation, restore]);
   const audio = readingHasAudio(location);
