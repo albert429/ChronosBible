@@ -36,15 +36,16 @@ Final decisions (agreed with the owner; do not reopen them in review): completio
 - Chromium Playwright suite (112 tests) on the fixture build (`AUDIO_TEST_FIXTURES=1 VITE_AUDIO_BASE_URL=https://audio.example.test VITE_AUDIO_CHAPTERS_ENABLED=true`), all passing after each commit, including the new `reading-flow`, `offline`, appearance, preload and listening tests.
 - The Cloudflare asset audit (`scanAssets` from `scripts/cloudflare-app.mjs`) on the built `dist/` with `_headers` and `_redirects`: passed (about 4,300 files, 46 MB).
 - Bundle and Lighthouse numbers against `aa4f366`: see §6.
+- The full browser suite (`npm run test:e2e`, all three projects, 245 tests) on `56253b4`, with Playwright's WebKit installed in the cloud container (`npx playwright install webkit` plus `install-deps`): 240 passed, 4 skipped by design. The one failure was the WebKit accessibility sweep (`layout.spec.ts:124`) hitting the 30 s limit; it passes alone in 31 s here against 21.5 s on CI, so it is the container's speed, not the change. CI's `verify` runs the same suite.
 
-**Not verified there:** mobile WebKit (not installed), physical devices, real CDN headers, and screenshots for the PR.
+**Not verified there:** physical devices, real CDN headers, and screenshots for the PR. Playwright's WebKit is not Safari: the iPhone checks below still matter.
 
 ## 4. Handoff tasks on the Mac
 
 Work in a fresh checkout (`git fetch origin && git switch feature/reading-listening-offline`) with Node 22. Record each result in the PR (a short checklist comment), attaching screenshots where asked.
 
 1. **Full local checks.** `npm ci`, then `npm run validate`. Pass: no errors.
-2. **Both browser projects.** `npx playwright install chromium webkit`, then `PW_PORT=4400 npm run test:e2e`. Pass: Chromium and **mobile WebKit** green (WebKit was never run in the cloud; if a WebKit-only failure appears, check swipe (`useSwipePaging`), the seek slider and the auto theme first). `offline.spec.ts` skips WebKit by design.
+2. **Both browser projects.** `npx playwright install chromium webkit`, then `PW_PORT=4400 npm run test:e2e`. Pass: Chromium and **mobile WebKit** green (both ran in the cloud, see §3; if a WebKit-only failure appears on the Mac, check swipe (`useSwipePaging`), the seek slider, the auto theme and linked-verse placement after the font swap first). `offline.spec.ts` skips WebKit by design.
 3. **iPhone, Safari** (LAN: `npm run build && npm start -- --host`, or the dev preview after deploying):
    - swipe left/right over the text turns pages; an edge swipe still goes Back; selecting text and pinch-zoomed panning never turn pages;
    - leave a long chapter (Psalm 119) mid-way, kill the tab, reopen: same verse at the top;
