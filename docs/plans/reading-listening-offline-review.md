@@ -27,6 +27,7 @@ Final decisions (agreed with the owner; do not reopen them in review): completio
 - **The menu sheet stays in the main bundle** so it opens complete from the keyboard (the day, Bible-picker and settings sheets are lazy, warmed on idle, press and focus).
 - **The seek slider** replaced the planned ±15 s buttons for chapter-timed recordings.
 - **The dialog observer** in `usePauseOnDialog` was kept, filtered to dialogs without `data-keeps-audio`.
+- **The first reading is fetched by `index.html` itself** and handed to the JSON client, not preloaded with `<link rel=preload as=fetch>`: CI's mobile WebKit run showed WebKit requesting the text a second time (fixed in `633b238`). Check on the iPhone (§4.3) that a linked verse still lands just below the toolbar after the fonts load.
 - **Follow-along** resumes on any seek, so the existing "tracking stays on after scrolling, then seeking" spec still holds.
 
 ## 3. Verified in the cloud session
