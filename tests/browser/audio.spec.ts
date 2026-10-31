@@ -196,12 +196,18 @@ test("direct speed, close, study pause and highlights remain accessible on phone
     await page.getByRole("button", { name: theme, exact: true }).click();
     await closeSheet(page);
     await expectAccessible(page);
-    const highlight = await page
-      .locator("[data-listening]")
-      .evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(highlight).toBe(
-      theme === "الوضع النهاري" ? "rgb(225, 233, 212)" : "rgb(53, 69, 49)",
-    );
+    // The recording plays on under the sheets, so the highlight moves about
+    // once a second: find and read it in one step.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const verse = document.querySelector("[data-listening]");
+          return verse && getComputedStyle(verse).backgroundColor;
+        }),
+      )
+      .toBe(
+        theme === "الوضع النهاري" ? "rgb(225, 233, 212)" : "rgb(53, 69, 49)",
+      );
   }
   await page.setViewportSize({ width: 195, height: 422 });
   await noOverflow(page);
