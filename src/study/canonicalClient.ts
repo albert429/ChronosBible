@@ -1,5 +1,6 @@
+import { dataUrl } from "../lib/dataVersion.ts";
 import { createJsonClient } from "../lib/jsonClient.ts";
-import { decodeStudyWords, UNSUPPORTED_WORDS } from "./decodeWords.ts";
+import { decodeStudyWords } from "./decodeWords.ts";
 import type {
   StudyChapterIndex,
   StudyLexicon,
@@ -93,7 +94,7 @@ const wordToken = (token: unknown): token is WordToken =>
 export const studyChapter = createJsonClient<StudyChapterIndex>({
   url: (key) => {
     chapterParts(key);
-    return `/study/v2/${key}/index.json`;
+    return dataUrl(`/study/v2/${key}/index.json`);
   },
   validate: (data, key): data is StudyChapterIndex => {
     const { book, chapter } = chapterParts(key);
@@ -127,7 +128,7 @@ export const studyChapter = createJsonClient<StudyChapterIndex>({
 export const studyWords = createJsonClient<StudyWords>({
   url: (key) => {
     rangeParts(key);
-    return `/study/v2/${key}.words.json.gz`;
+    return dataUrl(`/study/v2/${key}.words.json.gz`);
   },
   validate: (data, key): data is StudyWords =>
     rangeHeader(data, key) &&
@@ -135,17 +136,14 @@ export const studyWords = createJsonClient<StudyWords>({
       (entry) =>
         object(entry) && Array.isArray(entry.w) && entry.w.every(wordToken),
     ),
-  message: (_key, cause) =>
-    cause instanceof Error && cause.message === UNSUPPORTED_WORDS
-      ? UNSUPPORTED_WORDS
-      : message(),
+  message,
   parse: decodeStudyWords,
   maxEntries: 12,
 });
 export const studyTranslations = createJsonClient<StudyTranslations>({
   url: (key) => {
     rangeParts(key);
-    return `/study/v2/${key}.tr.json`;
+    return dataUrl(`/study/v2/${key}.tr.json`);
   },
   validate: (data, key): data is StudyTranslations =>
     rangeHeader(data, key) &&
@@ -161,7 +159,7 @@ export const studyTranslations = createJsonClient<StudyTranslations>({
 export const studyLexicon = createJsonClient<StudyLexicon>({
   url: (shard) => {
     if (!/^[GH]\d{2}$/.test(shard)) throw new Error(message());
-    return `/study/v2/lex/${shard}.json`;
+    return dataUrl(`/study/v2/lex/${shard}.json`);
   },
   validate: (data, shard): data is StudyLexicon =>
     object(data) &&
@@ -177,7 +175,9 @@ export const studyLexicon = createJsonClient<StudyLexicon>({
         typeof entry.d === "string",
     ),
   message,
-  maxEntries: 12,
+  // A verse needs about 12 shards (up to 30, in Daniel 3:15); all of them
+  // together are under 2 MB.
+  maxEntries: 64,
 });
 
 function rangeFor(index: StudyChapterIndex, verse: number): StudyRange {

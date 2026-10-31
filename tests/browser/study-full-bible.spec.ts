@@ -121,13 +121,13 @@ test("translations work when words fail and retry restores words independently",
   page,
 }) => {
   let broken = true;
-  await page.route("**/study/v2/GEN/1/*.words.json.gz", (route) =>
+  await page.route("**/study/v2/GEN/1/*.words.json.gz*", (route) =>
     broken ? route.fulfill({ status: 503, body: "down" }) : route.fallback(),
   );
   await page.goto("/?mode=bible&book=GEN&chapter=1");
   await ready(page);
   await openVerse(page);
-  await openSection(page, "الكلمات العبرية والآرامية");
+  await openSection(page, "الكلمات العبرية");
   const retry = study(page).getByRole("button", { name: "إعادة المحاولة" });
   await expect(retry).toBeVisible();
   await openSection(page, "ترجمات أخرى");
@@ -139,34 +139,57 @@ test("translations work when words fail and retry restores words independently",
   await expect(study(page).locator('bdi[lang="he"]').first()).toBeVisible();
 });
 
-test("a browser without gzip decoding keeps translations available", async ({
+// Cloudflare serves the stored word files as application/gzip with no
+// Content-Encoding, so the app decodes them; Vite's preview sends
+// Content-Encoding: gzip and the browser decodes. Exercise the raw bytes.
+for (const decoder of ["DecompressionStream", "the fallback decoder"])
+  test(`raw stored gzip words decode with ${decoder}`, async ({ page }) => {
+    if (decoder !== "DecompressionStream")
+      // Safari before 16.4.
+      await page.addInitScript(() =>
+        Object.defineProperty(window, "DecompressionStream", {
+          value: undefined,
+          configurable: true,
+        }),
+      );
+    await page.route("**/study/v2/GEN/1/*.words.json.gz*", (route) =>
+      route.fulfill({
+        body: readFileSync(`public${new URL(route.request().url()).pathname}`),
+        contentType: "application/gzip",
+      }),
+    );
+    await page.goto("/?mode=bible&book=GEN&chapter=1");
+    await ready(page);
+    await openVerse(page);
+    await openSection(page, "الكلمات العبرية");
+    const first = study(page).locator('bdi[lang="he"]').first();
+    await expect(first).toHaveText("בְּ רֵאשִׁ֖ית");
+    await expect(section(page, "الكلمات العبرية")).toHaveAccessibleName(
+      /^الكلمات العبرية [٠-٩]+$/,
+    );
+  });
+
+test("a Greek phrase keeps its word order and Hebrew prefixes stay with their words", async ({
   page,
 }) => {
-  await page.addInitScript(() =>
-    Object.defineProperty(window, "DecompressionStream", {
-      value: undefined,
-      configurable: true,
-    }),
-  );
-  // Vite may serve .gz with Content-Encoding, which the browser decodes itself.
-  // Exercise a raw stored gzip response, as well as the host-decoded path above.
-  await page.route("**/study/v2/GEN/1/*.words.json.gz", (route) =>
-    route.fulfill({
-      body: readFileSync(`public${new URL(route.request().url()).pathname}`),
-      contentType: "application/gzip",
-    }),
-  );
+  await page.goto("/?mode=bible&book=MAT&chapter=1");
+  await ready(page);
+  await openVerse(page, 18);
+  await openSection(page, "الكلمات اليونانية");
+  const phrase = study(page)
+    .locator(".greek-row", { hasText: "حُبْلَى" })
+    .locator('bdi[lang="grc"]');
+  await expect(phrase).toHaveText("γαστρὶ ἔχουσα");
+  // One isolate per phrase, read left to right.
+  await expect(phrase).toHaveAttribute("dir", "ltr");
+  await closeSheet(page);
   await page.goto("/?mode=bible&book=GEN&chapter=1");
   await ready(page);
   await openVerse(page);
-  await openSection(page, "الكلمات العبرية والآرامية");
-  await expect(study(page)).toContainText(
-    "يتطلب عرض الكلمات الأصلية تحديث المتصفح",
-  );
-  await openSection(page, "ترجمات أخرى");
-  await expect(study(page).locator(".study-english")).toContainText(
-    "In the beginning",
-  );
+  await openSection(page, "الكلمات العبرية");
+  await expect(
+    study(page).locator(".greek-main").first().locator("bdi[lang]"),
+  ).toHaveCount(2);
 });
 
 test("a delayed previous verse cannot populate the next verse's sheet", async ({
@@ -176,17 +199,17 @@ test("a delayed previous verse cannot populate the next verse's sheet", async ({
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route("**/study/v2/GEN/1/*.words.json.gz", async (route) => {
+  await page.route("**/study/v2/GEN/1/*.words.json.gz*", async (route) => {
     await gate;
     await route.fallback();
   });
   await page.goto("/?mode=bible&book=GEN&chapter=1");
   await ready(page);
   await openVerse(page, 1);
-  await openSection(page, "الكلمات العبرية والآرامية");
+  await openSection(page, "الكلمات العبرية");
   await closeSheet(page);
   await openVerse(page, 2);
-  await openSection(page, "الكلمات العبرية والآرامية");
+  await openSection(page, "الكلمات العبرية");
   release();
   await expect(study(page).locator(".greek-row").first()).toBeVisible();
   await expect(study(page)).toHaveAttribute("aria-labelledby", /./);

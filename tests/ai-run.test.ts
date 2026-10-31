@@ -10,19 +10,46 @@ import type { Verse } from "../src/plan/readings.ts";
 
 const requests: string[] = [];
 const pending: (() => void)[] = [];
+const range = (book: string, chapter: number, end: number) => ({
+  v: 2,
+  book,
+  chapter,
+  start: 1,
+  end,
+});
 const study: Record<string, unknown> = {
-  "10.tr.json": {
-    v: 1,
-    day: 10,
-    verses: { "MAT.8.15": { e: "And he touched her hand" } },
+  "v2/MAT/8/index.json": {
+    v: 2,
+    book: "MAT",
+    chapter: 8,
+    ranges: [{ start: 1, end: 34, key: "1-34" }],
   },
-  "10.lex.json": {
-    v: 1,
-    day: 10,
+  "v2/MAT/8/1-34.tr.json": {
+    ...range("MAT", 8, 34),
+    verses: { 15: { e: "And he touched her hand" } },
+  },
+  "v2/MAT/8/1-34.words.json.gz": {
+    ...range("MAT", 8, 34),
+    verses: {
+      15: {
+        w: [
+          ["ἥψατο", "hēpsato", "G0681", "V-AMI-3S", "to kindle", 0, 0, "grc"],
+        ],
+      },
+    },
+  },
+  "v2/lex/G06.json": {
+    v: 2,
+    shard: "G06",
     lex: { G0681: { l: "ἅπτω", g: "to touch", d: "" } },
   },
-  "11.tr.json": { v: 1, day: 11, verses: {} },
-  "11.lex.json": { v: 1, day: 11, lex: {} },
+  "v2/MAT/9/index.json": {
+    v: 2,
+    book: "MAT",
+    chapter: 9,
+    ranges: [{ start: 1, end: 38, key: "1-38" }],
+  },
+  "v2/MAT/9/1-38.tr.json": { ...range("MAT", 9, 38), verses: {} },
 };
 globalThis.fetch = async (url: RequestInfo | URL, init: RequestInit = {}) => {
   const path = String(url);
@@ -37,7 +64,7 @@ globalThis.fetch = async (url: RequestInfo | URL, init: RequestInit = {}) => {
     );
   }
   const name = path.split("/study/")[1];
-  if (name?.startsWith("12.")) {
+  if (name?.startsWith("v2/MAT/12/")) {
     // A study file that never arrives (until the test releases it).
     return new Promise((resolve) =>
       pending.push(() => resolve(new Response("{}", { status: 404 }))),
@@ -68,15 +95,13 @@ const { ask } = await import("../src/ai/run.ts");
 const { abortable } = await import("../src/ai/types.ts");
 
 const verse: Verse = { number: 15, text: "فلمس يدها" };
-const input = (chip: ChipId, day = 10): AskInput => ({
+const input = (chip: ChipId, chapter = 8): AskInput => ({
   chip,
-  day,
-  id: "MAT.8.15",
+  id: `MAT.${chapter}.15`,
   material: {
     book: "متى",
-    passage: { book: "متى", chapter: 8, start: 15, end: 15, verses: [verse] },
+    passage: { book: "متى", chapter, start: 15, end: 15, verses: [verse] },
     verse,
-    g: [["ἥψατο", "hēpsato", "G0681", "V-AMI-3S", "to kindle", 0, 0]],
   },
   question: chip === "ask" ? "ما معنى لمس؟" : "",
 });
@@ -86,7 +111,8 @@ test("A typed question loads the lexicon, so the Greek meaning is the lexicon's"
   requests.length = 0;
   let sent = 0;
   await ask(input("ask"), new AbortController().signal, quiet, () => sent++);
-  assert.ok(requests.some((r) => r.endsWith("/study/10.lex.json")));
+  assert.ok(requests.includes("/study/v2/MAT/8/1-34.words.json.gz"));
+  assert.ok(requests.includes("/study/v2/lex/G06.json"));
   const prompt = requests.find((r) => r.startsWith("المرجع"));
   assert.ok(prompt);
   assert.match(prompt, /G0681: to touch/);
@@ -95,11 +121,11 @@ test("A typed question loads the lexicon, so the Greek meaning is the lexicon's"
   assert.equal(sent, 1);
 });
 
-test("«اشرح الآية» needs no lexicon", async () => {
+test("«اشرح الآية» needs no words or lexicon", async () => {
   requests.length = 0;
-  await ask(input("explain", 11), new AbortController().signal, quiet);
-  assert.ok(requests.some((r) => r.endsWith("/study/11.tr.json")));
-  assert.ok(!requests.some((r) => r.endsWith("/study/11.lex.json")));
+  await ask(input("explain", 9), new AbortController().signal, quiet);
+  assert.ok(requests.includes("/study/v2/MAT/9/1-38.tr.json"));
+  assert.ok(!requests.some((r) => /words\.json|\/lex\//.test(r)));
 });
 
 test("Stopping while the study files load ends the request at once and sends nothing", async () => {

@@ -42,6 +42,7 @@
     "app:host:deploy:dev": "node scripts/cloudflare-app.mjs deploy dev"
   },
   "dependencies": {
+    "fflate": "^0.8.2",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

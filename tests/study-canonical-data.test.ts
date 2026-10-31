@@ -22,6 +22,7 @@ import {
 import { readBibleChapters } from "../scripts/build-bible.js";
 import { scanAssets } from "../scripts/cloudflare-app.mjs";
 import type { GreekToken, StudyWords } from "../src/study/types.ts";
+import { verseWordsTitle, wordsTitle } from "../src/study/verse.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -72,7 +73,11 @@ test("All canonical verses publish bounded words and translations with unchanged
             tokens,
             greek[id].map((token) => [...token, "grc"]),
           );
-        else assert.deepEqual(tokens, source.ot[id]);
+        else {
+          assert.deepEqual(tokens, source.ot[id]);
+          // The title shown before loading names the loaded words' language.
+          assert.equal(verseWordsTitle(id, true), wordsTitle(tokens), id);
+        }
         // STEP joins a gloss's words with "_"; readers see spaces.
         assert.ok(!tokens.some((token) => token[4].includes("_")), id);
         covered++;

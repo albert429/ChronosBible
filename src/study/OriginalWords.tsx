@@ -3,9 +3,15 @@ import { Languages } from "lucide-react";
 import { Loading, LoadError } from "../components/Feedback";
 import { useResource } from "../lib/useResource";
 import { displayArabic } from "../lib/arabicDisplay";
-import { useAppearance } from "../navigation/appearance";
+import { useDiacritics } from "../navigation/appearance";
 import { verseWords } from "./canonicalClient";
-import { gloss, originalWord, span, wordGroups, wordsTitle } from "./verse";
+import {
+  gloss,
+  originalWord,
+  span,
+  verseWordsTitle,
+  wordGroups,
+} from "./verse";
 import type { WordToken } from "./types";
 import Section from "./Section";
 
@@ -19,7 +25,7 @@ function Words({
   onWords: (words: WordToken[]) => void;
 }) {
   const loaded = useResource(verseWords, id);
-  const { diacritics } = useAppearance();
+  const diacritics = useDiacritics();
   const words = loaded.data?.verses[id.split(".")[2]]?.w;
   useEffect(() => {
     if (words) onWords(words);
@@ -32,47 +38,53 @@ function Words({
     return <p className="study-empty">لا تتوفر كلمات أصلية لهذه الآية.</p>;
   return (
     <ul className="greek-list">
-      {groups.map((group, index) => (
-        <li className="greek-row" key={index}>
-          <div className="greek-main">
-            {group.a0 !== null &&
-              group.a1 !== null &&
-              group.a1 < text.split(" ").length && (
-                <>
-                  <span className="greek-ar">
-                    {displayArabic(span(text, group.a0, group.a1), diacritics)}
-                  </span>
-                  <span className="greek-arrow" aria-hidden="true">
-                    ←
-                  </span>
-                </>
-              )}
-            {group.tokens.map((word, i) => (
+      {groups.map((group, index) => {
+        // One isolate per group keeps its words in reading order: as flex
+        // items, Greek words would run right to left and Hebrew prefixes
+        // could wrap apart from their words.
+        const language = group.tokens[0][7];
+        return (
+          <li className="greek-row" key={index}>
+            <div className="greek-main">
+              {group.a0 !== null &&
+                group.a1 !== null &&
+                group.a1 < text.split(" ").length && (
+                  <>
+                    <span className="greek-ar">
+                      {displayArabic(
+                        span(text, group.a0, group.a1),
+                        diacritics,
+                      )}
+                    </span>
+                    <span className="greek-arrow" aria-hidden="true">
+                      ←
+                    </span>
+                  </>
+                )}
               <bdi
-                key={i}
-                lang={word[7]}
-                dir={word[7] === "grc" ? "ltr" : "rtl"}
+                lang={language}
+                dir={language === "grc" ? "ltr" : "rtl"}
                 className="greek-word"
               >
-                {originalWord(word)}
+                {group.tokens.map(originalWord).join(" ")}
               </bdi>
-            ))}
-            <span className="greek-arrow" aria-hidden="true">
-              ←
-            </span>
-            <bdi lang="en" dir="ltr" className="greek-en">
-              {group.tokens.map((word) => gloss(word[4])).join(" · ")}
+              <span className="greek-arrow" aria-hidden="true">
+                ←
+              </span>
+              <bdi lang="en" dir="ltr" className="greek-en">
+                {group.tokens.map((word) => gloss(word[4])).join(" · ")}
+              </bdi>
+            </div>
+            <bdi lang="en" dir="ltr" className="greek-meta">
+              {group.tokens.map((word) => word[1]).join(" ")}
+              {" · "}
+              <span className="study-strong">
+                {group.tokens.map((word) => word[2]).join(" · ")}
+              </span>
             </bdi>
-          </div>
-          <bdi lang="en" dir="ltr" className="greek-meta">
-            {group.tokens.map((word) => word[1]).join(" ")}
-            {" · "}
-            <span className="study-strong" aria-label="Strong’s">
-              {group.tokens.map((word) => word[2]).join(" · ")}
-            </span>
-          </bdi>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -89,7 +101,7 @@ export default function OriginalWords({
   const [words, setWords] = useState<WordToken[]>([]);
   return (
     <Section
-      title={wordsTitle(words, oldTestament)}
+      title={verseWordsTitle(id, oldTestament)}
       hint="الكلمة العربية ومقابلها في الأصل"
       icon={<Languages size={18} />}
       count={words.length ? wordGroups(words).length : undefined}

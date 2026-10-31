@@ -1,7 +1,7 @@
 import type { ChipId } from "./types.ts";
 
 /** Bump when the prompt, chips or models change: cached answers are dropped. */
-export const PROMPT_VERSION = 2;
+export const PROMPT_VERSION = 3;
 export const QUESTION_MIN = 3;
 export const QUESTION_MAX = 200;
 

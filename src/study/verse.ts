@@ -73,15 +73,60 @@ export function wordGroups(words: WordToken[]) {
     : groupRows(words);
 }
 
-export function wordsTitle(words: WordToken[], oldTestament = false) {
+// The OT's Hebrew/Aramaic content words: nouns, verbs and adjectives after the
+// language letter (HNcmsa, AVqp3ms); prefixes, particles and suffixes are not.
+const OT_CONTENT = /^[HA][NVA]/;
+
+/**
+ * Up to `limit` groups that carry a verse's meaning, for an explanation's
+ * context: Greek key words, or Hebrew/Aramaic rows with a content word (kept
+ * whole, with their affixes, so each Arabic span is explained in full).
+ */
+export function meaningGroups(words: WordToken[], limit: number) {
+  const groups = words.every((word) => word[7] === "grc")
+    ? keyGroups(words)
+    : groupRows(words).filter((group) =>
+        group.tokens.some(([, , , morph]) => OT_CONTENT.test(morph)),
+      );
+  return groups.slice(0, limit);
+}
+
+/**
+ * Where Daniel, Ezra and Jeremiah turn to Aramaic in the Leningrad text, by
+ * Arabic/KJV reference; Daniel 2:4 changes mid-verse.
+ */
+const ARAMAIC: [book: string, from: [number, number], to: [number, number]][] =
+  [
+    ["DAN", [2, 5], [7, 28]],
+    ["EZR", [4, 8], [6, 18]],
+    ["EZR", [7, 12], [7, 26]],
+    ["JER", [10, 11], [10, 11]],
+  ];
+const atOrAfter = (a: [number, number], b: [number, number]) =>
+  a[0] > b[0] || (a[0] === b[0] && a[1] >= b[1]);
+
+/** The words section's title for a verse, known before its words load. */
+export function verseWordsTitle(id: string, oldTestament: boolean) {
+  if (!oldTestament) return "الكلمات اليونانية";
+  if (id === "DAN.2.4") return "الكلمات العبرية والآرامية";
+  const [book, chapter, verse] = id.split(".");
+  const at: [number, number] = [Number(chapter), Number(verse)];
+  return ARAMAIC.some(
+    ([name, from, to]) =>
+      name === book && atOrAfter(at, from) && atOrAfter(to, at),
+  )
+    ? "الكلمات الآرامية"
+    : "الكلمات العبرية";
+}
+
+/** The same title from loaded words (an explanation names their language). */
+export function wordsTitle(words: WordToken[]) {
   const languages = new Set(words.map((word) => word[7]));
   if (languages.has("he") && languages.has("arc"))
     return "الكلمات العبرية والآرامية";
   if (languages.has("arc")) return "الكلمات الآرامية";
   if (languages.has("he")) return "الكلمات العبرية";
-  return oldTestament && !words.length
-    ? "الكلمات العبرية والآرامية"
-    : "الكلمات اليونانية";
+  return "الكلمات اليونانية";
 }
 
 export const originalWord = (word: WordToken) =>

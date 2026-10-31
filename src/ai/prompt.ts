@@ -1,14 +1,14 @@
 import type { Passage, Verse } from "../plan/readings.ts";
 import type {
   GreekToken,
-  LexDay,
+  LexEntry,
   VerseText,
   WordToken,
 } from "../study/types.ts";
 import {
   gloss,
+  meaningGroups,
   originalWord,
-  wordGroups,
   wordsTitle,
   span,
 } from "../study/verse.ts";
@@ -61,7 +61,7 @@ export type Material = {
   words?: WordToken[];
   /** كتاب الحياة (n) and KJV (e); omitted when the file failed to load. */
   tr?: { n?: VerseText; e?: VerseText };
-  lex?: LexDay["lex"];
+  lex?: Record<string, LexEntry>;
 };
 
 const VERSE_CHARS = 600;
@@ -105,7 +105,7 @@ function materialWords(material: Material): WordToken[] {
 }
 
 function originalBlock(material: Material, definitions: boolean) {
-  const groups = wordGroups(materialWords(material)).slice(0, 10);
+  const groups = meaningGroups(materialWords(material), 10);
   if (!groups.length)
     return "لا توجد كلمات مفتاحية معلمة؛ اشرح الكلمات العربية المهمة في الآية.";
   const lines: string[] = [];

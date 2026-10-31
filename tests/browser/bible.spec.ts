@@ -234,15 +234,16 @@ test("canonical OT and NT study load independently without the daily plan", asyn
   await expect(page.locator(".verse-text h3")).toContainText("البدء");
   await page.locator(".verse-number").first().focus();
   await page.keyboard.press("Enter");
+  // Named before any word loads, so the name does not change on opening.
   await expect(
-    page.getByRole("button", { name: /^الكلمات العبرية والآرامية/ }),
+    page.getByRole("button", { name: "الكلمات العبرية", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /الكلمات اليونانية/ }),
   ).toHaveCount(0);
   expect(requests).toEqual([]);
   await page
-    .getByRole("button", { name: /^الكلمات العبرية والآرامية/ })
+    .getByRole("button", { name: "الكلمات العبرية", exact: true })
     .click();
   await expect(page.locator('dialog bdi[lang="he"]').first()).toBeVisible();
   await closeSheet(page);

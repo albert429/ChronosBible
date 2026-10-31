@@ -1,6 +1,5 @@
 // The only module that holds the provider configuration (and so the public
 // key). It is a separate lazy chunk, loaded on the first uncached request.
-import { studyLex, studyTr } from "../study/client.ts";
 import {
   verseTranslations,
   verseWords,
@@ -26,8 +25,7 @@ const disabled = new Set<string>();
 
 export type AskInput = {
   chip: ChipId;
-  /** Only old clients identify study by plan day. New callers use id. */
-  day?: number;
+  /** The canonical verse (GEN.1.1). */
   id: string;
   material: Omit<Material, "tr" | "lex">;
   question?: string;
@@ -45,25 +43,18 @@ export async function ask(
 ): Promise<AiMeta> {
   if (signal.aborted) throw new AiError("aborted");
   const needsWords = input.chip === "words" || input.chip === "ask";
-  const canonical = input.day === undefined;
+  const verse = String(studyReference(input.id).verse);
   const wordContext = async () => {
-    if (!canonical || !needsWords) return undefined;
+    if (!needsWords) return undefined;
     const data = await verseWords.load(input.id);
-    const words = data.verses[String(studyReference(input.id).verse)]?.w ?? [];
+    const words = data.verses[verse]?.w ?? [];
     return { words, lex: await wordDefinitions(words) };
   };
   // Each resource is optional context. Stop cancels the AI run immediately,
   // while deduplicated static requests may finish for an open study section.
-  const [tr, lex, context] = await abortable(
+  const [tr, context] = await abortable(
     Promise.allSettled([
-      canonical
-        ? verseTranslations
-            .load(input.id)
-            .then((data) => data.verses[String(studyReference(input.id).verse)])
-        : studyTr.load(String(input.day)).then((data) => data.verses[input.id]),
-      !canonical && needsWords
-        ? studyLex.load(String(input.day)).then((data) => data.lex)
-        : Promise.resolve(undefined),
+      verseTranslations.load(input.id).then((data) => data.verses[verse]),
       wordContext(),
     ]),
     signal,
@@ -76,12 +67,7 @@ export async function ask(
       ...input.material,
       words: words ?? input.material.words,
       tr: tr.status === "fulfilled" ? tr.value : undefined,
-      lex:
-        context.status === "fulfilled" && context.value
-          ? context.value.lex
-          : lex.status === "fulfilled"
-            ? lex.value
-            : undefined,
+      lex: context.status === "fulfilled" ? context.value?.lex : undefined,
     },
     input.question,
   );

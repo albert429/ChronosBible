@@ -1,10 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { gzipSync } from "node:zlib";
-import {
-  decodeStudyWords,
-  UNSUPPORTED_WORDS,
-} from "../src/study/decodeWords.ts";
+import { decodeStudyWords } from "../src/study/decodeWords.ts";
 import type { WordToken } from "../src/study/types.ts";
 
 const requests: string[] = [];
@@ -208,7 +205,7 @@ test("gzip transport supports compressed and host-decoded responses", async () =
   );
 });
 
-test("an older browser gets an explicit word error while decoded JSON remains usable", async () => {
+test("a browser without DecompressionStream decodes words with the same limits", async () => {
   const native = globalThis.DecompressionStream;
   try {
     Object.defineProperty(globalThis, "DecompressionStream", {
@@ -216,9 +213,18 @@ test("an older browser gets an explicit word error while decoded JSON remains us
       configurable: true,
       writable: true,
     });
-    await assert.rejects(decodeStudyWords(new Response(gzipSync("{}"))), {
-      message: UNSUPPORTED_WORDS,
-    });
+    const data = { v: 2, verses: { 1: { w: [] } } };
+    assert.deepEqual(
+      await decodeStudyWords(new Response(gzipSync(JSON.stringify(data)))),
+      data,
+    );
+    await assert.rejects(
+      decodeStudyWords(new Response(gzipSync("x".repeat(256 * 1024 + 1)))),
+      /size limit/,
+    );
+    await assert.rejects(
+      decodeStudyWords(new Response(new Uint8Array([31, 139, 1, 2, 3]))),
+    );
     assert.deepEqual(await decodeStudyWords(Response.json({ ok: true })), {
       ok: true,
     });
