@@ -1,10 +1,14 @@
 import { createHash } from "node:crypto";
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { catalog as defaultCatalog } from "../../src/domain/scripture/catalog.ts";
 import { validBibleChapter } from "../../src/data/bible/client.ts";
+import { payload, publishOwned } from "../lib/ownership.js";
 import { ROOT } from "../lib/paths.js";
+
+/** The catalog and the chapter files this builder owns in its folder. */
+export const BIBLE_PATH = /^(?:catalog|[1-3]?[A-Z]{2,3}\/[1-9]\d{0,2})\.json$/;
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
@@ -86,8 +90,13 @@ export function readBibleChapters(root = ROOT) {
   return prepareBible(JSON.parse(normalized.toString("utf8")), catalog);
 }
 
-/** Validate all chapters and payload budgets before writing any public output. */
-export function buildBible({ out, root = ROOT }) {
+/**
+ * Validate all chapters and payload budgets before writing any public output.
+ * With an `inventory`, chapter files an earlier build wrote and this one no
+ * longer produces are removed (scripts/lib/ownership.js).
+ * @param {{ out: string, root?: string, inventory?: string }} options
+ */
+export function buildBible({ out, root = ROOT, inventory }) {
   const chapters = readBibleChapters(root);
   const payloads = chapters.map((chapter) => ({
     chapter,
@@ -102,12 +111,17 @@ export function buildBible({ out, root = ROOT }) {
         `Canonical chapter ${chapter.usfm}:${chapter.chapter} exceeds 12KB gzip`,
       );
   }
-  mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, "catalog.json"), JSON.stringify(defaultCatalog));
-  for (const { chapter, json } of payloads) {
-    const folder = join(out, chapter.usfm);
-    mkdirSync(folder, { recursive: true });
-    writeFileSync(join(folder, `${chapter.chapter}.json`), json);
-  }
+  publishOwned({
+    base: out,
+    payloads: [
+      payload("catalog.json", JSON.stringify(defaultCatalog)),
+      ...payloads.map(({ chapter, json }) =>
+        payload(`${chapter.usfm}/${chapter.chapter}.json`, json),
+      ),
+    ],
+    safePath: (path) => BIBLE_PATH.test(path),
+    inventory,
+    label: "Bible",
+  });
   return `Generated ${chapters.length} canonical chapters; largest ${largest} bytes gzip.`;
 }

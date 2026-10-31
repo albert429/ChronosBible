@@ -6,8 +6,8 @@ next run may delete a file only if the inventory names it, it is no longer
 generated and it is byte-for-byte what was recorded. Everything is validated
 before anything is written, and unsafe paths, symlinks, unreadable inventories
 and hand-modified owned files stop the run. Unknown files are never touched and
-folders are never removed. This mirrors publishStudyPayloads in
-scripts/build-study-canonical.js.
+folders are never removed. This mirrors the JavaScript builders'
+scripts/lib/ownership.js (used by scripts/data/build-study-canonical.js).
 """
 
 import hashlib

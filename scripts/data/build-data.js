@@ -12,9 +12,12 @@ const out = (name) => join(ROOT, "public", name);
 // outside public/ so they never ship (scripts/lib/ownership.js).
 const inventory = (name) => join(ROOT, OWNERSHIP_DIR, `${name}.json`);
 for (const summary of [
-  buildReadings({ out: out("readings") }),
-  buildBible({ out: out("bible") }),
-  buildChronology({ out: out("chronology") }),
+  buildReadings({ out: out("readings"), inventory: inventory("readings") }),
+  buildBible({ out: out("bible"), inventory: inventory("bible") }),
+  buildChronology({
+    out: out("chronology"),
+    inventory: inventory("chronology"),
+  }),
   buildStudy({ out: out("study") }),
   buildAudioIndex({ out: out("audio"), inventory: inventory("audio") }),
 ])

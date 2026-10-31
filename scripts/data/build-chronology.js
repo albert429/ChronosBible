@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { catalog as books } from "../../src/domain/scripture/catalog.ts";
@@ -8,6 +8,7 @@ import {
 } from "../../src/data/chronology/validate.ts";
 import { ar } from "../../src/shared/lib/format.ts";
 import { readBibleChapters } from "./build-bible.js";
+import { payload, publishOwned } from "../lib/ownership.js";
 import { ROOT } from "../lib/paths.js";
 
 export const TESTAMENTS = ["OT", "NT"];
@@ -562,11 +563,22 @@ export function prepareChronology(root = ROOT) {
   return { inputs, audit, testaments };
 }
 
-/** Writes `<out>/OT.json`, `<out>/NT.json` and `<out>/<T>/<id>.json`. */
-export function buildChronology({ out, root = ROOT }) {
+/** The catalogs and reading definitions this builder owns in its folder. */
+export const CHRONOLOGY_PATH =
+  /^(?:OT|NT)(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)?\.json$/;
+
+/**
+ * Writes `<out>/OT.json`, `<out>/NT.json` and `<out>/<T>/<id>.json` once both
+ * testaments are valid and within budget. With an `inventory`, definitions an
+ * earlier build wrote and this one no longer produces are removed; nothing
+ * else in the folder is touched (scripts/lib/ownership.js).
+ * @param {{ out: string, root?: string, inventory?: string }} options
+ */
+export function buildChronology({ out, root = ROOT, inventory }) {
   const { testaments } = prepareChronology(root);
   const summary = [];
-  rmSync(out, { recursive: true, force: true });
+  /** @type {[string, Buffer][]} */
+  const payloads = [];
   for (const testament of TESTAMENTS) {
     const { catalog, definitions } = testaments[testament];
     const json = JSON.stringify(catalog);
@@ -575,16 +587,24 @@ export function buildChronology({ out, root = ROOT }) {
       throw new Error(
         `${testament} chronology catalog exceeds ${CATALOG_GZIP_BUDGET} bytes gzip`,
       );
-    mkdirSync(join(out, testament), { recursive: true });
-    writeFileSync(join(out, `${testament}.json`), json);
+    payloads.push(payload(`${testament}.json`, json));
     for (const definition of definitions)
-      writeFileSync(
-        join(out, testament, `${definition.id}.json`),
-        JSON.stringify(definition),
+      payloads.push(
+        payload(
+          `${testament}/${definition.id}.json`,
+          JSON.stringify(definition),
+        ),
       );
     summary.push(
       `${testament} ${definitions.length} readings (${bytes} bytes gzip catalog)`,
     );
   }
+  publishOwned({
+    base: out,
+    payloads,
+    safePath: (path) => CHRONOLOGY_PATH.test(path),
+    inventory,
+    label: "chronology",
+  });
   return `Generated chronology: ${summary.join("; ")}.`;
 }

@@ -29,6 +29,17 @@ import { dirname, join } from "node:path";
 /** Where builders whose output ships unchanged keep their inventories. */
 export const OWNERSHIP_DIR = "artifacts/generated-output";
 
+/**
+ * One generated file for publishOwned.
+ * @param {string} path relative POSIX path
+ * @param {string | Buffer} data text (UTF-8) or bytes
+ * @returns {[string, Buffer]}
+ */
+export const payload = (path, data) => [
+  path,
+  typeof data === "string" ? Buffer.from(data) : data,
+];
+
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const isLink = (path) => existsSync(path) && lstatSync(path).isSymbolicLink();
 // existsSync follows links, so a dangling link would look absent.

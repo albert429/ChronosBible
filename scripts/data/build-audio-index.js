@@ -8,7 +8,7 @@ import {
 import { readBibleChapters } from "./build-bible.js";
 import { ROOT } from "../lib/paths.js";
 import { AUDIO_MANIFEST_PATH } from "../lib/audio-manifests.js";
-import { publishOwned } from "../lib/ownership.js";
+import { payload, publishOwned } from "../lib/ownership.js";
 
 /**
  * Publishes every catalogued manifest into `out`; returns the summary line.
@@ -27,9 +27,10 @@ export function buildAudioIndex({
   const read = (path) => JSON.parse(readFileSync(join(root, path), "utf8"));
   const { days } = read("data/audio/catalog.json");
   const plan = read("data/plan.json");
+  /** @type {[string, Buffer][]} */
   const payloads = [];
   const publish = (path, manifest) =>
-    payloads.push([path, Buffer.from(JSON.stringify(manifest))]);
+    payloads.push(payload(path, JSON.stringify(manifest)));
   for (const day of days) {
     const reading = plan.find((entry) => entry.day === day);
     if (!reading) throw new Error(`Invalid audio day ${day}`);
