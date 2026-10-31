@@ -3,10 +3,14 @@ import hashlib
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
+from unittest import mock
 
-from _support import load_script
+from _support import ROOT, load_script
 from chronos_tools.audio_text import chapter_text_hash, reading_hash
+from chronos_tools.ownership import OwnershipError, publish_owned
 
 build = load_script("audio/build-reading-audio.py", "build_reading_audio")
 
@@ -195,6 +199,58 @@ class Loading(unittest.TestCase):
         _, unusable = self.load(alignment(), trims={"bible:GEN:2": {"end": 45.0}},
                                 record={**RECORD, "trimEnd": 45.0})
         self.assertIn("invalid interval", unusable["GEN-2"])
+
+
+class PublishedManifests(unittest.TestCase):
+    """main() publishes playlists through the inventory: no unowned deletion, nothing half-written."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        for folder in ("data/audio/review", "data/audio/readings", "chronology/OT", "chronology/NT", "alignments"):
+            (self.root / folder).mkdir(parents=True)
+        for name, value in (("data/audio/canonical-sources.json", {"chapters": []}),
+                            ("data/audio/chapter-catalog.json", {"chapters": []}),
+                            ("chronology/OT.json", {"readings": [{"id": "1"}]}),
+                            ("chronology/NT.json", {"readings": []})):
+            (self.root / name).write_text(json.dumps(value))
+        (self.root / "chronology/OT/1.json").write_text("{}")
+        self.readings = self.root / "data/audio/readings"
+        publish_owned(self.readings, {"OT/old.json": b"{}\n", "NT/old.json": b"{}\n"}, build.READING_MANIFEST)
+        (self.readings / "OT/unknown.json").write_text("not ours")
+
+    def run_main(self, *extra):
+        manifest = {"version": 3, "identity": "chrono:OT:1", "readingHash": "x", "duration": 1, "entries": []}
+        argv = ["--chronology", str(self.root / "chronology"), "--ot", str(self.root), "--nt", str(self.root),
+                "--output", str(self.root / "media"), "--bible", str(ROOT / "data/bible/source.json.gz"),
+                "--alignments", str(self.root / "alignments"), "--review",
+                "--trims", str(self.root / "none.json"), *extra]
+        with mock.patch.object(build, "ROOT", self.root), mock.patch.object(build, "source_files", return_value={}), \
+                mock.patch.object(build, "build_reading", return_value=(manifest, None)), redirect_stdout(StringIO()):
+            build.main(argv)
+
+    def test_full_run_replaces_owned_manifests_and_keeps_unknown_files(self):
+        self.run_main()
+        self.assertTrue((self.readings / "OT/1.json").is_file())
+        self.assertFalse((self.readings / "OT/old.json").exists())
+        self.assertFalse((self.readings / "NT/old.json").exists())
+        self.assertEqual((self.readings / "OT/unknown.json").read_text(), "not ours")
+        self.assertEqual(list(json.loads((self.readings / "inventory.json").read_text())["files"]), ["OT/1.json"])
+        self.assertEqual(json.loads((self.root / "data/audio/reading-catalog.json").read_text())["readings"],
+                         ["chrono:OT:1"])
+
+    def test_pilot_removes_nothing(self):
+        self.run_main("--limit", "1")
+        self.assertTrue((self.readings / "OT/old.json").exists())
+        self.assertTrue((self.readings / "OT/1.json").exists())
+
+    def test_modified_owned_manifest_stops_the_run_before_any_write(self):
+        (self.readings / "OT/old.json").write_text("edited")
+        with self.assertRaises(OwnershipError):
+            self.run_main()
+        self.assertFalse((self.readings / "OT/1.json").exists())
+        self.assertEqual((self.readings / "OT/old.json").read_text(), "edited")
 
 
 if __name__ == "__main__":

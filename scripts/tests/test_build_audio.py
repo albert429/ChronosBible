@@ -242,6 +242,19 @@ class Catalog(unittest.TestCase):
             self.assertEqual(converted["MRK-1-1-1"]["samples"], RATE)
 
 
+class StrayManifests(unittest.TestCase):
+    def test_days_outside_the_plan_are_reported_never_deleted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            for name in ("1.json", "150.json", "151.json", "notes.json", "report.json"):
+                (folder / name).write_text("{}")
+            self.assertEqual(build.stray_manifest_days(folder, PLAN), [151])
+            self.assertTrue((folder / "151.json").exists())
+
+    def test_committed_manifests_are_all_in_the_plan(self):
+        self.assertEqual(build.stray_manifest_days(ROOT / "data/audio/manifests", PLAN), [])
+
+
 class Assembly(unittest.TestCase):
     """End to end for day 1, with decode/encode/probe replaced by fakes."""
 
