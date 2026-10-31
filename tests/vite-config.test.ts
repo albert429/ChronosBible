@@ -7,7 +7,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ConfigEnv, UserConfigFn } from "vite";
-import config, { dataVersions } from "../vite.config.ts";
+import config from "../vite.config.ts";
+import { dataVersions } from "../scripts/build/data-versions.ts";
 
 assert.equal(typeof config, "function");
 const makeConfig = config as UserConfigFn;

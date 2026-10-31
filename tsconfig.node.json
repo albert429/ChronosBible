@@ -21,6 +21,7 @@
   "include": [
     "vite.config.ts",
     "playwright.config.ts",
+    "scripts/build/**/*.ts",
     "src/vite-env.d.ts",
     "tests/*.test.ts",
     "tests/browser/**/*"

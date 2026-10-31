@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -25,7 +26,13 @@ const viteKeys = (env: Record<string, string | undefined>) =>
 
 test("Every reference configuration sets every VITE_ variable the build reads", () => {
   const read_ = new Set(
-    [read("vite.config.ts"), read("src/features/ai/config.ts")]
+    [
+      read("vite.config.ts"),
+      ...readdirSync(new URL("../scripts/build/", import.meta.url))
+        .filter((name) => name.endsWith(".ts"))
+        .map((name) => read(`scripts/build/${name}`)),
+      read("src/features/ai/config.ts"),
+    ]
       .join("\n")
       .match(/VITE_[A-Z_]+/g),
   );
