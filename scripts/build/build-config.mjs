@@ -11,6 +11,9 @@
 //   fixture-audio     what `npm run test:e2e` builds             -> dist/
 //   ai-stub           what the `ai-chromium` project builds      -> dist-ai/
 //                     (after the fixture-audio build it reuses)
+//
+// The browser tests build the same fixture-audio and ai-stub environments
+// (scripts/build/browser-build.mjs), the AI one against their own stub port.
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -66,32 +69,48 @@ export const CONFIGS = {
       "ai-chromium project: fixture audio plus the AI card against the local SSE stub.",
     outDir: "dist-ai",
     prepare: "fixture-audio",
-    env: {
-      ...FIXTURE_AUDIO,
-      VITE_AI_PROVIDERS: "openrouter",
-      VITE_OPENROUTER_API_KEY: "sk-or-v1-playwright-dummy-key",
-      VITE_OPENROUTER_MODELS: "",
-      VITE_OPENROUTER_BASE_URL: `http://127.0.0.1:${STUB_PORT}/api/v1`,
-      VITE_AI_ALLOW_LOCAL: "1",
-      VITE_AI_DAILY_CAP: "",
-    },
+    env: aiStubVariables(STUB_PORT),
   },
 };
+
+/**
+ * The AI card's build variables: fixture audio plus a dummy key against the
+ * local SSE stub (scripts/quality/sse-stub.mjs) listening on `stubPort`.
+ * @param {number} stubPort
+ * @returns {Record<string, string>}
+ */
+export function aiStubVariables(stubPort) {
+  if (!Number.isInteger(stubPort) || stubPort <= 0 || stubPort > 65535)
+    throw new Error(`invalid stub port ${stubPort}`);
+  return {
+    ...FIXTURE_AUDIO,
+    VITE_AI_PROVIDERS: "openrouter",
+    VITE_OPENROUTER_API_KEY: "sk-or-v1-playwright-dummy-key",
+    VITE_OPENROUTER_MODELS: "",
+    VITE_OPENROUTER_BASE_URL: `http://127.0.0.1:${stubPort}/api/v1`,
+    VITE_AI_ALLOW_LOCAL: "1",
+    VITE_AI_DAILY_CAP: "",
+  };
+}
 
 const BASE_VARIABLES = ["PATH", "HOME", "TMPDIR", "TMP", "TEMP", "LANG"];
 
 /**
- * The complete child environment: a few system variables plus the config.
+ * The complete child environment: a few system variables plus the config
+ * (or `variables` in its place).
+ * @param {string} name
+ * @param {Record<string, string | undefined>} [source]
+ * @param {Record<string, string>} [variables]
  * @returns {Record<string, string | undefined>}
  */
-export function buildEnvironment(name, source = process.env) {
+export function buildEnvironment(name, source = process.env, variables) {
   const config = CONFIGS[name];
   if (!config) throw new Error(`unknown configuration "${name}"`);
   /** @type {Record<string, string | undefined>} */
   const env = {};
   for (const key of BASE_VARIABLES)
     if (source[key] !== undefined) env[key] = source[key];
-  return { ...env, ...config.env };
+  return { ...env, ...(variables ?? config.env) };
 }
 
 /** Throws when a local file could leak into, or alter, a reference build. */

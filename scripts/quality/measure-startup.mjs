@@ -3,63 +3,20 @@
 //   node scripts/quality/measure-startup.mjs capture <dir> [--dist <folder>] [--root <repo>]
 //   node scripts/quality/measure-startup.mjs compare <baseline-dir> <candidate-dir>
 //
-// `capture` serves <dist> from a throwaway local server on a free port (no
-// preview server to reuse or collide with), opens three entry places on a
+// `capture` serves <dist> from a throwaway production-like server on a free
+// port (static-server.mjs; no preview server to reuse or collide with), opens three entry places on a
 // 390x844 phone viewport with service workers blocked, and records every
 // request made until the page has been quiet for a moment: method, resource
 // type, status, bytes and path with content hashes removed. Requests to other
 // origins are aborted, and recorded as blocked. It writes <dir>/startup.json.
 // `compare` prints per-place differences and exits 1 when a place makes more
 // requests than the baseline did.
-import { createServer } from "node:http";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
-import { extname, join, resolve, sep } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { ROOT, isMain } from "../lib/paths.js";
+import { serve } from "./static-server.mjs";
 
-const TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json",
-  ".woff2": "font/woff2",
-  ".png": "image/png",
-  ".txt": "text/plain; charset=utf-8",
-};
 const SETTLE_MS = 1500;
-
-/** A static server over `directory`; unknown extension-less paths get the page. */
-function serve(directory) {
-  const root = resolve(directory);
-  const server = createServer((req, res) => {
-    const url = new URL(req.url ?? "/", "http://localhost");
-    let file = resolve(root, "." + decodeURIComponent(url.pathname));
-    if (file !== root && !file.startsWith(root + sep)) file = root;
-    const isFile = existsSync(file) && statSync(file).isFile();
-    if (!isFile && !extname(file)) file = join(root, "index.html");
-    try {
-      const body = readFileSync(file);
-      const gz = file.endsWith(".gz");
-      res.writeHead(200, {
-        "content-type": gz
-          ? "application/gzip"
-          : (TYPES[extname(file)] ?? "application/octet-stream"),
-        "content-length": body.length,
-      });
-      res.end(body);
-    } catch {
-      res.writeHead(404).end();
-    }
-  });
-  return new Promise((done) =>
-    server.listen(0, "127.0.0.1", () => done(server)),
-  );
-}
 
 /** A request address without content hashes, so builds compare. */
 export const normalize = (pathAndQuery) =>
@@ -85,7 +42,10 @@ export async function capture(root, dist = "dist") {
     ],
   ];
   const server = await serve(distDir);
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  const { port } = /** @type {import("node:net").AddressInfo} */ (
+    server.address()
+  );
+  const origin = `http://127.0.0.1:${port}`;
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,
     args: process.env.CHROMIUM_PATH

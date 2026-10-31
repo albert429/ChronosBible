@@ -12,9 +12,11 @@ import { join } from "node:path";
 import { test } from "node:test";
 import {
   CONFIGS,
+  STUB_PORT,
   assertClean,
   buildEnvironment,
 } from "../scripts/build/build-config.mjs";
+import { browserEnvironment } from "../scripts/build/browser-build.mjs";
 import { buildEnvironment as productionEnvironment } from "../scripts/hosting/cloudflare-app.mjs";
 
 const read = (path: string) =>
@@ -69,30 +71,69 @@ test("fixture-audio matches the variables npm run test:e2e exports", () => {
   assert.equal(fixture.VITE_AI_PROVIDERS, "");
 });
 
-test("ai-stub matches the ai-chromium build in playwright.config.ts", () => {
-  // The config cannot be imported by Node (extensionless import), so read the
-  // AI build's env block as text.
-  const config = read("playwright.config.ts");
-  const block = config.slice(config.indexOf("--outDir dist-ai"));
-  const env = Object.fromEntries(
-    [
-      ...block.slice(block.indexOf("env: {")).matchAll(/(VITE_\w+): (.+?),\n/g),
-    ].map(([, key, value]) => [key, value]),
+test("The browser builds are the fixture-audio and ai-stub configurations", () => {
+  const system = { PATH: "/bin", HOME: "/home/x" };
+  const inherited = {
+    ...system,
+    VITE_AI_PROVIDERS: "openrouter",
+    VITE_OPENROUTER_API_KEY: "sk-or-v1-from-the-shell",
+    VITE_FUTURE_KEY: "x",
+  };
+  assert.deepEqual(
+    browserEnvironment("app", { source: inherited }),
+    buildEnvironment("fixture-audio", system),
   );
-  const key = read("tests/browser/ai-stub.ts").match(/AI_KEY = "([^"]+)"/)?.[1];
-  const resolved: Record<string, string> = {};
-  for (const [name, value] of Object.entries(env))
-    resolved[name] = value
-      .replace("AI_KEY", JSON.stringify(key))
-      .replace("`${STUB_URL}/api/v1`", '"http://127.0.0.1:PORT/api/v1"')
-      .replace(/^"(.*)"$/, "$1");
-  assert.equal(Object.keys(resolved).length, 6);
-  const stub = CONFIGS["ai-stub"].env as Record<string, string>;
-  for (const [name, value] of Object.entries(resolved))
-    assert.equal(stub[name].replace(/:\d+\//, ":PORT/"), value, name);
-  // The AI project inherits the fixture-audio build variables.
+  // The reference ai-stub build is the browser AI build on PW_PORT 4400.
+  assert.deepEqual(
+    browserEnvironment("ai", { stubPort: STUB_PORT, source: inherited }),
+    buildEnvironment("ai-stub", system),
+  );
+  const ai = browserEnvironment("ai", { stubPort: 4432, source: {} });
+  assert.equal(ai.VITE_OPENROUTER_BASE_URL, "http://127.0.0.1:4432/api/v1");
+  assert.equal(
+    ai.VITE_OPENROUTER_API_KEY,
+    read("tests/browser/ai-stub.ts").match(/AI_KEY = "([^"]+)"/)?.[1],
+  );
   for (const [name, value] of Object.entries(CONFIGS["fixture-audio"].env))
-    if (!(name in resolved)) assert.equal(stub[name], value, name);
+    if (!name.startsWith("VITE_AI") && !name.startsWith("VITE_OPENROUTER"))
+      assert.equal(ai[name], value, name);
+  assert.throws(
+    () => browserEnvironment("ai", { stubPort: undefined, source: {} }),
+    /stub port/,
+  );
+  assert.throws(() => browserEnvironment("other", { source: {} }), /app/);
+});
+
+test("Playwright builds explicitly and never reuses a server on its ports", async () => {
+  const { default: config } = await import("../playwright.config.ts");
+  const { PW_PORT } = await import("./browser/ai-stub.ts");
+  const servers = config.webServer as {
+    command: string;
+    reuseExistingServer?: boolean;
+    env?: Record<string, string>;
+  }[];
+  assert.equal(servers.length, 3);
+  for (const server of servers) assert.equal(server.reuseExistingServer, false);
+  assert.equal(
+    servers[0].command,
+    `node scripts/quality/static-server.mjs dist --port ${PW_PORT}`,
+  );
+  assert.deepEqual(servers[1].env, { SSE_STUB_PORT: String(PW_PORT + 2) });
+  assert.equal(
+    servers[2].command,
+    `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/quality/static-server.mjs dist-ai --port ${PW_PORT + 1}`,
+  );
+  // No build variables come from the config: the build sets them all.
+  assert.equal(servers[2].env, undefined);
+  const e2e: string = JSON.parse(read("package.json")).scripts["test:e2e"];
+  assert.match(
+    e2e,
+    /&& node scripts\/build\/browser-build\.mjs app && playwright test$/,
+  );
+  assert.deepEqual(
+    config.projects?.map((project) => project.name),
+    ["chromium", "mobile-webkit", "ai-chromium"],
+  );
 });
 
 test("Build environments drop inherited VITE_, fixture and credential variables", () => {

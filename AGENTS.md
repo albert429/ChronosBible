@@ -39,13 +39,14 @@ Use Node.js 22 and `npm ci` for locked dependencies.
   (`--test-name-pattern` filters).
 - One browser spec: export `AUDIO_TEST_FIXTURES=1`,
   `VITE_AUDIO_BASE_URL=https://audio.example.test` and
-  `VITE_AUDIO_CHAPTERS_ENABLED=true`, run `npm run build`, then
+  `VITE_AUDIO_CHAPTERS_ENABLED=true`, build with
+  `node scripts/build/browser-build.mjs app` (what `test:e2e` runs), then
   `npx playwright test tests/browser/<name>.spec.ts --project=chromium`
   (projects: `chromium`, `mobile-webkit`, `ai-chromium`).
 
 Install browser binaries with `npx playwright install chromium webkit`.
 Use `PW_PORT=4400 npm run test:e2e` in concurrent worktrees; the next two ports
-serve AI tests. Avoid reusing stale preview servers.
+serve AI tests. Playwright never reuses a server: an occupied port fails the run.
 
 ## Coding Style & Naming Conventions
 

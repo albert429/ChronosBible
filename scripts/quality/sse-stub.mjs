@@ -172,6 +172,15 @@ const server = createServer(async (req, res) => {
   }
 });
 
+// A taken port is an error: the browser tests never reuse a stale stub.
+server.on("error", (/** @type {NodeJS.ErrnoException} */ error) => {
+  console.error(
+    error.code === "EADDRINUSE"
+      ? `Port ${port} is already in use; stop that server first.`
+      : `SSE stub cannot listen on ${port}: ${error.message}`,
+  );
+  process.exit(1);
+});
 server.listen(port, "127.0.0.1", () =>
   console.log(`SSE stub on http://127.0.0.1:${port}`),
 );

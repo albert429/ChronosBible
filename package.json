@@ -20,7 +20,7 @@
     "start": "vite preview --host 0.0.0.0",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "playwright test",
-    "test:e2e": "export AUDIO_TEST_FIXTURES=1 VITE_AUDIO_BASE_URL=https://audio.example.test VITE_AUDIO_CHAPTERS_ENABLED=true && npm run build && playwright test",
+    "test:e2e": "export AUDIO_TEST_FIXTURES=1 VITE_AUDIO_BASE_URL=https://audio.example.test VITE_AUDIO_CHAPTERS_ENABLED=true && node scripts/build/browser-build.mjs app && playwright test",
     "test:visual": "node scripts/quality/capture-preview.mjs",
     "icons:build": "node scripts/assets/export-favicon.mjs",
     "audit:performance": "node scripts/quality/audit-performance.mjs",

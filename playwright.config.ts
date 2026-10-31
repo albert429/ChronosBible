@@ -1,11 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import {
-  AI_KEY,
-  AI_URL,
-  APP_URL,
-  PW_PORT,
-  STUB_URL,
-} from "./tests/browser/ai-stub";
+import { AI_URL, APP_URL, PW_PORT, STUB_URL } from "./tests/browser/ai-stub.ts";
 
 const chromium = {
   ...devices["Pixel 5"],
@@ -50,33 +44,28 @@ export default defineConfig({
       use: { ...chromium, baseURL: AI_URL },
     },
   ],
+  // Production-like servers over explicit builds (scripts/build/browser-build.mjs):
+  // `.json.gz` study words arrive as stored gzip bytes, as on Cloudflare. A
+  // server already listening on one of these ports is an error, never reused,
+  // so a stale build cannot answer for this one.
   webServer: [
     {
-      command: `npm start -- --host 127.0.0.1 --port ${PW_PORT} --strictPort`,
+      command: `node scripts/quality/static-server.mjs dist --port ${PW_PORT}`,
       url: APP_URL,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
     {
       command: "node scripts/quality/sse-stub.mjs",
       env: { SSE_STUB_PORT: String(PW_PORT + 2) },
       url: `${STUB_URL}/__stub/health`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
     {
-      // `vite build` alone: public/readings and public/study come from the
-      // regular build (npm run build), which runs first in CI.
-      command: `npx vite build --outDir dist-ai --emptyOutDir --logLevel warn && npx vite preview --outDir dist-ai --host 127.0.0.1 --port ${PW_PORT + 1} --strictPort`,
+      // Self-contained: it generates the data it bundles, then serves dist-ai/.
+      command: `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/quality/static-server.mjs dist-ai --port ${PW_PORT + 1}`,
       url: AI_URL,
       timeout: 180000,
-      reuseExistingServer: !process.env.CI,
-      env: {
-        VITE_AI_PROVIDERS: "openrouter",
-        VITE_OPENROUTER_API_KEY: AI_KEY,
-        VITE_OPENROUTER_MODELS: "",
-        VITE_OPENROUTER_BASE_URL: `${STUB_URL}/api/v1`,
-        VITE_AI_ALLOW_LOCAL: "1",
-        VITE_AI_DAILY_CAP: "",
-      },
+      reuseExistingServer: false,
     },
   ],
 });

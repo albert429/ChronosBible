@@ -140,8 +140,9 @@ test("translations work when words fail and retry restores words independently",
 });
 
 // Cloudflare serves the stored word files as application/gzip with no
-// Content-Encoding, so the app decodes them; Vite's preview sends
-// Content-Encoding: gzip and the browser decodes. Exercise the raw bytes.
+// Content-Encoding, so the app decodes them, and so does the browser tests'
+// server (scripts/quality/static-server.mjs); `vite preview` sends
+// Content-Encoding: gzip and the browser decodes. Pin the raw bytes here.
 for (const decoder of ["DecompressionStream", "the fallback decoder"])
   test(`raw stored gzip words decode with ${decoder}`, async ({ page }) => {
     if (decoder !== "DecompressionStream")

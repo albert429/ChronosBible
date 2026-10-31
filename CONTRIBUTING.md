@@ -13,7 +13,7 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
-`npm run test:e2e` first builds with the audio test fixtures (`AUDIO_TEST_FIXTURES=1` and `VITE_AUDIO_BASE_URL=https://audio.example.test`), then runs the Playwright suite with the same variables. A plain `playwright test` against an ordinary build fails every audio spec. Outside CI, Playwright reuses a server already running on ports 4173 or 4174, so stop any `npm start` or preview first; otherwise the suite runs against a stale `dist/`.
+`npm run test:e2e` first makes the explicit audio-fixture build (`scripts/build/browser-build.mjs app`: every `VITE_*` value set, none inherited from your shell or `.env` files), then runs the Playwright suite with the fixture variables (`AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test`). A plain `playwright test` against an ordinary build fails every audio spec. Playwright serves the builds with a production-like static server and never reuses a server: if ports 4173–4175 (or your `PW_PORT` and the next two) are taken, it stops with an error, so stop any `npm start` or preview first.
 
 Set `PW_PORT` (default 4173; the AI preview uses +1 and the SSE stub +2) to run the suite on other ports, for example from several worktrees at once: `PW_PORT=5173 npm run test:e2e`.
 
