@@ -1,4 +1,4 @@
-![An open Bible and a phone reader](docs/assets/readme-banner.png)
+![ChronosBible on a MacBook and an iPhone: Genesis 1 in the reader, and John 3:16 lit in night mode as it plays, beside «الكتاب المقدس بالترتيب الكرونولوجي»](docs/assets/readme-banner.jpg)
 
 # ChronosBible / «الكتاب المقدس بالترتيب الكرونولوجي»
 
@@ -25,18 +25,20 @@ The four-mode release is live at [chronosbible.com](https://chronosbible.com/), 
 - Optional listening through one native audio player, using 48 kbps mono AAC chapters, daily tracks, and chronology playlists. Nothing audio is fetched until the reader taps Listen; files are immutable and reused by the browser, and a clip shared by several readings is stored once.
 
 <p align="center">
-  <img src="docs/assets/mobile-reader.png" width="300" alt="Actual mobile app: a slim Arabic day toolbar followed immediately by Scripture" />
+  <img src="docs/assets/mobile-reader.png" width="250" alt="The app on a phone: Genesis 1 under a slim toolbar, with Listen beside the heading" />
+  <img src="docs/assets/mobile-menu.png" width="250" alt="The menu's four ways to read: the whole Bible, the Old and New Testaments in chronological order, and the 150-day New Testament plan" />
+  <img src="docs/assets/mobile-listening.png" width="250" alt="Night mode while listening: John 3:16 is highlighted as it plays, in a New Testament chronological reading" />
 </p>
 
 ## Made for daily reading together
 
-![An illustration of church youth reading a Bible and a phone together](docs/assets/community-reading.png)
+![An illustration of three church youth reading together in a courtyard at sunset, one from a Bible and two on phones](docs/assets/community-reading.jpg)
 
 Developed by **Albert Alfred** for the youth of the Brethren Church at Kholousy.
 
 Contact: [albertalfred429@gmail.com](mailto:albertalfred429@gmail.com) · GitHub: [albert429](https://github.com/albert429)
 
-The banner and community illustration are generated artwork. The mobile screenshot shows the actual app. [Artwork prompts and provenance](docs/design/image-prompts.md) are included in the repository.
+The devices in the banner and the community illustration are generated artwork. The banner's screens and the phone screenshots show the actual app at chronosbible.com. [Artwork prompts and provenance](docs/design/image-prompts.md) are included in the repository.
 
 ## Run locally
 
