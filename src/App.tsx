@@ -23,6 +23,7 @@ import { chapters } from "./bible/client";
 import {
   readingKey,
   type AnyReadingLocation,
+  type AnyScriptureReading,
   type ReadingTrack,
 } from "./bible/types";
 import {
@@ -33,7 +34,15 @@ import {
 } from "./chronology/client";
 import { useReadingLocation } from "./reader/useReadingLocation";
 import { days } from "./plan/readings";
+import { adjacentLocation } from "./navigation/adjacent";
+import { afterStartup } from "./lib/afterStartup";
+import { TRACK_NAMES } from "./navigation/modes";
 const Dialogs = lazy(() => import("./plan/dialogs"));
+const DIALOG_NAMES: Record<Modal["kind"], string> = {
+  join: "القراء على هذا الجهاز",
+  settings: "إعدادات القارئ",
+  invite: "مشاركة التطبيق",
+};
 
 export default function App() {
   const progress = useProgress();
@@ -104,6 +113,66 @@ export default function App() {
       : location.mode === "bible"
         ? chapterReading
         : chronoReading;
+  const previous = adjacentLocation(location, -1, chronology.data);
+  const next = adjacentLocation(location, 1, chronology.data);
+  const title = readingTitle(location, chronology.data, reading.data);
+  // Once the text is shown, the next launch fetches it alongside the app.
+  const shownKey = reading.data ? readingKey(reading.data) : "";
+  const shown = useRef<[AnyReadingLocation, AnyScriptureReading?]>(null);
+  useEffect(() => {
+    if (!shownKey || shownKey !== readingKey(location)) return;
+    shown.current = [location, reading.data];
+    // Not needed until the next launch: its small module loads apart, after
+    // the first screen, and records whatever is shown by then.
+    afterStartup(
+      () =>
+        void import("./reader/preload").then(
+          ({ readingPaths, rememberPreload }) => {
+            if (shown.current) rememberPreload(readingPaths(...shown.current));
+          },
+          () => {},
+        ),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownKey]);
+  useEffect(() => {
+    const page = view === "read" ? title : TRACK_NAMES.plan;
+    document.title = page ? `${page} · الكتاب المقدس` : "الكتاب المقدس";
+  }, [title, view]);
+  // Arrow keys page like the toolbar's chevrons (next is on the left).
+  const paging = useRef({ view, previous, next, go });
+  useLayoutEffect(() => {
+    paging.current = { view, previous, next, go };
+  });
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      const { view, previous, next, go } = paging.current;
+      const target =
+        event.key === "ArrowLeft"
+          ? next
+          : event.key === "ArrowRight"
+            ? previous
+            : undefined;
+      if (
+        !target ||
+        view !== "read" ||
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        (event.target as Element | null)?.closest?.(
+          "input, select, textarea, [contenteditable]",
+        ) ||
+        document.querySelector("dialog[open]")
+      )
+        return;
+      event.preventDefault();
+      go(target);
+    };
+    addEventListener("keydown", key);
+    return () => removeEventListener("keydown", key);
+  }, []);
 
   // A remembered or linked reading the current catalog no longer has: start
   // that chronology from its first reading instead of a dead end.
@@ -200,12 +269,14 @@ export default function App() {
     <div className="app">
       <Navigation
         location={location}
+        previous={previous}
+        next={next}
         go={go}
         chooseTrack={chooseTrack}
         chronology={chronology.data}
         chronologyError={chronology.error}
         retryChronology={chronology.retry}
-        readingTitle={readingTitle(location, chronology.data, reading.data)}
+        readingTitle={title}
         completion={completion}
         continuous={locationState.preferences.continuous}
         setContinuous={locationState.setContinuous}
@@ -247,7 +318,12 @@ export default function App() {
             key={member?.id || "guest"}
             location={location}
             navigation={locationState.navigation}
+            restore={locationState.restore}
+            previous={previous}
+            next={next}
+            onPage={go}
             continuous={locationState.preferences.continuous}
+            setContinuous={locationState.setContinuous}
             // Continuous listening moves on without taking keyboard focus.
             onContinue={locationState.go}
             reading={reading.data}
@@ -273,7 +349,7 @@ export default function App() {
       </main>
       <dialog
         className="app-dialog"
-        aria-label="القراء على هذا الجهاز"
+        aria-label={DIALOG_NAMES[modal?.kind ?? "join"]}
         ref={dialog}
         {...dialogProps}
       >

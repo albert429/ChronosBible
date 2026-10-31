@@ -176,7 +176,7 @@ test("rapid chapter and mode changes ignore stale text; failed chapters retry", 
 }) => {
   await stubConnection(page, { saveData: true });
   const gate = createGate();
-  await page.route("**/bible/GEN/2.json", async (route) => {
+  await page.route("**/bible/GEN/2.json*", async (route) => {
     await gate.opened;
     await route.continue();
   });
@@ -200,7 +200,7 @@ test("rapid chapter and mode changes ignore stale text; failed chapters retry", 
   await ready(page);
   await expect(page.getByRole("article")).toHaveAttribute("data-day", "1");
   let fail = true;
-  await page.route("**/bible/GEN/4.json", (route) =>
+  await page.route("**/bible/GEN/4.json*", (route) =>
     fail
       ? route.fulfill({ status: 503, body: "unavailable" })
       : route.continue(),
@@ -284,9 +284,7 @@ test("Bible navigation and picker fit phones, dark maximum text and 200% reflow"
     exact: true,
   });
   while (await increase.isEnabled()) await increase.click();
-  await settings
-    .getByRole("checkbox", { name: "استماع متواصل للإصحاحات" })
-    .check();
+  await settings.getByRole("checkbox", { name: "استماع متواصل" }).check();
   await closeSheet(page);
   for (const width of [320, 360, 390, 430, 195]) {
     await page.setViewportSize({ width, height: width === 195 ? 422 : 844 });
@@ -325,6 +323,6 @@ test("Bible navigation and picker fit phones, dark maximum text and 200% reflow"
   await ready(page);
   const reloaded = await openAppearance(page);
   await expect(
-    reloaded.getByRole("checkbox", { name: "استماع متواصل للإصحاحات" }),
+    reloaded.getByRole("checkbox", { name: "استماع متواصل" }),
   ).toBeChecked();
 });

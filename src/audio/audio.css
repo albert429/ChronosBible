@@ -59,26 +59,63 @@
   text-decoration: underline;
   min-height: 44px;
 }
-.audio-progress {
-  appearance: none;
-  display: block;
-  width: 100%;
-  height: 2px;
-  border: 0;
-  background: var(--line);
+/* Second row: where the recording is, its speed and what happens at its end. */
+.audio-timeline {
+  max-width: 832px;
+  margin-inline: auto;
+  padding: 0 max(12px, env(safe-area-inset-right, 0px)) 4px
+    max(12px, env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.audio-time {
+  min-width: 34px;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.audio-seek {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--olive);
+  cursor: pointer;
+}
+.audio-seek:disabled {
+  cursor: default;
+}
+.audio-player .audio-close,
+.audio-player .audio-end {
+  color: var(--muted);
+}
+.audio-player .audio-end:not([data-action="stop"]) {
   color: var(--olive);
 }
-.audio-progress::-webkit-progress-bar {
-  background: var(--line);
-}
-.audio-progress::-webkit-progress-value {
-  background: var(--olive);
-}
-.audio-progress::-moz-progress-bar {
-  background: var(--olive);
+/* Back to the verse being read, after scrolling away by hand. */
+.audio-follow {
+  position: absolute;
+  inset-block-end: calc(100% + 12px);
+  inset-inline-start: 50%;
+  transform: translateX(50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--olive);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px #0002;
 }
 .audio-speed {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -96,8 +133,12 @@
 .verse[data-listening] .verse-number {
   color: var(--ink);
 }
+/* The fixed player's height, for the space kept under the text and the toast. */
+:root:has(.audio-player) {
+  --player-height: calc(112px + env(safe-area-inset-bottom, 0px));
+}
 .reading-layout:has(.audio-player) {
-  padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--player-height) + 24px);
 }
 .audio-player button {
   transition:

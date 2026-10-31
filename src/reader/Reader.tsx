@@ -8,7 +8,7 @@ import {
 } from "react";
 import { readingHasAudio } from "../audio/availability";
 import { catalog } from "../bible/catalog";
-import { adjacentChapter, findBibleBook } from "../bible/navigation";
+import { findBibleBook } from "../bible/navigation";
 import {
   isChronologicalReading,
   readingKey,
@@ -17,12 +17,11 @@ import {
   type BibleChapter,
   type ScriptureReading,
 } from "../bible/types";
-import { adjacentChronologicalLocation } from "../chronology/client";
 import type { ChronologyCatalog } from "../chronology/types";
 import { ar } from "../lib/format";
 import { readingLabel } from "../plan/labels";
 import { Loading, LoadError, ChunkBoundary } from "../components/Feedback";
-import VerseStudy, { type StudyTarget } from "../study/VerseStudy";
+import { loadVerseStudy, type StudyTarget } from "../study/load";
 import CompletionBar from "./CompletionBar";
 import Scripture from "./Scripture";
 import {
@@ -31,14 +30,32 @@ import {
   useChronologyPrefetch,
 } from "./useAdjacentPrefetch";
 import { useVerseTap } from "./useVerseTap";
-import { verseElement, verseNumberButton } from "./scriptureDom";
-import { playbackPosition, savePlaybackPosition } from "./location";
+import { useSwipePaging } from "./useSwipePaging";
+import {
+  clearSelected,
+  markSelected,
+  scrollToVerse,
+  verseElement,
+  verseNumberButton,
+} from "./scriptureDom";
+import {
+  playbackPosition,
+  readingPosition,
+  savePlaybackPosition,
+} from "./location";
 import "./Reader.css";
 const AudioPlayer = lazy(() => import("../audio/AudioPlayer"));
+const VerseStudy = lazy(loadVerseStudy);
 
 type Props = {
   location: AnyReadingLocation;
   navigation: number;
+  /** Resume the reader's remembered position in this reading. */
+  restore: boolean;
+  /** The neighbouring places in this mode, for swipes and the next button. */
+  previous?: AnyReadingLocation;
+  next?: AnyReadingLocation;
+  onPage: (location: AnyReadingLocation) => void;
   reading?: AnyScriptureReading;
   /** The open chronology's summaries, for labels and continuous listening. */
   chronology?: ChronologyCatalog;
@@ -47,6 +64,7 @@ type Props = {
   done: boolean;
   complete: () => void;
   continuous: boolean;
+  setContinuous: (enabled: boolean) => void;
   onContinue: (location: AnyReadingLocation) => void;
 };
 type Listening = {
@@ -95,6 +113,9 @@ export function readingTitle(
   );
 }
 
+/** What a reader does to move the page themselves. */
+const INPUT_EVENTS = ["pointerdown", "wheel", "keydown"] as const;
+
 const DONE_LABELS = {
   plan: "تمت قراءة هذا اليوم",
   bible: "تمت قراءة هذا الإصحاح",
@@ -104,6 +125,10 @@ const DONE_LABELS = {
 export default function Reader({
   location,
   navigation,
+  restore,
+  previous,
+  next,
+  onPage,
   reading,
   chronology,
   error,
@@ -111,6 +136,7 @@ export default function Reader({
   done,
   complete,
   continuous,
+  setContinuous,
   onContinue,
 }: Props) {
   const identity = readingKey(location);
@@ -135,6 +161,10 @@ export default function Reader({
     );
   }, [current, identity, navigation]);
   const tap = useVerseTap(current);
+  const swipe = useSwipePaging((direction) => {
+    const target = direction === 1 ? next : previous;
+    if (target) onPage(target);
+  });
   const [seenNavigation, setSeenNavigation] = useState(navigation);
   const [seenIdentity, setSeenIdentity] = useState(identity);
   // Reset against requested navigation, even while the new text is still cold.
@@ -147,49 +177,73 @@ export default function Reader({
     tap.reset();
   }
   useLayoutEffect(() => {
+    let target: HTMLElement | null;
+    let offset: number | undefined;
+    let clear: (() => void) | undefined;
     if (!location.verse) {
-      window.scrollTo({ top: 0, behavior: "instant" });
-      return;
+      const saved = restore && current && readingPosition(identity);
+      target = saved ? verseElement(saved.passage, saved.verse) : null;
+      offset = saved ? saved.offset : undefined;
+      if (!target) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+        return;
+      }
+      scrollToVerse(target, offset);
+    } else {
+      if (!current) return;
+      // A chronological link names a verse number but not its occurrence: the
+      // first passage that contains it (canonical links have one passage).
+      const verse = location.verse;
+      const passage = Math.max(
+        0,
+        current.passages.findIndex(
+          (item) => verse >= item.start && verse <= item.end,
+        ),
+      );
+      target = verseElement(passage, verse);
+      if (!target) return;
+      verseNumberButton(target)?.focus({ preventScroll: true });
+      scrollToVerse(target);
+      // The linked verse stays marked until the reader next touches the page.
+      const marked = target;
+      markSelected(marked);
+      clear = () => clearSelected(marked);
+      document.addEventListener("pointerdown", clear, { once: true });
     }
-    if (!current) return;
-    // A chronological link names a verse number but not its occurrence: the
-    // first passage that contains it (canonical links have one passage).
-    const verse = location.verse;
-    const passage = Math.max(
-      0,
-      current.passages.findIndex(
-        (item) => verse >= item.start && verse <= item.end,
-      ),
-    );
-    const target = verseElement(passage, verse);
-    if (!target) return;
-    verseNumberButton(target)?.focus({ preventScroll: true });
-    // Below the sticky toolbar, which grows with large text and zoom.
-    const toolbar = document.querySelector(".topbar")?.getBoundingClientRect();
-    const top =
-      target.getBoundingClientRect().top +
-      window.scrollY -
-      (toolbar?.bottom ?? 0) -
-      16;
-    window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
-  }, [current, location.verse, navigation]);
+    // The text can arrive before its fonts (it is fetched with the page), and
+    // their swap reflows it: place it again once they settle, unless the
+    // reader has touched the page since. The swap itself can move the scroll
+    // (a shorter page clamps it), so only the reader's own input counts.
+    const placed = target;
+    let active = true;
+    const stop = () => {
+      active = false;
+      for (const type of INPUT_EVENTS)
+        removeEventListener(type, stop, { capture: true });
+    };
+    if (document.fonts?.status === "loading") {
+      for (const type of INPUT_EVENTS)
+        addEventListener(type, stop, { capture: true, passive: true });
+      void document.fonts.ready.then(() => {
+        if (active) scrollToVerse(placed, offset);
+        stop();
+      });
+    }
+    return () => {
+      stop();
+      if (clear) {
+        document.removeEventListener("pointerdown", clear);
+        clear();
+      }
+    };
+  }, [current, identity, location.verse, navigation, restore]);
   const audio = readingHasAudio(location);
-  // The next canonical/chronological place, only when continuous listening is
-  // on and its recording is published; never crosses into another mode.
-  const nextLocation = (() => {
-    if (!continuous) return undefined;
-    const next =
-      location.mode === "bible"
-        ? adjacentChapter(catalog, location, 1)
-        : location.mode === "chronological" && chronology
-          ? adjacentChronologicalLocation(chronology, location, 1)
-          : undefined;
-    return next && readingHasAudio(next) ? next : undefined;
-  })();
+  // Where «متابعة» may continue: the next place in this mode whose recording
+  // is published. The player decides whether to (its «عند الانتهاء»).
+  const listenNext = next && readingHasAudio(next) ? next : undefined;
   const playerReading = listening && (current || listening.reading);
-  function ended() {
+  function ended(next?: AnyReadingLocation) {
     if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
-    const next = nextLocation;
     if (!playerReading) return;
     if (!next) return;
     setListening({
@@ -212,6 +266,7 @@ export default function Reader({
         aria-busy={!current && !error}
         onPointerDown={tap.onPointerDown}
         onClick={tap.onClick}
+        {...swipe}
       >
         {error ? (
           <LoadError message={error} retry={retry} />
@@ -233,7 +288,11 @@ export default function Reader({
             <Suspense fallback={<Loading label="جارٍ فتح المشغل…" />}>
               <AudioPlayer
                 reading={playerReading}
-                next={nextLocation}
+                next={listenNext}
+                continuous={continuous}
+                setContinuous={setContinuous}
+                done={done}
+                onComplete={complete}
                 initialTime={(source) =>
                   listening.continuing ? 0 : playbackPosition(source)
                 }
@@ -256,13 +315,17 @@ export default function Reader({
         </div>
       )}
       {study && (
-        <VerseStudy
-          open={tap.open}
-          reading={study.reading}
-          target={study.target}
-          onClose={tap.close}
-          onAfterClose={tap.afterClose}
-        />
+        <ChunkBoundary>
+          <Suspense fallback={null}>
+            <VerseStudy
+              open={tap.open}
+              reading={study.reading}
+              target={study.target}
+              onClose={tap.close}
+              onAfterClose={tap.afterClose}
+            />
+          </Suspense>
+        </ChunkBoundary>
       )}
       {current && (
         <CompletionBar
@@ -271,6 +334,8 @@ export default function Reader({
           done={done}
           doneLabel={DONE_LABELS[location.mode]}
           onComplete={complete}
+          nextLabel={next && readingTitle(next, chronology)}
+          onNext={next && (() => onPage(next))}
         />
       )}
     </div>

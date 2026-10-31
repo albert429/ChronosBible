@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ConfigEnv, UserConfigFn } from "vite";
-import config from "../vite.config.ts";
+import config, { dataVersions } from "../vite.config.ts";
 
 assert.equal(typeof config, "function");
 const makeConfig = config as UserConfigFn;
@@ -185,4 +185,27 @@ test("The audio host is inlined as __AUDIO_BASE_URL__", async () => {
     await baseUrl("https://audio.example.test"),
     '"https://audio.example.test"',
   );
+});
+
+test("Each data folder is versioned by its content, names included", async () => {
+  // The scratch checkout has no generated data yet: plain addresses.
+  assert.equal((await makeConfig(env)).define?.__DATA_VERSIONS__, "{}");
+  mkdirSync(join(root, "public/bible/GEN"), { recursive: true });
+  mkdirSync(join(root, "public/readings"), { recursive: true });
+  writeFileSync(join(root, "public/bible/GEN/1.json"), "{}");
+  writeFileSync(join(root, "public/readings/1.json"), "{}");
+  const first = dataVersions();
+  assert.deepEqual(Object.keys(first).sort(), ["bible", "readings"]);
+  assert.match(first.bible, /^[0-9a-f]{10}$/);
+  assert.equal(
+    (await makeConfig(env)).define?.__DATA_VERSIONS__,
+    JSON.stringify(first),
+  );
+  writeFileSync(join(root, "public/bible/GEN/1.json"), '{"v":2}');
+  const changed = dataVersions();
+  assert.notEqual(changed.bible, first.bible);
+  assert.equal(changed.readings, first.readings);
+  rmSync(join(root, "public/bible/GEN/1.json"));
+  writeFileSync(join(root, "public/bible/GEN/2.json"), '{"v":2}');
+  assert.notEqual(dataVersions().bible, changed.bible);
 });

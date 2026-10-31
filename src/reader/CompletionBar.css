@@ -8,8 +8,26 @@
   padding-top: 24px;
   border-top: 1px solid var(--line);
 }
+.completion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
 .reading-completion .primary {
   width: min(100%, 300px);
+}
+/* A long chronology title ends in an ellipsis; the full one is its name. */
+.completion-next {
+  min-width: 0;
+  max-width: 100%;
+}
+.completion-next span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .completion-state {
   display: inline-flex;

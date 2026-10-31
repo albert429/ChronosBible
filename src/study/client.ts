@@ -1,4 +1,5 @@
 import { createJsonClient } from "../lib/jsonClient.ts";
+import { dataUrl } from "../lib/dataVersion.ts";
 import type { LexDay, StudyDay, TrDay } from "./types.ts";
 
 const message = () => "تعذر تحميل دراسة الآية. تحقق من الاتصال وحاول مرة أخرى.";
@@ -11,7 +12,7 @@ const isObject = (value: unknown) =>
   !!value && typeof value === "object" && !Array.isArray(value);
 
 export const studyCore = createJsonClient<StudyDay>({
-  url: (day) => `/study/${day}.json`,
+  url: (day) => dataUrl(`/study/${day}.json`),
   validate: (data, key): data is StudyDay =>
     header(data, key) &&
     Array.isArray((data as StudyDay).p) &&
@@ -19,13 +20,13 @@ export const studyCore = createJsonClient<StudyDay>({
   message,
 });
 export const studyTr = createJsonClient<TrDay>({
-  url: (day) => `/study/${day}.tr.json`,
+  url: (day) => dataUrl(`/study/${day}.tr.json`),
   validate: (data, key): data is TrDay =>
     header(data, key) && isObject((data as TrDay).verses),
   message: () => "تعذر تحميل الترجمات. تحقق من الاتصال وحاول مرة أخرى.",
 });
 export const studyLex = createJsonClient<LexDay>({
-  url: (day) => `/study/${day}.lex.json`,
+  url: (day) => dataUrl(`/study/${day}.lex.json`),
   validate: (data, key): data is LexDay =>
     header(data, key) && isObject((data as LexDay).lex),
   message,
