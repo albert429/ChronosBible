@@ -37,17 +37,17 @@ test("Every reference configuration sets every VITE_ variable the build reads", 
 });
 
 test("production-audio matches what the Cloudflare production build sets", () => {
-  const expected = productionEnvironment(
-    "production",
-    {},
-    read("vite.config.ts"),
-  );
+  const expected = productionEnvironment("production", {});
   const actual = CONFIGS["production-audio"].env as Record<string, string>;
   for (const key of [...viteKeys(expected), "CI", "NODE_ENV"])
     assert.equal(actual[key], expected[key as keyof typeof expected], key);
   // Optional AI settings stay empty: production builds without AI.
   assert.equal(actual.VITE_AI_PROVIDERS, "");
   assert.equal(actual.VITE_OPENROUTER_API_KEY, "");
+  // The explicit chapter policy, pinned here too: the reference build is what
+  // production builds, and production advertises hosted chapters.
+  assert.equal(actual.VITE_AUDIO_CHAPTERS_ENABLED, "true");
+  assert.equal(actual.VITE_AUDIO_BASE_URL, "https://audio.chronosbible.com");
 });
 
 test("fixture-audio matches the variables npm run test:e2e exports", () => {

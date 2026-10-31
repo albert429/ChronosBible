@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { audioUrl } from "../src/domain/audio/url.ts";
 import {
   AUDIO_BASE_URL,
+  CHAPTER_AUDIO,
   buildEnvironment,
   deployArguments,
   gitEnvironment,
@@ -72,11 +73,7 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
     AUDIO_TEST_FIXTURES: "1",
     NODE_OPTIONS: "unsafe",
   };
-  const env = buildEnvironment(
-    "production",
-    source,
-    "VITE_AUDIO_CHAPTERS_ENABLED",
-  );
+  const env = buildEnvironment("production", source);
   assert.equal(env.VITE_AUDIO_BASE_URL, "https://audio.chronosbible.com");
   assert.equal(buildEnvironment("dev", {}).VITE_AUDIO_BASE_URL, AUDIO_BASE_URL);
   assert.equal(
@@ -85,23 +82,38 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
   );
   assert.equal(env.VITE_AI_PROVIDERS, "");
   assert.equal(env.VITE_OPENROUTER_API_KEY, "");
-  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
-  assert.equal(
-    buildEnvironment("production", source, "older config")
-      .VITE_AUDIO_CHAPTERS_ENABLED,
-    "false",
-  );
   for (const key of ["VITE_FUTURE_KEY", "AUDIO_TEST_FIXTURES", "NODE_OPTIONS"])
     assert.equal(env[key as keyof typeof env], undefined);
+});
+
+test("Chapter audio follows the explicit per-environment policy", () => {
+  // Both Workers may advertise hosted chapters; the verified upload inventory
+  // still decides which ones. Nothing is inferred from the build's source, so
+  // a source string, or a VITE_AUDIO_CHAPTERS_ENABLED in the shell, changes
+  // nothing.
+  assert.deepEqual({ ...CHAPTER_AUDIO }, { production: true, dev: true });
+  assert.ok(Object.isFrozen(CHAPTER_AUDIO));
+  for (const target of ["production", "dev"] as const)
+    for (const inherited of [undefined, "false", "true", "1"]) {
+      const source =
+        inherited === undefined
+          ? {}
+          : { VITE_AUDIO_CHAPTERS_ENABLED: inherited };
+      assert.equal(
+        buildEnvironment(target, source).VITE_AUDIO_CHAPTERS_ENABLED,
+        "true",
+        `${target} ${inherited}`,
+      );
+    }
+  // The retired third argument (the Vite configuration's source) is ignored.
+  const legacy = buildEnvironment as (...args: unknown[]) => {
+    VITE_AUDIO_CHAPTERS_ENABLED?: string;
+  };
   assert.equal(
-    buildEnvironment("dev", {}, "VITE_AUDIO_CHAPTERS_ENABLED")
-      .VITE_AUDIO_CHAPTERS_ENABLED,
+    legacy("production", {}, "older config").VITE_AUDIO_CHAPTERS_ENABLED,
     "true",
   );
-  assert.equal(
-    buildEnvironment("dev", {}, "older config").VITE_AUDIO_CHAPTERS_ENABLED,
-    "false",
-  );
+  assert.throws(() => buildEnvironment("preview", {}), /production or dev/);
 });
 
 const DUMMY_KEY = "sk-or-v1-0123456789abcdef0123456789abcdef";
@@ -498,10 +510,8 @@ for (const testCase of buildCases) {
         join(f.root, "hosting/cloudflare-app/_redirects"),
         "/audio/days/* https://audio.example.test/audio/days/:splat 301\n",
       );
-      writeFileSync(
-        join(f.root, "vite.config.ts"),
-        "// VITE_AUDIO_CHAPTERS_ENABLED supported",
-      );
+      // The chapter flag comes from the explicit policy, not from this file.
+      writeFileSync(join(f.root, "vite.config.ts"), "// no audio settings");
       writeFileSync(
         join(f.root, "package.json"),
         JSON.stringify({

@@ -57,6 +57,12 @@ export function deployment(target) {
 // Public, read-only R2 custom domain (bucket chronosbible-audio).
 export const AUDIO_BASE_URL = "https://audio.chronosbible.com";
 
+// Whether each Worker's build may advertise hosted chapter recordings. An
+// explicit decision per environment, not inferred from the build's source:
+// the verified upload inventory (data/audio/publication.json) still decides
+// which chapters are actually advertised.
+export const CHAPTER_AUDIO = Object.freeze({ production: true, dev: true });
+
 // AI explanations are allowed on the dev Worker only, and only when its build
 // variables set VITE_AI_PROVIDERS. Production never enables them.
 const AI_SETTINGS = [
@@ -80,7 +86,7 @@ export function aiSettings(target, source = process.env) {
 // silently enable AI, fixtures, or a future public setting in this deployment.
 // Test-only switches (VITE_OPENROUTER_BASE_URL, VITE_AI_ALLOW_LOCAL) never pass.
 /** @returns {Record<string, string | undefined>} */
-export function buildEnvironment(target, source = process.env, config = "") {
+export function buildEnvironment(target, source = process.env) {
   deployment(target);
   const env = {};
   for (const key of [
@@ -106,9 +112,7 @@ export function buildEnvironment(target, source = process.env, config = "") {
     CI: "true",
     NODE_ENV: "production",
     VITE_AUDIO_BASE_URL: AUDIO_BASE_URL,
-    VITE_AUDIO_CHAPTERS_ENABLED: config.includes("VITE_AUDIO_CHAPTERS_ENABLED")
-      ? "true"
-      : "false",
+    VITE_AUDIO_CHAPTERS_ENABLED: String(CHAPTER_AUDIO[target]),
     ...ai,
   };
 }
@@ -332,11 +336,7 @@ export function build(target) {
   const ai = aiSettings(target, process.env);
   execFileSync("npm", ["run", "build"], {
     cwd: ROOT,
-    env: buildEnvironment(
-      target,
-      process.env,
-      readFileSync(join(ROOT, "vite.config.ts"), "utf8"),
-    ),
+    env: buildEnvironment(target, process.env),
     stdio: "inherit",
   });
   for (const name of ["_headers", "_redirects"])

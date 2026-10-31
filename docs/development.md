@@ -242,9 +242,11 @@ Cloudflare serves two independent Workers from the same explicit `wrangler.json`
 | `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
 Both environments build the same way from their own branch, using that
-branch's full-Bible content and audio publication inventory. The chapter-audio
-flag is enabled whenever the branch's Vite configuration supports it. These
-hosting scripts do not copy content between branches. Vercel continues using
+branch's full-Bible content and audio publication inventory. Whether a Worker
+may advertise hosted chapter recordings is an explicit per-environment policy
+(`CHAPTER_AUDIO` in the hosting script; on for both), never inferred from the
+build's source; the verified publication inventory still decides which chapters
+are advertised. These hosting scripts do not copy content between branches. Vercel continues using
 `npm run build` and its existing configuration.
 
 Use Node 22 and install the locked app dependencies with `npm ci --ignore-scripts`.
@@ -280,8 +282,8 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 `.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
 `VITE_*` values take priority. Therefore the Cloudflare build also uses a small
 environment allowlist and supplies its public settings explicitly:
-`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the branch-specific audio
-flag. Do not add other private `VITE_*` values to Cloudflare build settings.
+`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the
+environment's chapter-audio policy. Do not add other private `VITE_*` values to Cloudflare build settings.
 AI is always disabled on the production Worker, whatever the shell sets. The
 **dev Worker only** may enable it; see [AI on the dev Worker](#ai-on-the-dev-worker).
 
