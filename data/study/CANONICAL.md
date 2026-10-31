@@ -31,13 +31,24 @@ checksums, and require no network, Python, or source archives.
 
 - All 23,145 OT verses have original-language words; the 7,959 existing NT
   verses retain their Greek tuples unchanged, with an added language tag.
-- OT tokens: 468,591 total; 461,037 Hebrew and 7,554 Aramaic. Language follows
+- OT tokens: 468,308 total; 460,758 Hebrew and 7,550 Aramaic. Language follows
   each source grammar part, including mixed Daniel 2:4. Prefixes and suffixes
   remain separate, meaningful elements.
-- 452,995 OT tokens have verified Arabic spans. Another 14,928 have no direct
+- 452,956 OT tokens have verified Arabic spans. Another 14,684 have no direct
   Arabic equivalent. For 668 tokens in 478 verses, source Arabic wording or
   segmentation could not be matched exactly after normalization: retain the
   original word but publish null spans. No positional replacement is guessed.
+- Only the Leningrad text is published. TTAraSVD also tags words that BHS's
+  apparatus reconstructs from Greek sources (an `X` suffix on the Hebrew word
+  number), such as Genesis 4:8 «let us go to the field» and the numbers in
+  1 Samuel 13:1. Exclude those 248 elements (152 source rows, 36 verses). In
+  Numbers 26:40 and 1 Chronicles 9:41 the Van Dyck has a word the source pairs
+  with such Hebrew; it keeps its place for alignment with no original word.
+  Restored (`R`) and Qere/Ketiv words are Leningrad readings and stay.
+- In 25 verses the source lists one Hebrew word number twice, in two Arabic rows
+  or in one row. Keep each Hebrew word once per verse, in the row naming the
+  fewest Hebrew words (the first on a tie); 35 repeated elements are removed.
+  Genesis 19:22 thus pairs קָרָא with «دُعِيَ» only.
 - Source Psalm headings are excluded from verse-word lists only after their
   Arabic prefix matches the canonical superscription: 743 tokens in 116 titles.
   The Scripture reader continues to show the original headings.
@@ -49,6 +60,10 @@ checksums, and require no network, Python, or source archives.
   elements rather than fabricate Hebrew. Retain the preceding written elements.
 - Eight H9014 maqaf/link elements have no grammar code in the source. Keep the
   punctuation and language, with an empty morphology field.
+- Lexicon entries are named by TBESH's dStrong, with the eStrong naming the
+  first entry of its number. The uStrong column only links related entries
+  (H0136 Adonai is "a Name of" H3068G) and never names one.
+- STEP joins the words of one English gloss with `_` (`call_by`); publish spaces.
 - H7417I and H5892I are absent from TBESH. Their lemma and gloss come directly
   from the tagged source. No dictionary sense is guessed.
 
@@ -73,7 +88,7 @@ plain JSON. `/study/v2/lex/H00.json` is an example Strong's-prefix shard.
 
 Every word request is limited to 30,000 compressed bytes and 256 KiB decoded;
 translations to 30,000 gzip bytes and lexicon shards to 35,000. Oversized chapters
-split only between verses. Current maxima are 20,111 compressed / 103,819 decoded
+split only between verses. Current maxima are 20,107 compressed / 103,819 decoded
 word bytes, 11,499 translation gzip bytes, and 8,087 lexicon gzip bytes.
 
 A build inventory records generated file hashes. Regeneration removes only

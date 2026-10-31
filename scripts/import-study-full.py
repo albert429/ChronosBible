@@ -43,18 +43,78 @@ def clean_field(value):
     return value.strip().replace("{", "").replace("}", "")
 
 
+def clean_gloss(value):
+    """STEP joins the words of one English gloss with "_" (call_by)."""
+    return clean_field(value).replace("_", " ")
+
+
 def hebrew_lexicon(path):
-    """Import only STEP lemma/gloss. The Online Bible definition column is excluded."""
-    lex = {}
+    """Import only STEP lemma/gloss. The Online Bible definition column is excluded.
+
+    An entry is named by its dStrong (column 2), and its eStrong (column 1)
+    names the first entry of that number. The uStrong column only links an
+    entry to a related one (H0136 Adonai is "a Name of" H3068G), so it never
+    names an entry.
+    """
+    lex, extended = {}, {}
     for line in path.read_text(encoding="utf-8-sig").splitlines():
         c = line.split("\t")
         if len(c) < 8 or not STRONG.fullmatch(c[0].strip()):
             continue
-        entry = {"l": c[3].strip(), "g": c[6].strip(), "d": ""}
-        for field in c[:3]:
-            for key in STRONG.findall(field):
-                lex.setdefault(key, entry)
+        entry = {"l": c[3].strip(), "g": clean_gloss(c[6]), "d": ""}
+        keys = STRONG.findall(c[1])
+        if len(keys) != 1 or keys[0] in lex:
+            raise ValueError(f"Unreviewed TBESH dStrong: {c[:3]!r}")
+        lex[keys[0]] = entry
+        extended.setdefault(c[0].strip(), entry)
+    for key, entry in extended.items():
+        lex.setdefault(key, entry)
     return lex
+
+
+def hebrew_words(strongs, numbers):
+    """Each lexical element's Hebrew word: (word index in the row, word number).
+
+    Words are separated by "; " in both the Strongs and "Heb w#" columns, and
+    a word's elements by ";" alone.
+    """
+    sizes = [len(word.split(";")) for word in re.split(r";\s+", strongs.strip())]
+    ids = [n.strip() for n in numbers.split(";") if n.strip()]
+    if len(ids) != len(sizes):
+        raise ValueError(f"Mismatched Hebrew word numbers: {strongs!r} {numbers!r}")
+    return [(index, word) for index, (word, size) in enumerate(zip(ids, sizes)) for _ in range(size)]
+
+
+def greek_sourced(word):
+    """BHS apparatus words based on Greek sources (suffix X), not in the Leningrad text."""
+    return re.search(r"#\d+X$", word) is not None
+
+
+def unique_words(rows):
+    """Keep each Hebrew word once in a verse.
+
+    The source sometimes lists one Hebrew word in two Arabic rows, or twice in
+    one row. It stays in the row naming the fewest Hebrew words, the most
+    specific Arabic match (the first such row on a tie), and once there.
+    """
+    owner = {}
+    for index, row in enumerate(rows):
+        words = {word for _, word in row["hebrew"]}
+        for word in words:
+            best = owner.get(word)
+            if best is None or len(words) < len({w for _, w in rows[best]["hebrew"]}):
+                owner[word] = index
+    removed = 0
+    for index, row in enumerate(rows):
+        first, tokens, hebrew = {}, [], []
+        for token, (group, word) in zip(row["tokens"], row["hebrew"]):
+            if owner[word] == index and first.setdefault(word, group) == group:
+                tokens.append(token)
+                hebrew.append((group, word))
+            else:
+                removed += 1
+        row["tokens"], row["hebrew"] = tokens, hebrew
+    return removed
 
 
 def grammar_parts(value):
@@ -93,7 +153,7 @@ def parse_ot(path, codes, lex):
         if len(positions) == 2 and "-" in c[0]:
             positions = list(range(positions[0], positions[1] + 1))
         if not (c[2].strip() and c[3].strip()):
-            result[key].append({"positions": positions, "arabic": c[1], "tokens": [], "source": c[8]})
+            result[key].append({"positions": positions, "arabic": c[1], "tokens": [], "hebrew": [], "source": c[8]})
             continue
         strongs = [clean_field(s).replace("+", "") for s in c[2].split(";")]
         words = [w.strip().rstrip(";") for w in c[3].split()]
@@ -106,7 +166,7 @@ def parse_ot(path, codes, lex):
                 if strong == "H9014":
                     language = morphs[max(0, min(index - 1, len(morphs) - 1))][1]
                     morphs.insert(index, ("", language))
-        glosses = [clean_field(s) for s in c[5].split(";")]
+        glosses = [clean_gloss(s) for s in c[5].split(";")]
         if not c[5].strip():
             glosses = [lex.get(s, lex.get(s[:5], {})).get("g", "") for s in strongs]
         if not all(STRONG.fullmatch(s) for s in strongs):
@@ -127,12 +187,28 @@ def parse_ot(path, codes, lex):
                 exceptions.append({"verse": key, "strong": strong, "reason": "Tag absent from TBESH; lemma and gloss retained verbatim from TTAraSVD"})
         tokens = [[word, trans, strong, morph, gloss, None, None, lang]
                   for word, trans, strong, (morph, lang), gloss in zip(words, translits, strongs, morphs, glosses)]
+        hebrew = hebrew_words(c[2], c[8])[:len(tokens)]
+        greek = [greek_sourced(word) for _, word in hebrew]
+        if any(greek):
+            # The Van Dyck follows the Hebrew here; an Arabic word that the
+            # source pairs with apparatus Hebrew (Num 26:40, 1 Chr 9:41) keeps
+            # its place for alignment, with no original word.
+            if not all(greek):
+                raise ValueError(f"Unreviewed partly Greek-sourced row at {key}: {c}")
+            exceptions.append({"verse": key, "row": c[8], "reason": "Based on Greek sources (BHS apparatus), not in the Leningrad text; excluded", "excludedStrongs": strongs})
+            if not positions:
+                continue
+            tokens, hebrew = [], []
         target = key
         if key in SPLIT_BLOCKS:
             suffix, other = SPLIT_BLOCKS[key]
             if c[8].startswith(f"({suffix})"):
                 target = other
-        result.setdefault(target, []).append({"positions": positions, "arabic": c[1], "tokens": tokens, "source": c[8]})
+        result.setdefault(target, []).append({"positions": positions, "arabic": c[1], "tokens": tokens, "hebrew": hebrew, "source": c[8]})
+    for key, verse_rows in result.items():
+        removed = unique_words(verse_rows)
+        if removed:
+            exceptions.append({"verse": key, "reason": "Source lists one Hebrew word twice; kept once, in its most specific Arabic row", "removedElements": removed})
     return result, exceptions
 
 
@@ -304,6 +380,8 @@ def main():
     report["tokensWithoutArabicEquivalent"] = report["otTokens"] - report["validatedArabicTokens"] - sum(unmapped.values())
     report["versesWithValidatedArabicSpans"] = sum(any(t[5] is not None for t in tokens) for tokens in ot.values())
     report["sourceExceptions"] = report.pop("omittedSurfaceExceptions")
+    report["greekSourcedElementsExcluded"] = sum(len(e["excludedStrongs"]) for e in exceptions if "excludedStrongs" in e)
+    report["repeatedElementsRemoved"] = sum(e.get("removedElements", 0) for e in exceptions)
     report["ntTranslationChanges"] = {}
     for name, field in [("nav", "n"), ("kjv", "e")]:
         old = json.loads((ROOT / "data/study" / (name + ".json")).read_text())
