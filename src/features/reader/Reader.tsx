@@ -6,7 +6,7 @@ import {
   lazy,
   Suspense,
 } from "react";
-import { readingHasAudio } from "../../domain/audio/availability";
+import { readingHasAudio } from "../audio/availability";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
   isChronologicalReading,

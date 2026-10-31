@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { type AnyReadingLocation } from "../../domain/reading/types.ts";
 import { readingKey } from "../../domain/reading/identity.ts";
-import { readingHasAudio } from "../../domain/audio/availability.ts";
+import { readingHasAudio } from "./availability.ts";
 import { audioManifests } from "./client.ts";
 
 type Connection = { saveData?: boolean; effectiveType?: string };
