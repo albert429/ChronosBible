@@ -1,14 +1,8 @@
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  lstatSync,
-  mkdirSync,
-  readFileSync,
-  unlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
+import { publishOwned } from "../lib/ownership.js";
 import { readBibleChapters } from "./build-bible.js";
 
 export const STUDY_WORDS_RAW_LIMIT = 256 * 1024;
@@ -251,69 +245,25 @@ export function buildCanonicalStudy({ out, root }) {
   return stats;
 }
 
-/** Remove only unmodified obsolete files recorded by an earlier successful build. */
+/** Study path names: chapter indexes and ranges, and lexicon shards. */
+export const STUDY_PATH =
+  /^(?:[1-3]?[A-Z]{2,3}\/[1-9]\d*\/(?:index\.json|[1-9]\d*-[1-9]\d*\.(?:tr\.json|words\.json\.gz))|lex\/[GH]\d{2}\.json)$/;
+
+/**
+ * Publish into `out`/v2 and record the set in its inventory.json, which the
+ * app's offline pack also reads. Removes only unmodified obsolete files
+ * recorded by an earlier successful build (scripts/lib/ownership.js).
+ */
 export function publishStudyPayloads(out, payloads) {
   const base = join(out, "v2");
-  const inventoryPath = join(base, "inventory.json");
-  const next = Object.fromEntries(
-    payloads.map(([path, body]) => [path, hash(body)]),
-  );
-  const obsolete = [];
-  if (existsSync(base) && lstatSync(base).isSymbolicLink())
-    fail("study output cannot be a symlink");
-  const safePath = (path) =>
-    /^(?:[1-3]?[A-Z]{2,3}\/[1-9]\d*\/(?:index\.json|[1-9]\d*-[1-9]\d*\.(?:tr\.json|words\.json\.gz))|lex\/[GH]\d{2}\.json)$/.test(
-      path,
-    );
-  function checkParents(path) {
-    let current = base;
-    for (const part of path.split("/")) {
-      current = join(current, part);
-      if (existsSync(current) && lstatSync(current).isSymbolicLink())
-        fail("study output cannot contain symlinks");
-    }
-  }
-  for (const [path] of payloads) {
-    if (!safePath(path)) fail("invalid generated study path");
-    checkParents(path);
-  }
-  if (existsSync(inventoryPath)) {
-    if (lstatSync(inventoryPath).isSymbolicLink())
-      fail("study inventory cannot be a symlink");
-    const old = JSON.parse(readFileSync(inventoryPath, "utf8"));
-    if (
-      old.v !== 2 ||
-      !old.files ||
-      Array.isArray(old.files) ||
-      typeof old.files !== "object"
-    )
-      fail("invalid study inventory");
-    for (const [path, checksum] of Object.entries(old.files)) {
-      if (
-        !safePath(path) ||
-        typeof checksum !== "string" ||
-        !/^[a-f0-9]{64}$/.test(checksum)
-      )
-        fail("invalid study inventory entry");
-      if (path in next) continue;
-      checkParents(path);
-      const target = join(base, path);
-      if (!existsSync(target)) continue;
-      if (hash(readFileSync(target)) !== checksum)
-        fail("obsolete study output was modified; refusing removal");
-      obsolete.push(target);
-    }
-  }
-  // All data, budgets and removals are verified before touching existing assets.
-  for (const target of obsolete) unlinkSync(target);
-  let bytes = 0;
-  for (const [path, body] of payloads) {
-    const target = join(base, path);
-    mkdirSync(join(target, ".."), { recursive: true });
-    writeFileSync(target, body);
-    bytes += body.length;
-  }
-  const inventory = json({ v: 2, files: next });
-  writeFileSync(inventoryPath, inventory);
-  return { files: payloads.length + 1, bytes: bytes + inventory.length };
+  const { files, bytes } = publishOwned({
+    base,
+    payloads,
+    safePath: (path) => STUDY_PATH.test(path),
+    inventory: join(base, "inventory.json"),
+    version: 2,
+    label: "study",
+    fail,
+  });
+  return { files, bytes };
 }
