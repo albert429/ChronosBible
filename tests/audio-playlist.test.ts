@@ -315,6 +315,34 @@ test("Native ended advances to the next file in the same task, exactly once", as
   assert.equal(player.time(), 0);
 });
 
+test("Replaying an ended single-file reading loads its file afresh", async () => {
+  const media = new FakeMedia();
+  const player = new PlaylistController((src) => `https://host${src}`);
+  player.attach(media);
+  const day: LegacyAudioManifest = {
+    version: 1,
+    day: 1,
+    readingHash: "a".repeat(64),
+    src: "/audio/days/001-abc.m4a",
+    duration: 9,
+    cues: [{ passage: 0, verse: 1, start: 0.2, end: 2 }],
+  };
+  player.setTimeline(toTimeline(day, "1"), 0);
+  await player.play();
+  media.metadata();
+  media.finish(day.duration);
+  assert.equal(player.ended(), "finished");
+  // Not a seek back on the ended file (WebKit may stall there).
+  await player.play();
+  assert.deepEqual(media.sources, [
+    `https://host${day.src}`,
+    `https://host${day.src}`,
+  ]);
+  assert.equal(media.ended, false);
+  assert.equal(player.time(), 0);
+  assert.equal(media.plays, 2);
+});
+
 test("Seeks cross files, apply after metadata, and keep the speed", async () => {
   const media = new FakeMedia();
   const player = new PlaylistController((src) => `https://host${src}`);

@@ -148,7 +148,10 @@ export class PlaylistController {
       this.loaded = undefined;
       this.load(this.known);
     } else if (this.finished || (element.ended && this.isLast())) {
+      // Load the first file afresh rather than seek an ended one back to
+      // its start: WebKit can then stall, playing yet never advancing.
       this.finished = false;
+      this.loaded = undefined;
       this.load(0);
     }
     return element.play();
