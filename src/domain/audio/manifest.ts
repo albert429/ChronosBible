@@ -1,6 +1,6 @@
 import {
   isChronologicalReading,
-  type AnyScriptureReading,
+  type ScriptureReading,
 } from "../reading/types.ts";
 import { readingKey } from "../reading/identity.ts";
 import { catalog } from "../scripture/catalog.ts";
@@ -74,7 +74,7 @@ export type AudioManifest =
   LegacyAudioManifest | AudioManifestV2 | AudioManifestV3;
 
 // This exact representation is also used by the offline audio builder.
-export function readingTranscript(reading: AnyScriptureReading) {
+export function readingTranscript(reading: ScriptureReading) {
   return JSON.stringify(
     reading.passages.map((p) => [
       p.book,
@@ -85,7 +85,7 @@ export function readingTranscript(reading: AnyScriptureReading) {
     ]),
   );
 }
-export async function readingHash(reading: AnyScriptureReading) {
+export async function readingHash(reading: ScriptureReading) {
   const hash = await crypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(readingTranscript(reading)),
@@ -94,7 +94,7 @@ export async function readingHash(reading: AnyScriptureReading) {
     byte.toString(16).padStart(2, "0"),
   ).join("");
 }
-export function audioReadingKey(reading: AnyScriptureReading) {
+export function audioReadingKey(reading: ScriptureReading) {
   return readingKey(reading);
 }
 export function manifestKey(key: string) {
@@ -282,7 +282,7 @@ export function validManifest(
 }
 
 /** Each entry must be exactly the reading's passage, in order. */
-function entriesMatch(manifest: AudioManifestV3, reading: AnyScriptureReading) {
+function entriesMatch(manifest: AudioManifestV3, reading: ScriptureReading) {
   return (
     manifest.entries.length === reading.passages.length &&
     manifest.entries.every((entry, index) => {
@@ -309,7 +309,7 @@ function entriesMatch(manifest: AudioManifestV3, reading: AnyScriptureReading) {
 
 export async function matchesReading(
   manifest: AudioManifest,
-  reading: AnyScriptureReading,
+  reading: ScriptureReading,
 ) {
   const key = audioReadingKey(reading);
   if (!validManifest(manifest, key)) return false;

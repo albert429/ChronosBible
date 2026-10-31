@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { AnyReadingLocation } from "../../domain/reading/types";
+import type { ReadingLocation } from "../../domain/reading/types";
 import {
   emptyCompletion,
   type GuestState,
@@ -117,7 +117,7 @@ const actions = {
   complete: (id: string, day: number, done: boolean) =>
     act(() => setCompletion(localStorage, id, day, done)),
   /** Explicitly mark any track's reading done or not done ("" = guest). */
-  completeReading: (id: string, location: AnyReadingLocation, done: boolean) =>
+  completeReading: (id: string, location: ReadingLocation, done: boolean) =>
     act(() => setReadingCompletion(localStorage, id, location, done)),
   fail,
   clearError() {

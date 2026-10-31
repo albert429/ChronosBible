@@ -1,7 +1,7 @@
 import { catalog } from "../scripture/catalog.ts";
 import type { BibleBook } from "../scripture/types.ts";
 import { validBibleLocation } from "./location.ts";
-import type { AnyReadingLocation, BibleLocation } from "./types.ts";
+import type { ReadingLocation, BibleLocation } from "./types.ts";
 import { adjacentChronologicalLocation } from "./chronologyCatalog.ts";
 import type { ChronologyCatalog } from "./chronology.ts";
 import { PLAN_DAYS } from "./schedule.ts";
@@ -32,10 +32,10 @@ export function adjacentChapter(
  * another mode, and undefined at either end or before a chronology loads.
  */
 export function adjacentLocation(
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   direction: -1 | 1,
   chronology?: ChronologyCatalog,
-): AnyReadingLocation | undefined {
+): ReadingLocation | undefined {
   if (location.mode === "bible")
     return adjacentChapter(catalog, location, direction);
   if (location.mode === "chronological")

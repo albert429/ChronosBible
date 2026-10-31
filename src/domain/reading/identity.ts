@@ -7,8 +7,8 @@ import type { Testament } from "../scripture/types.ts";
 import { isChronologyId } from "./chronology.ts";
 import { validBibleLocation } from "./location.ts";
 import type {
-  AnyReadingLocation,
-  AnyScriptureReading,
+  ReadingLocation,
+  ScriptureReading,
   BibleLocation,
   ChronologicalLocation,
   Day,
@@ -33,7 +33,7 @@ export const isReadingTrack = (value: unknown): value is ReadingTrack =>
   READING_TRACKS.includes(value as ReadingTrack);
 export const chronologicalTrack = (testament: Testament): ChronologicalTrack =>
   `chrono:${testament}`;
-export const trackOf = (location: AnyReadingLocation): ReadingTrack =>
+export const trackOf = (location: ReadingLocation): ReadingTrack =>
   location.mode === "chronological"
     ? chronologicalTrack(location.testament)
     : location.mode;
@@ -43,7 +43,7 @@ export const trackOf = (location: AnyReadingLocation): ReadingTrack =>
  * `chrono:OT|NT:id`. Readings never masquerade as one another's.
  */
 export function readingKey(
-  reading: AnyScriptureReading | AnyReadingLocation,
+  reading: ScriptureReading | ReadingLocation,
 ): string {
   if ("mode" in reading && reading.mode === "bible")
     return `bible:${"usfm" in reading ? reading.usfm : reading.book}:${reading.chapter}`;
@@ -76,5 +76,5 @@ export function chronologicalKeyLocation(
   return { mode: "chronological", testament: match[1], readingId: match[2] };
 }
 
-export const sameLocation = (a?: AnyReadingLocation, b?: AnyReadingLocation) =>
+export const sameLocation = (a?: ReadingLocation, b?: ReadingLocation) =>
   !!a && !!b && readingKey(a) === readingKey(b) && a.verse === b.verse;

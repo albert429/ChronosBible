@@ -1,6 +1,6 @@
 import type {
-  AnyReadingLocation,
-  AnyScriptureReading,
+  ReadingLocation,
+  ScriptureReading,
 } from "../../domain/reading/types.ts";
 import {
   audioAvailable,
@@ -16,9 +16,7 @@ let advertised: AdvertisedAudio | undefined;
  * `audioAvailable` for this build's advertised audio (vite.config.ts), built
  * once: the inlined lists become sets instead of new arrays on every call.
  */
-export const readingHasAudio = (
-  target: AnyReadingLocation | AnyScriptureReading,
-) =>
+export const readingHasAudio = (target: ReadingLocation | ScriptureReading) =>
   audioAvailable(
     target,
     (advertised ??= {

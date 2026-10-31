@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
-  type AnyReadingLocation,
+  type ReadingLocation,
   type BibleLocation,
   type ChronologicalLocation,
   type Day,
@@ -65,11 +65,11 @@ const ADJACENT_LABELS = {
 } as const;
 type Panel = "menu" | "day" | "appearance" | "about" | "bible" | "chronology";
 type Props = {
-  location: AnyReadingLocation;
+  location: ReadingLocation;
   /** The neighbouring places in this mode (see `adjacentLocation`). */
-  previous?: AnyReadingLocation;
-  next?: AnyReadingLocation;
-  go: (location: AnyReadingLocation) => void;
+  previous?: ReadingLocation;
+  next?: ReadingLocation;
+  go: (location: ReadingLocation) => void;
   chooseTrack: (track: ReadingTrack) => void;
   /** The open chronology's summaries (chronological mode only). */
   chronology?: ChronologyCatalog;

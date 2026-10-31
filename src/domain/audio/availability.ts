@@ -1,7 +1,7 @@
 import { catalog } from "../scripture/catalog.ts";
 import {
-  type AnyReadingLocation,
-  type AnyScriptureReading,
+  type ReadingLocation,
+  type ScriptureReading,
   type BibleChapter,
   type BibleLocation,
   type PlanLocation,
@@ -63,7 +63,7 @@ const has = <T>(
  * on the host. Pure and synchronous; nothing is fetched.
  */
 export function audioAvailable(
-  target: AnyReadingLocation | AnyScriptureReading,
+  target: ReadingLocation | ScriptureReading,
   advertised: AdvertisedAudio,
   books: readonly BibleBook[] = catalog,
 ): boolean {

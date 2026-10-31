@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  parseReadingLocation,
+  parsePlanOrBibleLocation,
   readingSearch,
 } from "../src/domain/reading/location.ts";
 import { adjacentChapter } from "../src/domain/reading/adjacent.ts";
@@ -49,10 +49,10 @@ test("Links round trip and reject invalid chapter and verse bounds", () => {
     "?mode=bible&book=GEN&chapter=1&verse=31",
   );
   assert.deepEqual(
-    parseReadingLocation(readingSearch(location), catalog),
+    parsePlanOrBibleLocation(readingSearch(location), catalog),
     location,
   );
-  assert.deepEqual(parseReadingLocation("?day=150", catalog), {
+  assert.deepEqual(parsePlanOrBibleLocation("?day=150", catalog), {
     mode: "plan",
     day: 150,
   });
@@ -65,7 +65,7 @@ test("Links round trip and reject invalid chapter and verse bounds", () => {
     "?mode=bible&book=GEN&chapter=1&verse=0",
     "?mode=bible&book=BAD&chapter=1",
   ])
-    assert.equal(parseReadingLocation(query, catalog), undefined, query);
+    assert.equal(parsePlanOrBibleLocation(query, catalog), undefined, query);
 });
 test("Reading identities keep chronological and canonical readings distinct", () => {
   assert.equal(readingKey(first), "bible:GEN:1");

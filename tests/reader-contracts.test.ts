@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  parseAnyReadingLocation,
   parseReadingLocation,
+  parsePlanOrBibleLocation,
   readingSearch,
   validChronologicalLocation,
   locationSearch,
@@ -276,18 +276,18 @@ test("each reader keeps separate places and completion in every track", () => {
 });
 
 test("links: shared URLs win, legacy ?day= links work, chronology is opt-in", () => {
-  assert.deepEqual(parseAnyReadingLocation("?day=7", catalog), {
+  assert.deepEqual(parseReadingLocation("?day=7", catalog), {
     mode: "plan",
     day: 7,
   });
   const link = "?mode=chronological&testament=NT&reading=mark-1&verse=3";
-  assert.deepEqual(parseAnyReadingLocation(link, catalog), {
+  assert.deepEqual(parseReadingLocation(link, catalog), {
     ...nt("mark-1"),
     verse: 3,
   });
   assert.equal(readingSearch({ ...nt("mark-1"), verse: 3 }), link);
   assert.equal(locationSearch(ot("ot-001")), readingSearch(ot("ot-001")));
-  assert.equal(parseReadingLocation(link, catalog), undefined);
+  assert.equal(parsePlanOrBibleLocation(link, catalog), undefined);
   for (const query of [
     "?mode=chronological&testament=XX&reading=a",
     "?mode=chronological&testament=OT&reading=__proto__",
@@ -296,13 +296,13 @@ test("links: shared URLs win, legacy ?day= links work, chronology is opt-in", ()
     "?mode=chronological&testament=OT",
     "?mode=chronological&testament=OT&reading=a&verse=0",
   ])
-    assert.equal(parseAnyReadingLocation(query, catalog), undefined, query);
+    assert.equal(parseReadingLocation(query, catalog), undefined, query);
   // Explicit links replace the saved place in their own track only.
   const saved = withPlace(
     { track: "plan", places: { plan: { mode: "plan", day: 80 } } },
     ot("ot-009"),
   );
-  const linked = withPlace(saved, parseAnyReadingLocation("?day=3", catalog)!);
+  const linked = withPlace(saved, parseReadingLocation("?day=3", catalog)!);
   assert.deepEqual(currentPlace(linked, 1), { mode: "plan", day: 3 });
   assert.deepEqual(linked.places["chrono:OT"], ot("ot-009"));
   // Without chronology support the Bible place stands in.

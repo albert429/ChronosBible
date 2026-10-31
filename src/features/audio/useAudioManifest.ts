@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   isBibleChapter,
   isChronologicalReading,
-  type AnyScriptureReading,
+  type ScriptureReading,
 } from "../../domain/reading/types";
 import { useResource } from "../../shared/hooks/useResource";
 import { audioManifests } from "./client";
@@ -14,7 +14,7 @@ import {
   type Timeline,
 } from "../../domain/audio/manifest";
 
-const mismatch = (reading: AnyScriptureReading) =>
+const mismatch = (reading: ScriptureReading) =>
   `يحتاج التسجيل إلى تحديث ليتطابق مع ${
     isChronologicalReading(reading)
       ? "نص هذه القراءة"
@@ -27,7 +27,7 @@ const mismatch = (reading: AnyScriptureReading) =>
  * Load a reading's manifest and accept it only if it matches the text on
  * screen (identity, passages and transcript hash), as one playable timeline.
  */
-export function useAudioManifest(reading: AnyScriptureReading) {
+export function useAudioManifest(reading: ScriptureReading) {
   const key = audioReadingKey(reading);
   const { data, error, retry } = useResource(audioManifests, key);
   const [checked, setChecked] = useState<{

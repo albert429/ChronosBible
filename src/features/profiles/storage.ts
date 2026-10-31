@@ -4,7 +4,7 @@
  * domain/profiles/state.ts. Storage is passed in, so a blocked or full
  * store surfaces as a message and nothing is half-written.
  */
-import type { AnyReadingLocation } from "../../domain/reading/types.ts";
+import type { ReadingLocation } from "../../domain/reading/types.ts";
 import {
   parseReaderPlaces,
   type ReaderPlaces,
@@ -167,7 +167,7 @@ export function createReader(
 export function setReadingCompletion(
   storage: StorageLike,
   id: string,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   completed: boolean,
   date = today(),
 ): ReaderProfile | GuestState {

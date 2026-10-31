@@ -4,12 +4,15 @@
  * (`bible-reader-location-v1`). Neither is ever written or removed.
  */
 import { catalog } from "../scripture/catalog.ts";
-import { parseReadingLocation, validLocation } from "../reading/location.ts";
+import {
+  parsePlanOrBibleLocation,
+  validPlanOrBibleLocation,
+} from "../reading/location.ts";
 import type { ReaderPlaces } from "../reading/places.ts";
 import type {
   BibleLocation,
   PlanLocation,
-  ReadingLocation,
+  PlanOrBibleLocation,
 } from "../reading/types.ts";
 import {
   MAX_READERS,
@@ -39,8 +42,8 @@ const validPlans = (value: unknown) =>
       .filter(
         ([reader, place]) =>
           reader.length <= 100 &&
-          validLocation(place) &&
-          (place as ReadingLocation).mode === "plan",
+          validPlanOrBibleLocation(place) &&
+          (place as PlanOrBibleLocation).mode === "plan",
       )
       .slice(-MAX_PLAN_READERS),
   ) as Record<string, PlanLocation>;
@@ -62,7 +65,7 @@ export function loadPreferences(raw?: string | null): ReaderPreferences {
       mode: value.mode === "bible" ? "bible" : "plan",
       plans: validPlans(value.plans),
       bible:
-        validLocation(value.bible) && value.bible.mode === "bible"
+        validPlanOrBibleLocation(value.bible) && value.bible.mode === "bible"
           ? value.bible
           : initial.bible,
       continuous: value.continuous === true,
@@ -85,7 +88,7 @@ export const planLocation = (
 export function withLocation(
   preferences: ReaderPreferences,
   reader: string,
-  location: ReadingLocation,
+  location: PlanOrBibleLocation,
 ): ReaderPreferences {
   if (location.mode === "bible")
     return { ...preferences, mode: "bible", bible: location };
@@ -107,7 +110,7 @@ export function initialPreferences(
   raw?: string | null,
 ) {
   const saved = loadPreferences(raw);
-  const linked = parseReadingLocation(search, catalog);
+  const linked = parsePlanOrBibleLocation(search, catalog);
   return linked ? withLocation(saved, reader, linked) : saved;
 }
 /** Legacy v1 preferences as one reader's v2 places. */

@@ -10,10 +10,10 @@ import { readingHasAudio } from "../audio/availability";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
   isChronologicalReading,
-  type AnyReadingLocation,
-  type AnyScriptureReading,
-  type BibleChapter,
+  type ReadingLocation,
   type ScriptureReading,
+  type BibleChapter,
+  type PlanOrBibleReading,
 } from "../../domain/reading/types";
 import { readingKey } from "../../domain/reading/identity";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
@@ -44,15 +44,15 @@ const AudioPlayer = lazy(() => import("../audio/AudioPlayer"));
 const VerseStudy = lazy(loadVerseStudy);
 
 type Props = {
-  location: AnyReadingLocation;
+  location: ReadingLocation;
   navigation: number;
   /** Resume the reader's remembered position in this reading. */
   restore: boolean;
   /** The neighbouring places in this mode, for swipes and the next button. */
-  previous?: AnyReadingLocation;
-  next?: AnyReadingLocation;
-  onPage: (location: AnyReadingLocation) => void;
-  reading?: AnyScriptureReading;
+  previous?: ReadingLocation;
+  next?: ReadingLocation;
+  onPage: (location: ReadingLocation) => void;
+  reading?: ScriptureReading;
   /** The open chronology's summaries, for labels and continuous listening. */
   chronology?: ChronologyCatalog;
   error?: string;
@@ -61,13 +61,13 @@ type Props = {
   complete: () => void;
   continuous: boolean;
   setContinuous: (enabled: boolean) => void;
-  onContinue: (location: AnyReadingLocation) => void;
+  onContinue: (location: ReadingLocation) => void;
 };
 type Listening = {
   continuing?: boolean;
   identity: string;
   navigation: number;
-  reading: AnyScriptureReading;
+  reading: ScriptureReading;
 };
 
 /**
@@ -75,9 +75,9 @@ type Listening = {
  * studied as its own chapter's verses.
  */
 function studyView(
-  reading: AnyScriptureReading,
+  reading: ScriptureReading,
   target: StudyTarget,
-): { reading: ScriptureReading; target: StudyTarget } | undefined {
+): { reading: PlanOrBibleReading; target: StudyTarget } | undefined {
   if (!isChronologicalReading(reading)) return { reading, target };
   const passage = reading.passages[target.passage];
   const book = passage && catalog.find((item) => item.name === passage.book);
@@ -95,9 +95,9 @@ function studyView(
 }
 
 export function readingTitle(
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   chronology?: ChronologyCatalog,
-  reading?: AnyScriptureReading,
+  reading?: ScriptureReading,
 ) {
   if (location.mode === "plan") return readingLabel(location.day);
   if (location.mode === "bible")
@@ -238,7 +238,7 @@ export default function Reader({
   // is published. The player decides whether to (its «عند الانتهاء»).
   const listenNext = next && readingHasAudio(next) ? next : undefined;
   const playerReading = listening && (current || listening.reading);
-  function ended(next?: AnyReadingLocation) {
+  function ended(next?: ReadingLocation) {
     if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
     if (!playerReading) return;
     if (!next) return;

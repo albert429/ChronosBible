@@ -12,7 +12,7 @@ import {
 } from "../src/features/reader/position.ts";
 import {
   locationSearch,
-  validLocation,
+  validPlanOrBibleLocation,
 } from "../src/domain/reading/location.ts";
 import { sameLocation } from "../src/domain/reading/identity.ts";
 import { chapterSegments } from "../src/features/reader/chapterSegments.ts";
@@ -134,7 +134,7 @@ test("invalid saved locations and malformed storage fall back safely", () => {
     { mode: "plan", day: 151 },
     { mode: "plan", day: 1, verse: 0 },
   ])
-    assert.equal(validLocation(location), false);
+    assert.equal(validPlanOrBibleLocation(location), false);
 });
 
 test("source structure splits by Unicode codepoint without altering Arabic text", () => {

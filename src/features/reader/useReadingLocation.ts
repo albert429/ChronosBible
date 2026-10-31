@@ -1,16 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { catalog } from "../../domain/scripture/catalog";
 import {
-  parseAnyReadingLocation,
   parseReadingLocation,
+  parsePlanOrBibleLocation,
   locationSearch,
-  validAnyLocation,
+  validReadingLocation,
 } from "../../domain/reading/location";
 import {
-  type AnyReadingLocation,
+  type ReadingLocation,
   type ChronologicalLocation,
   type PlanLocation,
-  type ReadingLocation,
+  type PlanOrBibleLocation,
 } from "../../domain/reading/types";
 import {
   readingKey,
@@ -41,7 +41,7 @@ import { topVisibleVerse } from "./verseScroll";
 if (typeof history !== "undefined") history.scrollRestoration = "manual";
 
 /** Saves the top visible verse of the place on screen, before leaving it. */
-function remember(place: AnyReadingLocation) {
+function remember(place: ReadingLocation) {
   const identity = readingKey(place);
   const position = topVisibleVerse(identity);
   if (position !== null) saveReadingPosition(identity, position);
@@ -85,12 +85,13 @@ export function useReadingLocation(
   scheduled: number,
   { chronological = false }: { chronological?: boolean } = {},
 ) {
-  const parse = (search: string): AnyReadingLocation | undefined =>
+  const parse = (search: string): ReadingLocation | undefined =>
     chronological
-      ? parseAnyReadingLocation(search, catalog)
-      : parseReadingLocation(search, catalog);
-  const allowed = (next: unknown): next is AnyReadingLocation =>
-    validAnyLocation(next) && (chronological || next.mode !== "chronological");
+      ? parseReadingLocation(search, catalog)
+      : parsePlanOrBibleLocation(search, catalog);
+  const allowed = (next: unknown): next is ReadingLocation =>
+    validReadingLocation(next) &&
+    (chronological || next.mode !== "chronological");
   const [state, setState] = useState(() => {
     const saved = savedPlaces(reader);
     // An explicit link wins over the remembered place.
@@ -111,9 +112,9 @@ export function useReadingLocation(
     () => currentPlace(places, state.scheduled, chronological),
     [places, state.scheduled, chronological],
   );
-  const current: ReadingLocation =
+  const current: PlanOrBibleLocation =
     here.mode === "chronological"
-      ? (trackPlace(places, "bible", state.scheduled) as ReadingLocation)
+      ? (trackPlace(places, "bible", state.scheduled) as PlanOrBibleLocation)
       : here;
   const [navigation, setNavigation] = useState(0);
   // Opening the app, Back/Forward and returning to a mode resume where the
@@ -156,7 +157,7 @@ export function useReadingLocation(
   useEffect(() => {
     const pop = (event: PopStateEvent) => {
       const next = allowed(event.state?.scripture)
-        ? (event.state.scripture as AnyReadingLocation)
+        ? (event.state.scripture as ReadingLocation)
         : parse(location.search);
       if (next) {
         remember(shown.current);
@@ -176,7 +177,7 @@ export function useReadingLocation(
    * Opens a place. Choosing the reading already open is still a manual
    * selection (it restarts that reading), but adds no history entry.
    */
-  function go(next: AnyReadingLocation, replace = false, resume = false) {
+  function go(next: ReadingLocation, replace = false, resume = false) {
     if (!allowed(next)) return;
     if (next.verse === undefined && readingKey(next) === readingKey(here))
       replace = true;

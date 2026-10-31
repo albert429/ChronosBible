@@ -1,8 +1,8 @@
 import {
   isBibleChapter,
   isChronologicalReading,
-  type AnyReadingLocation,
-  type AnyScriptureReading,
+  type ReadingLocation,
+  type ScriptureReading,
 } from "../../domain/reading/types";
 import { chapterVerse } from "../../domain/scripture/reference";
 import { dayLabel } from "../../domain/reading/labels";
@@ -23,7 +23,7 @@ import { useNextManifest } from "./useNextManifest";
 import { usePauseOnDialog } from "./usePauseOnDialog";
 import { useVerseHighlight } from "./useVerseHighlight";
 
-function readingTitle(reading: AnyScriptureReading) {
+function readingTitle(reading: ScriptureReading) {
   if (isChronologicalReading(reading)) return reading.title;
   if (isBibleChapter(reading)) return `${reading.book} ${ar(reading.chapter)}`;
   return dayLabel(reading.day);
@@ -41,17 +41,17 @@ export default function AudioPlayer({
   done,
   onComplete,
 }: {
-  reading: AnyScriptureReading;
+  reading: ScriptureReading;
   onClose: () => void;
   /**
    * The natural end, with the place to continue to under «متابعة». Only the
    * parent may hand off; manual navigation unmounts the player.
    */
-  onEnded?: (next?: AnyReadingLocation) => void;
+  onEnded?: (next?: ReadingLocation) => void;
   initialTime?: number | ((source: string) => number);
   onPosition?: (seconds: number, source: string) => void;
   /** Where «متابعة» would continue: the next place with a recording. */
-  next?: AnyReadingLocation;
+  next?: ReadingLocation;
   /** The «متابعة» preference behind «عند الانتهاء» (see endAction.ts). */
   continuous: boolean;
   setContinuous: (enabled: boolean) => void;

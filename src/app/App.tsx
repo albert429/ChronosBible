@@ -21,8 +21,8 @@ import { useNotice } from "../shared/hooks/useNotice";
 import { useModalDialog } from "../shared/ui/useModalDialog";
 import { chapters } from "../data/bible/client";
 import {
-  type AnyReadingLocation,
-  type AnyScriptureReading,
+  type ReadingLocation,
+  type ScriptureReading,
 } from "../domain/reading/types";
 import { readingKey, type ReadingTrack } from "../domain/reading/identity";
 import {
@@ -120,7 +120,7 @@ export default function App() {
   const title = readingTitle(location, chronology.data, reading.data);
   // Once the text is shown, the next launch fetches it alongside the app.
   const shownKey = reading.data ? readingKey(reading.data) : "";
-  const shown = useRef<[AnyReadingLocation, AnyScriptureReading?]>(null);
+  const shown = useRef<[ReadingLocation, ScriptureReading?]>(null);
   useEffect(() => {
     if (!shownKey || shownKey !== readingKey(location)) return;
     shown.current = [location, reading.data];
@@ -202,7 +202,7 @@ export default function App() {
     requestAnimationFrame(() => main.current?.focus({ preventScroll: true }));
     window.scrollTo({ top: 0 });
   }
-  function go(next: AnyReadingLocation) {
+  function go(next: ReadingLocation) {
     intent.current++;
     setModeError("");
     locationState.go(next);

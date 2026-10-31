@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { type AnyReadingLocation } from "../../domain/reading/types.ts";
+import { type ReadingLocation } from "../../domain/reading/types.ts";
 import { readingKey } from "../../domain/reading/identity.ts";
 import { readingHasAudio } from "./availability.ts";
 import { audioManifests } from "./client.ts";
@@ -24,7 +24,7 @@ export function constrainedConnection(
  * for readings without published audio and on constrained connections.
  */
 export function useNextManifest(
-  next: AnyReadingLocation | undefined,
+  next: ReadingLocation | undefined,
   playing: boolean,
 ) {
   const key = next && readingHasAudio(next) ? readingKey(next) : undefined;

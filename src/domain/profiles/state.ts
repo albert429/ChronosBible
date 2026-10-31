@@ -5,7 +5,7 @@
  * transition returns a new state and never mutates one.
  */
 import { catalog, findBibleBook } from "../scripture/catalog.ts";
-import { type AnyReadingLocation } from "../reading/types.ts";
+import { type ReadingLocation } from "../reading/types.ts";
 import { trackOf, type ReadingTrack } from "../reading/identity.ts";
 import {
   MAX_CHRONOLOGY_READINGS,
@@ -322,21 +322,21 @@ export function newReader(
 }
 
 /** The completion entry for a place: plan day, `USFM:chapter` or reading id. */
-export function completionEntry(location: AnyReadingLocation) {
+export function completionEntry(location: ReadingLocation) {
   if (location.mode === "plan") return location.day;
   if (location.mode === "bible") return `${location.book}:${location.chapter}`;
   return location.readingId;
 }
 export function isReadingComplete(
   reader: Pick<ReaderProfile, "completion">,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
 ): boolean {
   const done: (string | number)[] = reader.completion[trackOf(location)];
   return done.includes(completionEntry(location));
 }
 function toggle(
   completion: TrackCompletion,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   completed: boolean,
 ): TrackCompletion {
   const track: ReadingTrack = trackOf(location);
@@ -367,7 +367,7 @@ function toggle(
  */
 function stamp<T extends Completed>(
   reader: T,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   completed: boolean,
   date: string,
 ): T {
@@ -387,7 +387,7 @@ function stamp<T extends Completed>(
 export function withReadingCompletion(
   state: ProgressState,
   id: string,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
   completed: boolean,
   date: string,
 ): { state: ProgressState; updated: ReaderProfile | GuestState } {

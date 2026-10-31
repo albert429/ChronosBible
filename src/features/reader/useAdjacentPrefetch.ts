@@ -4,8 +4,8 @@ import { adjacentChapter } from "../../domain/reading/adjacent";
 import { catalog } from "../../domain/scripture/catalog";
 import { chapters } from "../../data/bible/client";
 import {
-  type AnyReadingLocation,
-  type AnyScriptureReading,
+  type ReadingLocation,
+  type ScriptureReading,
   type Day,
 } from "../../domain/reading/types";
 import { readingKey } from "../../domain/reading/identity";
@@ -60,8 +60,8 @@ export function useAdjacentPrefetch(
 
 /** Prepare only the immediate canonical neighbors, after text and fonts settle. */
 export function useChapterPrefetch(
-  location: AnyReadingLocation,
-  reading: AnyScriptureReading | undefined,
+  location: ReadingLocation,
+  reading: ScriptureReading | undefined,
   error: string | undefined,
 ) {
   const identity = readingKey(location);
@@ -92,8 +92,8 @@ export function useChapterPrefetch(
  * chapters, and readers move forward through a chronology.
  */
 export function useChronologyPrefetch(
-  location: AnyReadingLocation,
-  reading: AnyScriptureReading | undefined,
+  location: ReadingLocation,
+  reading: ScriptureReading | undefined,
   error: string | undefined,
   chronology: ChronologyCatalog | undefined,
 ) {

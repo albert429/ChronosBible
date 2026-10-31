@@ -2,10 +2,10 @@ import { catalog, findBibleBook } from "../scripture/catalog.ts";
 import { isChronologyId } from "./chronology.ts";
 import { isPlanDay } from "./schedule.ts";
 import type {
-  AnyReadingLocation,
+  ReadingLocation,
   BibleLocation,
   ChronologicalLocation,
-  ReadingLocation,
+  PlanOrBibleLocation,
 } from "./types.ts";
 import type { BibleBook } from "../scripture/types.ts";
 
@@ -54,10 +54,10 @@ const integer = (value: string | null) =>
  * Parse and validate canonical, chronological (`?mode=chronological&
  * testament=OT&reading=id`) and the existing `?day=N` links.
  */
-export function parseAnyReadingLocation(
+export function parseReadingLocation(
   search: string,
   catalog: readonly BibleBook[],
-): AnyReadingLocation | undefined {
+): ReadingLocation | undefined {
   const query = new URLSearchParams(search);
   const verse = query.has("verse") ? integer(query.get("verse")) : undefined;
   if (verse !== undefined && (!Number.isSafeInteger(verse) || verse < 1))
@@ -88,15 +88,15 @@ export function parseAnyReadingLocation(
 }
 
 /** Plan and canonical links only, for readers without chronology. */
-export function parseReadingLocation(
+export function parsePlanOrBibleLocation(
   search: string,
   catalog: readonly BibleBook[],
-): ReadingLocation | undefined {
-  const location = parseAnyReadingLocation(search, catalog);
+): PlanOrBibleLocation | undefined {
+  const location = parseReadingLocation(search, catalog);
   return location?.mode === "chronological" ? undefined : location;
 }
 
-export function readingSearch(location: AnyReadingLocation): string {
+export function readingSearch(location: ReadingLocation): string {
   const query = new URLSearchParams();
   if (location.mode === "bible") {
     query.set("mode", "bible");
@@ -111,9 +111,11 @@ export function readingSearch(location: AnyReadingLocation): string {
   return `?${query}`;
 }
 
-export function validLocation(value: unknown): value is ReadingLocation {
+export function validPlanOrBibleLocation(
+  value: unknown,
+): value is PlanOrBibleLocation {
   if (!value || typeof value !== "object") return false;
-  const location = value as ReadingLocation;
+  const location = value as PlanOrBibleLocation;
   if (location.mode === "bible") return validBibleLocation(catalog, location);
   return (
     location.mode === "plan" &&
@@ -122,12 +124,12 @@ export function validLocation(value: unknown): value is ReadingLocation {
       (Number.isSafeInteger(location.verse) && location.verse > 0))
   );
 }
-export const validAnyLocation = (value: unknown): value is AnyReadingLocation =>
-  validLocation(value) || validChronologicalLocation(value);
+export const validReadingLocation = (
+  value: unknown,
+): value is ReadingLocation =>
+  validPlanOrBibleLocation(value) || validChronologicalLocation(value);
 
-export const copyLocation = (
-  location: AnyReadingLocation,
-): AnyReadingLocation =>
+export const copyLocation = (location: ReadingLocation): ReadingLocation =>
   location.mode === "plan"
     ? { mode: "plan", day: location.day, ...verseOf(location) }
     : location.mode === "bible"
@@ -143,7 +145,7 @@ export const copyLocation = (
           readingId: location.readingId,
           ...verseOf(location),
         };
-const verseOf = (location: AnyReadingLocation) =>
+const verseOf = (location: ReadingLocation) =>
   location.verse === undefined ? {} : { verse: location.verse };
 
 /**
@@ -152,5 +154,5 @@ const verseOf = (location: AnyReadingLocation) =>
  * shortcut cannot pin one day; the stored place reopens it instead. An
  * explicit ?day= link is kept while it is current.
  */
-export const locationSearch = (location: AnyReadingLocation) =>
+export const locationSearch = (location: ReadingLocation) =>
   location.mode === "plan" ? "" : readingSearch(location);

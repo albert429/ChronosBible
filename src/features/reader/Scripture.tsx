@@ -5,7 +5,7 @@ import { useDiacritics } from "../appearance/appearance";
 import {
   isBibleChapter,
   isChronologicalReading,
-  type AnyScriptureReading,
+  type ScriptureReading,
 } from "../../domain/reading/types";
 import type { BibleBlock, Passage } from "../../domain/scripture/types";
 import ChapterText from "./ChapterText";
@@ -15,7 +15,7 @@ import { passageHeadingId, passageId } from "../../shared/browser/scriptureDom";
 import "./Scripture.css";
 
 type Props = {
-  reading: AnyScriptureReading;
+  reading: ScriptureReading;
   audio: boolean;
   listening: boolean;
   onToggleListen: () => void;

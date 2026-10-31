@@ -2,7 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { chapterVerse, isolate } from "../../domain/scripture/reference";
 import {
   isBibleChapter,
-  type ScriptureReading,
+  type PlanOrBibleReading,
 } from "../../domain/reading/types";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
@@ -26,7 +26,7 @@ export default function VerseStudy({
   onAfterClose,
 }: {
   open: boolean;
-  reading: ScriptureReading;
+  reading: PlanOrBibleReading;
   target: StudyTarget;
   onClose: () => void;
   onAfterClose: () => void;

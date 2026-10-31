@@ -24,10 +24,13 @@ export type BibleChapter = {
   passages: [Passage];
   structure: BibleBlock[];
 };
-/** What the current reader renders: youth plan days and canonical chapters. */
-export type ScriptureReading = Day | BibleChapter;
+/**
+ * Plan days and canonical chapters only: the shape the study sheet still
+ * receives (chronological passages are adapted to a chapter for it).
+ */
+export type PlanOrBibleReading = Day | BibleChapter;
 /** Every fetched reading, including self-paced chronological readings. */
-export type AnyScriptureReading = ScriptureReading | ChronologicalReading;
+export type ScriptureReading = PlanOrBibleReading | ChronologicalReading;
 
 export type PlanLocation = { mode: "plan"; day: number; verse?: number };
 export type BibleLocation = {
@@ -43,18 +46,22 @@ export type ChronologicalLocation = {
   readingId: string;
   verse?: number;
 };
-/** The two places the current reader UI renders (kept for compatibility). */
-export type ReadingLocation = PlanLocation | BibleLocation;
-export type AnyReadingLocation = ReadingLocation | ChronologicalLocation;
-export type ReadingMode = AnyReadingLocation["mode"];
+/**
+ * The two places that predate chronology: v1 device places and the
+ * chronology-off reader still use it. New code takes `ReadingLocation`.
+ */
+export type PlanOrBibleLocation = PlanLocation | BibleLocation;
+/** A place in any of the four tracks: the one location union. */
+export type ReadingLocation = PlanOrBibleLocation | ChronologicalLocation;
+export type ReadingMode = ReadingLocation["mode"];
 
 export function isBibleChapter(
-  reading: AnyScriptureReading,
+  reading: ScriptureReading,
 ): reading is BibleChapter {
   return "mode" in reading && reading.mode === "bible";
 }
 export function isChronologicalReading(
-  reading: AnyScriptureReading,
+  reading: ScriptureReading,
 ): reading is ChronologicalReading {
   return "mode" in reading && reading.mode === "chronological";
 }

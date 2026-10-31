@@ -1,6 +1,6 @@
-import { copyLocation, validAnyLocation } from "./location.ts";
+import { copyLocation, validReadingLocation } from "./location.ts";
 import type {
-  AnyReadingLocation,
+  ReadingLocation,
   BibleLocation,
   ChronologicalLocation,
   PlanLocation,
@@ -35,7 +35,7 @@ export function parseTrackPlaces(value: unknown): TrackPlaces | undefined {
   for (const [track, place] of Object.entries(value)) {
     if (
       !isReadingTrack(track) ||
-      !validAnyLocation(place) ||
+      !validReadingLocation(place) ||
       trackOf(place) !== track
     )
       return;
@@ -60,7 +60,7 @@ export function trackPlace(
   reader: ReaderPlaces,
   track: ReadingTrack,
   scheduled: number,
-): AnyReadingLocation | undefined {
+): ReadingLocation | undefined {
   const saved = reader.places[track];
   if (saved) return saved;
   if (track === "plan") return { mode: "plan", day: scheduled };
@@ -74,7 +74,7 @@ export function currentPlace(
   reader: ReaderPlaces,
   scheduled: number,
   chronological = true,
-): AnyReadingLocation {
+): ReadingLocation {
   const track =
     !chronological && reader.track.startsWith("chrono:")
       ? "bible"
@@ -87,7 +87,7 @@ export function currentPlace(
 /** Move within, or switch to, the location's own track. */
 export const withPlace = (
   reader: ReaderPlaces,
-  location: AnyReadingLocation,
+  location: ReadingLocation,
 ): ReaderPlaces => ({
   track: trackOf(location),
   places: { ...reader.places, [trackOf(location)]: copyLocation(location) },

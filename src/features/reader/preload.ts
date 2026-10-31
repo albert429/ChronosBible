@@ -1,8 +1,8 @@
 import { catalog } from "../../domain/scripture/catalog.ts";
 import {
   isChronologicalReading,
-  type AnyReadingLocation,
-  type AnyScriptureReading,
+  type ReadingLocation,
+  type ScriptureReading,
 } from "../../domain/reading/types.ts";
 
 /** Read by the inline script in index.html, which adds the data versions. */
@@ -14,8 +14,8 @@ export const PRELOAD_KEY = "bible-reader-preload-v1";
  * the reading is cut from.
  */
 export function readingPaths(
-  location: AnyReadingLocation,
-  reading?: AnyScriptureReading,
+  location: ReadingLocation,
+  reading?: ScriptureReading,
 ): string[] {
   if (location.mode === "bible")
     return [`/bible/${location.book}/${location.chapter}.json`];
