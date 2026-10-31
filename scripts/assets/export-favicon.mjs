@@ -10,7 +10,7 @@ import { repoPath } from "../lib/paths.js";
 
 const source = await readFile(repoPath("src/assets/favicon.svg"), "utf8");
 const out = (path) => repoPath(path);
-// The paper tone of the icon's own background (src/styles/tokens.css --bg).
+// The paper tone of the icon's own background (src/shared/styles/tokens.css --bg).
 const PAPER = "#f7f5ef";
 const exports = [
   { path: "src/assets/favicon.png", size: 32, scale: 1, bleed: false },

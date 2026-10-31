@@ -1,7 +1,7 @@
 """Transcript and chapter-text hashing shared by the audio tools.
 
 Standard library only. The reading transcript is also built by
-src/audio/manifest.ts (readingTranscript); tests/fixtures/transcript.json pins
+src/domain/audio/manifest.ts (readingTranscript); tests/fixtures/transcript.json pins
 both implementations to the same bytes.
 """
 import json

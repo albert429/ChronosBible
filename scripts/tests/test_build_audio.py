@@ -56,7 +56,7 @@ def alignments_for(day):
 
 
 def manifest_problems(manifest):
-    """The interval rules that src/audio/manifest.ts validManifest enforces."""
+    """The interval rules that src/domain/audio/manifest.ts validManifest enforces."""
     problems, cues = [], manifest["cues"]
     for i, cue in enumerate(cues):
         if not 0 <= cue["start"] < cue["end"] <= manifest["duration"] + .1:

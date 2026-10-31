@@ -32,7 +32,7 @@ const LOCAL = [
 // Maintained code and documentation that both tools must keep covering.
 const MAINTAINED = [
   "src/main.tsx",
-  "src/study/words.ts",
+  "src/domain/study/words.ts",
   "scripts/quality/snapshot.mjs",
   "scripts/data/build-data.js",
   "scripts/build/data-versions.ts",

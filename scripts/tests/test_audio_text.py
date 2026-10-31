@@ -1,4 +1,4 @@
-"""Hash contract between the Python audio tools and src/audio/manifest.ts.
+"""Hash contract between the Python audio tools and src/domain/audio/manifest.ts.
 
 Standard library only: run `python3 -I -m unittest discover -s scripts/tests`
 from the repository root.
