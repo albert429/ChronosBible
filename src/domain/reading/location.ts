@@ -1,4 +1,4 @@
-import { findBibleBook } from "../scripture/catalog.ts";
+import { catalog, findBibleBook } from "../scripture/catalog.ts";
 import { isChronologyId } from "./chronology.ts";
 import { isPlanDay } from "./schedule.ts";
 import type {
@@ -45,27 +45,6 @@ export function validChronologicalLocation(
     isChronologyId(value.readingId) &&
     validVerse(value.verse)
   );
-}
-
-/** Returns undefined at Genesis 1 / Revelation 22 instead of wrapping around. */
-export function adjacentChapter(
-  catalog: readonly BibleBook[],
-  location: BibleLocation,
-  direction: -1 | 1,
-): BibleLocation | undefined {
-  if (!validBibleLocation(catalog, location)) return;
-  const index = catalog.findIndex((book) => book.usfm === location.book);
-  const book = catalog[index];
-  const chapter = location.chapter + direction;
-  if (chapter >= 1 && chapter <= book.chapters)
-    return { mode: "bible", book: book.usfm, chapter };
-  const next = catalog[index + direction];
-  if (next)
-    return {
-      mode: "bible",
-      book: next.usfm,
-      chapter: direction === 1 ? 1 : next.chapters,
-    };
 }
 
 const integer = (value: string | null) =>
@@ -131,3 +110,47 @@ export function readingSearch(location: AnyReadingLocation): string {
   if (location.verse !== undefined) query.set("verse", String(location.verse));
   return `?${query}`;
 }
+
+export function validLocation(value: unknown): value is ReadingLocation {
+  if (!value || typeof value !== "object") return false;
+  const location = value as ReadingLocation;
+  if (location.mode === "bible") return validBibleLocation(catalog, location);
+  return (
+    location.mode === "plan" &&
+    isPlanDay(location.day) &&
+    (location.verse === undefined ||
+      (Number.isSafeInteger(location.verse) && location.verse > 0))
+  );
+}
+export const validAnyLocation = (value: unknown): value is AnyReadingLocation =>
+  validLocation(value) || validChronologicalLocation(value);
+
+export const copyLocation = (
+  location: AnyReadingLocation,
+): AnyReadingLocation =>
+  location.mode === "plan"
+    ? { mode: "plan", day: location.day, ...verseOf(location) }
+    : location.mode === "bible"
+      ? {
+          mode: "bible",
+          book: location.book,
+          chapter: location.chapter,
+          ...verseOf(location),
+        }
+      : {
+          mode: "chronological",
+          testament: location.testament,
+          readingId: location.readingId,
+          ...verseOf(location),
+        };
+const verseOf = (location: AnyReadingLocation) =>
+  location.verse === undefined ? {} : { verse: location.verse };
+
+/**
+ * The address for a place reached inside the app. Canonical chapters get a
+ * shareable static link. Plan days stay at the bare app URL, so a home-screen
+ * shortcut cannot pin one day; the stored place reopens it instead. An
+ * explicit ?day= link is kept while it is current.
+ */
+export const locationSearch = (location: AnyReadingLocation) =>
+  location.mode === "plan" ? "" : readingSearch(location);

@@ -1,6 +1,5 @@
 import { catalog } from "../scripture/catalog.ts";
 import {
-  readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
   type BibleChapter,
@@ -8,6 +7,7 @@ import {
   type PlanLocation,
   type Day,
 } from "../reading/types.ts";
+import { readingKey } from "../reading/identity.ts";
 import type { BibleBook } from "../scripture/types.ts";
 
 /**

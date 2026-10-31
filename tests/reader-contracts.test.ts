@@ -5,13 +5,11 @@ import {
   parseReadingLocation,
   readingSearch,
   validChronologicalLocation,
+  locationSearch,
 } from "../src/domain/reading/location.ts";
 import { catalog } from "../src/domain/scripture/catalog.ts";
-import {
-  readingKey,
-  trackOf,
-  type ChronologicalLocation,
-} from "../src/domain/reading/types.ts";
+import { type ChronologicalLocation } from "../src/domain/reading/types.ts";
+import { readingKey, trackOf } from "../src/domain/reading/identity.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
@@ -38,7 +36,6 @@ import {
 import {
   LOCATION_KEY,
   currentPlace,
-  locationSearch,
   parseTrackPlaces,
   trackPlace,
   withPlace,

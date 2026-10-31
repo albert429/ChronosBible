@@ -1,8 +1,8 @@
 import {
   isChronologicalReading,
-  readingKey,
   type AnyScriptureReading,
 } from "../reading/types.ts";
+import { readingKey } from "../reading/identity.ts";
 import { catalog } from "../scripture/catalog.ts";
 import { isChronologyId } from "../reading/chronology.ts";
 import { AUDIO_MEDIA_PATTERN } from "./contract.ts";

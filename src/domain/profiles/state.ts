@@ -1,9 +1,6 @@
 import { catalog, findBibleBook } from "../scripture/catalog.ts";
-import {
-  trackOf,
-  type AnyReadingLocation,
-  type ReadingTrack,
-} from "../reading/types.ts";
+import { type AnyReadingLocation } from "../reading/types.ts";
+import { trackOf, type ReadingTrack } from "../reading/identity.ts";
 import {
   MAX_CHRONOLOGY_READINGS,
   isChronologyId,

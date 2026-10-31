@@ -16,22 +16,25 @@ import {
 } from "lucide-react";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
-  trackOf,
   type AnyReadingLocation,
   type BibleLocation,
   type ChronologicalLocation,
-  type ReadingTrack,
   type Day,
 } from "../../domain/reading/types";
+import { trackOf, type ReadingTrack } from "../../domain/reading/identity";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
 import { ar } from "../../shared/lib/format";
 import type { TrackCompletion } from "../../domain/profiles/state";
 import { shareApp } from "./share";
-import { dayLabel, readingLabel } from "../../domain/reading/labels";
+import {
+  dayLabel,
+  readingLabel,
+  TRACK_NAMES,
+  TRACK_SHORT_NAMES,
+} from "../../domain/reading/labels";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
 import { passageElement } from "../reader/scriptureDom";
-import { TRACK_NAMES, TRACK_SHORT_NAMES } from "../../domain/reading/modes";
 import { connectionAllowsPrefetch } from "../../shared/browser/network";
 import MenuPanel from "./MenuPanel";
 import logo from "../../assets/favicon.svg";

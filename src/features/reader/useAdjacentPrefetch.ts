@@ -1,18 +1,16 @@
 import { useEffect } from "react";
 import { connectionAllowsPrefetch } from "../../shared/browser/network.ts";
-import { adjacentChapter } from "../../domain/reading/location";
+import { adjacentChapter } from "../../domain/reading/adjacent";
 import { catalog } from "../../domain/scripture/catalog";
 import { chapters } from "../../data/bible/client";
 import {
-  readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
   type Day,
 } from "../../domain/reading/types";
-import {
-  adjacentChronologicalLocation,
-  chronologicalReadings,
-} from "../../data/chronology/client";
+import { readingKey } from "../../domain/reading/identity";
+import { chronologicalReadings } from "../../data/chronology/client";
+import { adjacentChronologicalLocation } from "../../domain/reading/chronologyCatalog";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
 import { days } from "../../data/plan/client.ts";
 

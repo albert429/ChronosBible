@@ -18,7 +18,7 @@ import {
   Upload,
   UserRound,
 } from "lucide-react";
-import type { ReadingTrack } from "../../domain/reading/types";
+import type { ReadingTrack } from "../../domain/reading/identity";
 import { useProgress } from "../profiles/useProgress";
 import { Streak } from "../streak/lazy";
 import { downloadBackup, readBackupFile } from "../profiles/backupFile";
@@ -29,7 +29,7 @@ import {
   PLAN_SUBTITLE,
   TESTAMENT_NAMES,
   TRACK_NAMES,
-} from "../../domain/reading/modes";
+} from "../../domain/reading/labels";
 import logo from "../../assets/favicon.svg";
 import "./MenuPanel.css";
 // Offline saving and installing load when their section is first opened.

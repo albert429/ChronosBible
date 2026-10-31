@@ -1,5 +1,3 @@
-import { today } from "../../shared/lib/format.ts";
-
 export const PLAN_DAYS = 150;
 export const PAGE_SIZE = 30;
 export const PAGE_COUNT = PLAN_DAYS / PAGE_SIZE;
@@ -15,7 +13,8 @@ export const dayIndex = (start: string, date: string) =>
     (Date.parse(date + "T12:00:00Z") - Date.parse(start + "T12:00:00Z")) /
       86400000,
   ) + 1;
-export const scheduledDay = (start: string, date = today()) =>
+/** The plan day for `date` (a Cairo YYYY-MM-DD, injected by the caller). */
+export const scheduledDay = (start: string, date: string) =>
   clampDay(dayIndex(start, date));
 export function dateFor(start: string, day: number) {
   const date = new Date(start + "T12:00:00Z");

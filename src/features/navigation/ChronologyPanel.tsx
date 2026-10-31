@@ -8,11 +8,8 @@ import type {
 } from "../../domain/reading/chronology";
 import { ar } from "../../shared/lib/format";
 import { Loading, LoadError } from "../../shared/ui/Feedback";
-import {
-  continueReading,
-  durationLabel,
-  minutesLabel,
-} from "../../domain/reading/modes";
+import { durationLabel, minutesLabel } from "../../domain/reading/labels";
+import { continueReading } from "../../domain/reading/chronologyCatalog";
 import "./ChronologyPanel.css";
 
 type Props = {

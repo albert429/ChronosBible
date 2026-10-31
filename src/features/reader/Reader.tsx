@@ -10,12 +10,12 @@ import { readingHasAudio } from "../../domain/audio/availability";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
   isChronologicalReading,
-  readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
   type BibleChapter,
   type ScriptureReading,
 } from "../../domain/reading/types";
+import { readingKey } from "../../domain/reading/identity";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
 import { ar } from "../../shared/lib/format";
 import { readingLabel } from "../../domain/reading/labels";

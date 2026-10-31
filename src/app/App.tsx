@@ -21,22 +21,24 @@ import { useNotice } from "../shared/hooks/useNotice";
 import { useModalDialog } from "../shared/ui/useModalDialog";
 import { chapters } from "../data/bible/client";
 import {
-  readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
-  type ReadingTrack,
 } from "../domain/reading/types";
+import { readingKey, type ReadingTrack } from "../domain/reading/identity";
 import {
-  chronologicalLocationExists,
   chronologicalReadings,
   chronologyCatalogs,
-  firstChronologicalLocation,
 } from "../data/chronology/client";
+import {
+  chronologicalLocationExists,
+  firstChronologicalLocation,
+} from "../domain/reading/chronologyCatalog";
 import { useReadingLocation } from "../features/reader/useReadingLocation";
 import { days } from "../data/plan/client";
 import { adjacentLocation } from "../domain/reading/adjacent";
 import { afterStartup } from "../shared/browser/afterStartup";
-import { TRACK_NAMES } from "../domain/reading/modes";
+import { today } from "../shared/lib/format";
+import { TRACK_NAMES } from "../domain/reading/labels";
 const Dialogs = lazy(() => import("../features/profiles/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
   join: "القراء على هذا الجهاز",
@@ -49,7 +51,7 @@ export default function App() {
   const { member, error, completion } = progress;
   const locationState = useReadingLocation(
     member?.id ?? "",
-    member ? scheduledDay(member.startDate) : 1,
+    member ? scheduledDay(member.startDate, today()) : 1,
     { chronological: true },
   );
   const location = locationState.location;
@@ -190,7 +192,7 @@ export default function App() {
     // Another reader: their own last places, or their scheduled day.
     const day = locationState.selectReader(
       member?.id ?? "",
-      member ? scheduledDay(member.startDate) : 1,
+      member ? scheduledDay(member.startDate, today()) : 1,
     );
     setSeenSwitches(progress.switches);
     setPage(pageFor(day));

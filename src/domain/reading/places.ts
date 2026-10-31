@@ -1,22 +1,18 @@
 import { catalog } from "../scripture/catalog.ts";
 import {
+  copyLocation,
   parseReadingLocation,
-  readingSearch,
-  validBibleLocation,
-  validChronologicalLocation,
+  validAnyLocation,
+  validLocation,
 } from "./location.ts";
-import {
-  isReadingTrack,
-  readingKey,
-  trackOf,
-  type AnyReadingLocation,
-  type BibleLocation,
-  type ChronologicalLocation,
-  type PlanLocation,
-  type ReadingLocation,
-  type ReadingTrack,
+import type {
+  AnyReadingLocation,
+  BibleLocation,
+  ChronologicalLocation,
+  PlanLocation,
+  ReadingLocation,
 } from "./types.ts";
-import { isPlanDay } from "./schedule.ts";
+import { isReadingTrack, trackOf, type ReadingTrack } from "./identity.ts";
 
 /** Legacy (v1) device places; read only to migrate into the v2 state. */
 export const LOCATION_KEY = "bible-reader-location-v1";
@@ -30,17 +26,6 @@ export type ReaderPreferences = {
   continuous: boolean;
 };
 const MAX_READERS = 20;
-export function validLocation(value: unknown): value is ReadingLocation {
-  if (!value || typeof value !== "object") return false;
-  const location = value as ReadingLocation;
-  if (location.mode === "bible") return validBibleLocation(catalog, location);
-  return (
-    location.mode === "plan" &&
-    isPlanDay(location.day) &&
-    (location.verse === undefined ||
-      (Number.isSafeInteger(location.verse) && location.verse > 0))
-  );
-}
 const validPlans = (value: unknown) =>
   Object.fromEntries(
     Object.entries(
@@ -120,17 +105,6 @@ export function initialPreferences(
   const linked = parseReadingLocation(search, catalog);
   return linked ? withLocation(saved, reader, linked) : saved;
 }
-export const sameLocation = (a?: AnyReadingLocation, b?: AnyReadingLocation) =>
-  !!a && !!b && readingKey(a) === readingKey(b) && a.verse === b.verse;
-/**
- * The address for a place reached inside the app. Canonical chapters get a
- * shareable static link. Plan days stay at the bare app URL, so a home-screen
- * shortcut cannot pin one day; the stored place reopens it instead. An
- * explicit ?day= link is kept while it is current.
- */
-export const locationSearch = (location: AnyReadingLocation) =>
-  location.mode === "plan" ? "" : readingSearch(location);
-
 /* ---- v2: one place per reading track, per reader ---- */
 
 export const FIRST_CHAPTER: BibleLocation = {
@@ -149,28 +123,6 @@ export type TrackPlaces = {
 export type ReaderPlaces = { track: ReadingTrack; places: TrackPlaces };
 /** No saved state at all: the canonical Bible at Genesis 1. */
 export const freshPlaces = (): ReaderPlaces => ({ track: "bible", places: {} });
-
-export const validAnyLocation = (value: unknown): value is AnyReadingLocation =>
-  validLocation(value) || validChronologicalLocation(value);
-
-const copyLocation = (location: AnyReadingLocation): AnyReadingLocation =>
-  location.mode === "plan"
-    ? { mode: "plan", day: location.day, ...verseOf(location) }
-    : location.mode === "bible"
-      ? {
-          mode: "bible",
-          book: location.book,
-          chapter: location.chapter,
-          ...verseOf(location),
-        }
-      : {
-          mode: "chronological",
-          testament: location.testament,
-          readingId: location.readingId,
-          ...verseOf(location),
-        };
-const verseOf = (location: AnyReadingLocation) =>
-  location.verse === undefined ? {} : { verse: location.verse };
 
 /**
  * Strictly validated places, rebuilt from known fields only; undefined when

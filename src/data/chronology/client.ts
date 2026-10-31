@@ -1,14 +1,16 @@
 import { catalog as books } from "../../domain/scripture/catalog.ts";
 import { chapters } from "../bible/client.ts";
 import {
-  readingKey,
   type BibleChapter,
   type ChronologicalLocation,
 } from "../../domain/reading/types.ts";
-import type { Testament } from "../../domain/scripture/types.ts";
+import {
+  chronologicalKeyLocation,
+  isTestament,
+  readingKey,
+} from "../../domain/reading/identity.ts";
 import { createJsonClient } from "../jsonClient.ts";
 import { dataUrl } from "../dataVersion.ts";
-import { isChronologyId } from "../../domain/reading/chronology.ts";
 import type {
   ChronologicalPassage,
   ChronologicalReading,
@@ -21,21 +23,7 @@ import {
   isChronologyCatalog,
 } from "./validate.ts";
 
-export * from "../../domain/reading/chronologyCatalog.ts";
-
 type ChapterSource = { load(key: string): Promise<BibleChapter> };
-
-const isTestament = (value: string): value is Testament =>
-  value === "OT" || value === "NT";
-
-/** `chrono:OT|NT:<id>` back to its location, or undefined if malformed. */
-export function chronologicalKeyLocation(
-  key: string,
-): ChronologicalLocation | undefined {
-  const match = /^chrono:(OT|NT):(.+)$/.exec(key);
-  if (!match || !isTestament(match[1]) || !isChronologyId(match[2])) return;
-  return { mode: "chronological", testament: match[1], readingId: match[2] };
-}
 
 /** A definition's verse ranges cut from their canonical chapters. */
 export function assembleChronologicalReading(

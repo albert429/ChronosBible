@@ -10,15 +10,15 @@ import type {
   BibleChapter,
   ChronologicalLocation,
 } from "../src/domain/reading/types.ts";
+import { createChronologyClients } from "../src/data/chronology/client.ts";
 import {
   adjacentChronologicalLocation,
-  chronologicalKeyLocation,
   chronologicalStage,
   chronologicalSummary,
-  createChronologyClients,
   firstChronologicalLocation,
   resumeChronologicalLocation,
-} from "../src/data/chronology/client.ts";
+} from "../src/domain/reading/chronologyCatalog.ts";
+import { chronologicalKeyLocation } from "../src/domain/reading/identity.ts";
 import type {
   ChronologicalReading,
   ChronologyCatalog,

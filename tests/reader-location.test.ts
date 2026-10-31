@@ -3,14 +3,16 @@ import { test } from "node:test";
 import {
   initialPreferences,
   loadPreferences,
-  locationSearch,
   planLocation,
   readingPosition,
-  sameLocation,
   saveReadingPosition,
-  validLocation,
   withLocation,
 } from "../src/domain/reading/places.ts";
+import {
+  locationSearch,
+  validLocation,
+} from "../src/domain/reading/location.ts";
+import { sameLocation } from "../src/domain/reading/identity.ts";
 import { chapterSegments } from "../src/features/reader/chapterSegments.ts";
 
 test("each reader's last plan place, the Bible place and the mode are remembered", () => {

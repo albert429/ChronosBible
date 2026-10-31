@@ -78,3 +78,22 @@ export function chronologicalStage(
   const substage = stage.substages?.find((s) => s.id === reading.substageId);
   return substage ? { stage, substage } : { stage };
 }
+
+/**
+ * Where «متابعة القراءة» leads: the first unfinished reading from the current
+ * one on, else the earliest unfinished; undefined once all are complete.
+ */
+export function continueReading(
+  readings: readonly ChronologicalReadingSummary[],
+  current: string,
+  done: ReadonlySet<string>,
+) {
+  const from = Math.max(
+    0,
+    readings.findIndex((reading) => reading.id === current),
+  );
+  return (
+    readings.slice(from).find((reading) => !done.has(reading.id)) ??
+    readings.find((reading) => !done.has(reading.id))
+  );
+}

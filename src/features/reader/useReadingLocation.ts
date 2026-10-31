@@ -3,15 +3,20 @@ import { catalog } from "../../domain/scripture/catalog";
 import {
   parseAnyReadingLocation,
   parseReadingLocation,
+  locationSearch,
+  validAnyLocation,
 } from "../../domain/reading/location";
 import {
-  readingKey,
   type AnyReadingLocation,
   type ChronologicalLocation,
   type PlanLocation,
   type ReadingLocation,
-  type ReadingTrack,
 } from "../../domain/reading/types";
+import {
+  readingKey,
+  type ReadingTrack,
+  sameLocation,
+} from "../../domain/reading/identity";
 import {
   loadProgress,
   readerPlaces,
@@ -22,12 +27,9 @@ import {
   freshPlaces,
   LOCATION_KEY,
   loadPreferences,
-  locationSearch,
   placesFromPreferences,
-  sameLocation,
   saveReadingPosition,
   trackPlace,
-  validAnyLocation,
   withPlace,
   type ReaderPlaces,
 } from "../../domain/reading/places";

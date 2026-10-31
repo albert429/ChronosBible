@@ -2,11 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TRACK_NAMES,
-  continueReading,
   durationLabel,
   minutesLabel,
-} from "../src/domain/reading/modes.ts";
-import { READING_TRACKS } from "../src/domain/reading/types.ts";
+} from "../src/domain/reading/labels.ts";
+import { continueReading } from "../src/domain/reading/chronologyCatalog.ts";
+import { READING_TRACKS } from "../src/domain/reading/identity.ts";
 
 test("Every reading track has a distinct Arabic name", () => {
   const names = READING_TRACKS.map((track) => TRACK_NAMES[track]);

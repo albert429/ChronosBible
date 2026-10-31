@@ -3,27 +3,19 @@ import { dataUrl } from "../dataVersion.ts";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog.ts";
 import { validBibleLocation } from "../../domain/reading/location.ts";
 import {
-  readingKey,
   type BibleChapter,
   type BibleLocation,
 } from "../../domain/reading/types.ts";
-
-export function chapterLocation(key: string): BibleLocation | undefined {
-  const match = /^bible:([A-Z0-9]{3}):([1-9]\d*)$/.exec(key);
-  if (!match) return;
-  const location: BibleLocation = {
-    mode: "bible",
-    book: match[1],
-    chapter: Number(match[2]),
-  };
-  return validBibleLocation(catalog, location) ? location : undefined;
-}
+import {
+  chapterKeyLocation,
+  readingKey,
+} from "../../domain/reading/identity.ts";
 
 export function validBibleChapter(
   data: unknown,
   key: string,
 ): data is BibleChapter {
-  const location = chapterLocation(key);
+  const location = chapterKeyLocation(key);
   if (!location || !data || typeof data !== "object") return false;
   const chapter = data as BibleChapter;
   const book = findBibleBook(catalog, location.book)!;
@@ -98,7 +90,7 @@ export function createBibleClient(
   const client = createJsonClient<BibleChapter>(
     {
       url: (key) => {
-        const location = chapterLocation(key);
+        const location = chapterKeyLocation(key);
         if (!location) throw new Error("Invalid canonical chapter key");
         return dataUrl(`/bible/${location.book}/${location.chapter}.json`);
       },
