@@ -14,8 +14,8 @@ import {
   CONFIGS,
   assertClean,
   buildEnvironment,
-} from "../scripts/build-config.mjs";
-import { buildEnvironment as productionEnvironment } from "../scripts/cloudflare-app.mjs";
+} from "../scripts/build/build-config.mjs";
+import { buildEnvironment as productionEnvironment } from "../scripts/hosting/cloudflare-app.mjs";
 
 const read = (path: string) =>
   readFileSync(new URL(`../${path}`, import.meta.url), "utf8");

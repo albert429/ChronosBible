@@ -20,7 +20,7 @@ Bible, and Old/New Testament chronology. The place lives in the query string
 features are absent from the bundle.
 
 `data/` holds source data; `scripts/` imports and builds static JSON into
-`public/` (`scripts/build-data.js` runs in `predev`/`prebuild`; a bare
+`public/` (`scripts/data/build-data.js` runs in `predev`/`prebuild`; a bare
 `vite build` skips it). Runtime assets live in `src/assets/`; documentation
 images belong in `docs/assets/`. See `docs/development.md` for the full
 architecture and `docs/audio.md` for the audio pipeline.

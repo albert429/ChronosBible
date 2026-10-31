@@ -53,7 +53,7 @@ npm run build
 ```
 
 The importer writes deterministic JSON and gzip bytes (fixed gzip timestamp
-and OS field). `scripts/build-bible.js` validates source checksums and full
+and OS field). `scripts/data/build-bible.js` validates source checksums and full
 coverage before emitting `/bible/<USFM>/<chapter>.json` into ignored
 `public/bible/`. Every chapter is checked against a **12 KiB gzip** delivery
 budget; the pinned source's largest chapter is **6,170 bytes gzip** including

@@ -24,7 +24,7 @@ import {
   gitEnvironment,
   preflight,
   scanAssets,
-} from "../scripts/cloudflare-app.mjs";
+} from "../scripts/hosting/cloudflare-app.mjs";
 
 function checkout(branch = "main") {
   const root = mkdtempSync(join(tmpdir(), "cloudflare-app-test-"));
@@ -229,7 +229,7 @@ test("Deploy CLI always selects an explicit config and environment", () => {
 
 test("The build helpers can be imported from a Node stdin module", () => {
   const result = spawnSync(process.execPath, ["--input-type=module", "-"], {
-    input: `import { deployment } from ${JSON.stringify(new URL("../scripts/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
+    input: `import { deployment } from ${JSON.stringify(new URL("../scripts/hosting/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
     encoding: "utf8",
     env: gitEnvironment(),
   });
@@ -422,6 +422,13 @@ test("Asset audit rejects unexpected file types, audio artifacts and oversized f
   }
 });
 
+const HOSTING_FILES = [
+  "scripts/cloudflare-app.mjs",
+  "scripts/hosting/cloudflare-app.mjs",
+  "scripts/lib/books.js",
+  "scripts/lib/paths.js",
+];
+
 // Each case runs the real wrapper against a fixture checkout whose build script
 // asserts the exact environment it receives and writes the given extra assets.
 const buildCases = [
@@ -496,11 +503,14 @@ for (const testCase of buildCases) {
     const { target, ai, expectAi, assets, fails } = testCase;
     const f = checkout(target === "production" ? "main" : "dev");
     try {
-      mkdirSync(join(f.root, "scripts"));
-      copyFileSync(
-        new URL("../scripts/cloudflare-app.mjs", import.meta.url),
-        join(f.root, "scripts/cloudflare-app.mjs"),
-      );
+      // The entry point, its implementation and the helpers they import.
+      for (const path of HOSTING_FILES) {
+        mkdirSync(join(f.root, path, ".."), { recursive: true });
+        copyFileSync(
+          new URL(`../${path}`, import.meta.url),
+          join(f.root, path),
+        );
+      }
       mkdirSync(join(f.root, "hosting/cloudflare-app"), { recursive: true });
       writeFileSync(
         join(f.root, "hosting/cloudflare-app/_headers"),

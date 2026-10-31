@@ -23,7 +23,7 @@ about ten minutes. The PDF and page renders are not committed.
 3. `data/chronology/review.json` records the reviewed audit: every
    repetition, every omission and every applied correction. If the source
    audit differs from this file in any way, the build stops.
-4. `scripts/build-chronology.js` (run by `scripts/build-data.js`) writes the
+4. `scripts/data/build-chronology.js` (run by `scripts/data/build-data.js`) writes the
    ignored output `public/chronology/OT.json` and `NT.json` (catalogs:
    summaries only) and one definition per reading,
    `public/chronology/<T>/<id>.json` (references only). Scripture text is

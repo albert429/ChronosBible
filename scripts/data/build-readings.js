@@ -1,8 +1,6 @@
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
+import { ROOT } from "../lib/paths.js";
 
 /** Writes the plan index and one file per day into `out`; returns the summary line. */
 export function buildReadings({ out, root = ROOT }) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { compare, normalize } from "../scripts/measure-startup.mjs";
+import { compare, normalize } from "../scripts/quality/measure-startup.mjs";
 
 const place = (paths: string[]) => ({
   count: paths.length,

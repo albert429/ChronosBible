@@ -3,21 +3,19 @@
 // data. Refactors are verified by building the same configurations before and
 // after (artifacts/refactor/VERIFY.md).
 //
-//   node scripts/build-config.mjs list
-//   node scripts/build-config.mjs env <name>      print the build environment
-//   node scripts/build-config.mjs build <name>    clean, then build it
+//   node scripts/build/build-config.mjs list
+//   node scripts/build/build-config.mjs env <name>      print the build environment
+//   node scripts/build/build-config.mjs build <name>    clean, then build it
 //
 //   production-audio  what Cloudflare production builds (AI off) -> dist/
 //   fixture-audio     what `npm run test:e2e` builds             -> dist/
 //   ai-stub           what the `ai-chromium` project builds      -> dist-ai/
 //                     (after the fixture-audio build it reuses)
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, realpathSync, rmSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { GENERATED_FOLDERS } from "./snapshot.mjs";
-
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
+import { existsSync, readdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { ROOT, isMain } from "../lib/paths.js";
+import { GENERATED_FOLDERS } from "../quality/snapshot.mjs";
 
 /** The port the AI stub listens on in the reference build (PW_PORT 4400 + 2). */
 export const STUB_PORT = 4402;
@@ -48,7 +46,7 @@ const FIXTURE_AUDIO = {
 export const CONFIGS = {
   "production-audio": {
     description:
-      "Production: hosted audio, chapters enabled, AI off (cloudflare-app.mjs buildEnvironment).",
+      "Production: hosted audio, chapters enabled, AI off (hosting/cloudflare-app.mjs buildEnvironment).",
     outDir: "dist",
     env: {
       ...ALL_VITE,
@@ -184,6 +182,4 @@ export function main(argv) {
   }
 }
 
-const invoked = process.argv[1] ? realpathSync(resolve(process.argv[1])) : "";
-if (invoked && realpathSync(fileURLToPath(import.meta.url)) === invoked)
-  process.exitCode = main(process.argv.slice(2));
+if (isMain(import.meta.url)) process.exitCode = main(process.argv.slice(2));

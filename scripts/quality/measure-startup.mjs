@@ -1,7 +1,7 @@
 // Startup requests of a built app, measured in headless Chromium.
 //
-//   node scripts/measure-startup.mjs capture <dir> [--dist <folder>] [--root <repo>]
-//   node scripts/measure-startup.mjs compare <baseline-dir> <candidate-dir>
+//   node scripts/quality/measure-startup.mjs capture <dir> [--dist <folder>] [--root <repo>]
+//   node scripts/quality/measure-startup.mjs compare <baseline-dir> <candidate-dir>
 //
 // `capture` serves <dist> from a throwaway local server on a free port (no
 // preview server to reuse or collide with), opens three entry places on a
@@ -16,12 +16,11 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  realpathSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import { extname, join, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { ROOT, isMain } from "../lib/paths.js";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -194,10 +193,7 @@ const read = (dir) => {
   return JSON.parse(readFileSync(file, "utf8"));
 };
 
-export async function main(
-  argv,
-  defaultRoot = fileURLToPath(new URL("..", import.meta.url)),
-) {
+export async function main(argv, defaultRoot = ROOT) {
   const flags = {};
   const positional = [];
   for (let i = 0; i < argv.length; i++)
@@ -239,6 +235,5 @@ export async function main(
   return 2;
 }
 
-const invoked = process.argv[1] ? realpathSync(resolve(process.argv[1])) : "";
-if (invoked && realpathSync(fileURLToPath(import.meta.url)) === invoked)
+if (isMain(import.meta.url))
   process.exitCode = await main(process.argv.slice(2));

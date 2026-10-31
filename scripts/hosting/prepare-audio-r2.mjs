@@ -12,15 +12,15 @@ import {
 import { createHash } from "node:crypto";
 import { basename, delimiter, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { pathToFileURL } from "node:url";
+import { isMain } from "../lib/paths.js";
 import {
   AUDIO_MAX_BYTES,
   AUDIO_MEDIA_PATTERN,
-} from "../src/domain/audio/contract.ts";
+} from "../../src/domain/audio/contract.ts";
 import {
   manifestMedia,
   publishedMedia,
-} from "../src/domain/audio/publication.ts";
+} from "../../src/domain/audio/publication.ts";
 
 /** One wrangler process uploads this many objects at most (tokens can expire). */
 export const UPLOAD_BATCH_SIZE = 300;
@@ -218,7 +218,7 @@ export function writeUploadBatches(dir, batches) {
 // Media roots (AUDIO_MEDIA_ROOT, a path-delimited list, or repeated --media)
 // may lie outside public/, so local builds do not copy recordings into dist/.
 // Nothing here talks to Cloudflare: `npm run audio:host:upload` uploads.
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta.url)) {
   const { values } = parseArgs({
     options: {
       media: { type: "string", multiple: true },

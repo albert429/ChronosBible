@@ -1,16 +1,15 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { catalog as books } from "../src/domain/scripture/catalog.ts";
+import { catalog as books } from "../../src/domain/scripture/catalog.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
-} from "../src/data/chronology/validate.ts";
-import { ar } from "../src/shared/lib/format.ts";
+} from "../../src/data/chronology/validate.ts";
+import { ar } from "../../src/shared/lib/format.ts";
 import { readBibleChapters } from "./build-bible.js";
+import { ROOT } from "../lib/paths.js";
 
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const TESTAMENTS = ["OT", "NT"];
 export const SOURCE_ID = "chronological-pdf";
 /** Reader-facing attribution; the file name and hash stay in source.json. */

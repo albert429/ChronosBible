@@ -15,11 +15,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { compare, walk } from "../scripts/snapshot.mjs";
-
-const script = fileURLToPath(
-  new URL("../scripts/snapshot.mjs", import.meta.url),
-);
+import { compare, walk } from "../scripts/quality/snapshot.mjs";
 
 const PAGE = (extra = "") => `<!doctype html><html><head>
 <script>var early = 1;</script>
@@ -38,8 +34,14 @@ function fixture() {
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, bytes);
   };
-  mkdirSync(join(root, "scripts"), { recursive: true });
-  copyFileSync(script, join(root, "scripts/snapshot.mjs"));
+  // The tool and the root helper it imports, at their repository paths.
+  for (const path of ["scripts/quality/snapshot.mjs", "scripts/lib/paths.js"]) {
+    mkdirSync(join(root, dirname(path)), { recursive: true });
+    copyFileSync(
+      fileURLToPath(new URL(`../${path}`, import.meta.url)),
+      join(root, path),
+    );
+  }
   const data: Record<string, string | Uint8Array> = {
     "readings/1.json": '{"day":1}',
     "bible/GEN/1.json": '{"chapter":1}',
@@ -70,7 +72,7 @@ function fixture() {
     run: (...args: string[]) =>
       spawnSync(
         process.execPath,
-        [join(root, "scripts/snapshot.mjs"), ...args],
+        [join(root, "scripts/quality/snapshot.mjs"), ...args],
         {
           encoding: "utf8",
         },

@@ -18,9 +18,9 @@ import {
   publishStudyPayloads,
   STUDY_BUDGETS,
   STUDY_WORDS_RAW_LIMIT,
-} from "../scripts/build-study-canonical.js";
-import { readBibleChapters } from "../scripts/build-bible.js";
-import { scanAssets } from "../scripts/cloudflare-app.mjs";
+} from "../scripts/data/build-study-canonical.js";
+import { readBibleChapters } from "../scripts/data/build-bible.js";
+import { scanAssets } from "../scripts/hosting/cloudflare-app.mjs";
 import type { GreekToken, StudyWords } from "../src/domain/study/types.ts";
 import { verseWordsTitle, wordsTitle } from "../src/domain/study/words.ts";
 

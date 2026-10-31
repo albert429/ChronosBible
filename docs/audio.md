@@ -54,7 +54,7 @@ Generated output:
 - `data/audio/manifests/`: compact timing manifests, suitable for Git.
 - `data/audio/catalog.json`: days for which audio has been prepared.
 - `public/audio/days/`: encoded audio, ignored by Git.
-- `public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/build-data.js`), not by `build-audio.py`.
+- `public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/data/build-data.js`), not by `build-audio.py`.
 
 ## Canonical chapters (Bible mode)
 
@@ -250,7 +250,7 @@ name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/audio/contract.ts`.
 
 Both app hosts load audio from that origin. The Cloudflare builds set
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com` themselves
-(`AUDIO_BASE_URL` in `scripts/cloudflare-app.mjs`; a test pins it to the
+(`AUDIO_BASE_URL` in `scripts/hosting/cloudflare-app.mjs`; a test pins it to the
 contract); Vercel takes the same **public** value from its environment.
 `vite.config.ts` validates it and inlines it as `__AUDIO_BASE_URL__`, so the app
 never reads `import.meta.env`. Day, chapter and chronological playlist JSON stay

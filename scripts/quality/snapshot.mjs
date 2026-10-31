@@ -1,7 +1,7 @@
 // Snapshot of everything the build generates, for refactor comparisons.
 //
-//   node scripts/snapshot.mjs capture <dir> [--label <name>] [--dist <folder>] [--root <repo>]
-//   node scripts/snapshot.mjs compare <baseline-dir> [<candidate-dir>] [--full]
+//   node scripts/quality/snapshot.mjs capture <dir> [--label <name>] [--dist <folder>] [--root <repo>]
+//   node scripts/quality/snapshot.mjs compare <baseline-dir> [<candidate-dir>] [--full]
 //
 // `capture` writes <dir>/snapshot.json: the complete relative-path set and the
 // SHA-256 of every byte under public/{readings,bible,chronology,study,audio}
@@ -22,11 +22,10 @@ import {
   readdirSync,
   readFileSync,
   readlinkSync,
-  realpathSync,
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { ROOT, isMain } from "../lib/paths.js";
 import { gzipSync } from "node:zlib";
 
 export const GROWTH_LIMIT = 512;
@@ -393,10 +392,7 @@ const read = (location) => {
 };
 
 /** @returns {number} the process exit code */
-export function main(
-  argv,
-  defaultRoot = fileURLToPath(new URL("..", import.meta.url)),
-) {
+export function main(argv, defaultRoot = ROOT) {
   const { positional, flags } = parse(argv);
   const [rawCommand, first, second] = positional;
   const command = rawCommand === "save" ? "capture" : rawCommand;
@@ -449,6 +445,4 @@ export function main(
   }
 }
 
-const invoked = process.argv[1] ? realpathSync(resolve(process.argv[1])) : "";
-if (invoked && realpathSync(fileURLToPath(import.meta.url)) === invoked)
-  process.exitCode = main(process.argv.slice(2));
+if (isMain(import.meta.url)) process.exitCode = main(process.argv.slice(2));

@@ -52,7 +52,7 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
-    files: ["scripts/capture-preview.mjs"],
+    files: ["scripts/quality/capture-preview.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 );

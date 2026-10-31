@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify a deployed audio release byte for byte, then record it as published.
 
-Reads the local prepared inventory written by scripts/prepare-audio-r2.mjs
+Reads the local prepared inventory written by scripts/hosting/prepare-audio-r2.mjs
 (artifacts/r2-audio-inventory.json) and checks every recording on the
 deployed host, normally https://audio.chronosbible.com (the R2 bucket):
 

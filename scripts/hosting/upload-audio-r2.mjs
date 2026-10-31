@@ -2,12 +2,12 @@ import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { pathToFileURL } from "node:url";
+import { isMain } from "../lib/paths.js";
 import {
   AUDIO_CACHE_CONTROL,
   AUDIO_CONTENT_TYPE,
   AUDIO_R2_BUCKET,
-} from "../src/domain/audio/contract.ts";
+} from "../../src/domain/audio/contract.ts";
 
 /** Retries after the first attempt of one batch. */
 export const UPLOAD_RETRIES = 3;
@@ -83,7 +83,7 @@ export function runUploads(
 
 // Uploads what `npm run audio:host:prepare` staged. Objects are immutable:
 // this never deletes, and the batches hold only files not yet verified.
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta.url)) {
   const { values } = parseArgs({
     options: {
       dir: { type: "string", default: "artifacts/r2-audio-upload" },

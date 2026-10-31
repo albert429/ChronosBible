@@ -4,11 +4,9 @@ import { join } from "node:path";
 import {
   readingTranscript,
   validManifest,
-} from "../src/domain/audio/manifest.ts";
+} from "../../src/domain/audio/manifest.ts";
 import { readBibleChapters } from "./build-bible.js";
-import { fileURLToPath } from "node:url";
-
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
+import { ROOT } from "../lib/paths.js";
 
 /** Publishes every catalogued manifest into `out`; returns the summary line. */
 export function buildAudioIndex({ out, root = ROOT }) {

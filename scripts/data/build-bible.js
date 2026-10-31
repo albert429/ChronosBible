@@ -1,12 +1,11 @@
 import { createHash } from "node:crypto";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { gunzipSync, gzipSync } from "node:zlib";
-import { catalog as defaultCatalog } from "../src/domain/scripture/catalog.ts";
-import { validBibleChapter } from "../src/data/bible/client.ts";
+import { catalog as defaultCatalog } from "../../src/domain/scripture/catalog.ts";
+import { validBibleChapter } from "../../src/data/bible/client.ts";
+import { ROOT } from "../lib/paths.js";
 
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /** Pure conversion from the committed source schema to the public chapter schema. */

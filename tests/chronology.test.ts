@@ -11,8 +11,8 @@ import {
   readingTitle,
   sourceOccurrences,
   verseSequence,
-} from "../scripts/build-chronology.js";
-import { readBibleChapters } from "../scripts/build-bible.js";
+} from "../scripts/data/build-chronology.js";
+import { readBibleChapters } from "../scripts/data/build-bible.js";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
 import { catalog as books } from "../src/domain/scripture/catalog.ts";
 import type { Day } from "../src/domain/reading/types.ts";

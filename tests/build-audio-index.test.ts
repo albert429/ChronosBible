@@ -12,7 +12,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildAudioIndex } from "../scripts/build-audio-index.js";
+import { buildAudioIndex } from "../scripts/data/build-audio-index.js";
 import { readingHash } from "../src/domain/audio/manifest.ts";
 import type { Day } from "../src/domain/reading/types.ts";
 

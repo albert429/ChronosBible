@@ -28,8 +28,11 @@ import {
   prepareRelease,
   releaseSources,
   writeUploadBatches,
-} from "../scripts/prepare-audio-r2.mjs";
-import { listBatches, runUploads } from "../scripts/upload-audio-r2.mjs";
+} from "../scripts/hosting/prepare-audio-r2.mjs";
+import {
+  listBatches,
+  runUploads,
+} from "../scripts/hosting/upload-audio-r2.mjs";
 
 const DAY = "/audio/days/001-aa.m4a";
 const GEN = "/audio/chapters/assets/GEN-1-aa.m4a";

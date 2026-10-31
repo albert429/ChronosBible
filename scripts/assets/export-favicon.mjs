@@ -6,13 +6,10 @@
  */
 import { chromium } from "playwright";
 import { mkdir, readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { repoPath } from "../lib/paths.js";
 
-const source = await readFile(
-  new URL("../src/assets/favicon.svg", import.meta.url),
-  "utf8",
-);
-const out = (path) => fileURLToPath(new URL(`../${path}`, import.meta.url));
+const source = await readFile(repoPath("src/assets/favicon.svg"), "utf8");
+const out = (path) => repoPath(path);
 // The paper tone of the icon's own background (src/styles/tokens.css --bg).
 const PAPER = "#f7f5ef";
 const exports = [

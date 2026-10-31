@@ -57,7 +57,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "node scripts/sse-stub.mjs",
+      command: "node scripts/quality/sse-stub.mjs",
       env: { SSE_STUB_PORT: String(PW_PORT + 2) },
       url: `${STUB_URL}/__stub/health`,
       reuseExistingServer: !process.env.CI,

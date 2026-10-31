@@ -3,8 +3,8 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
-import { readBibleChapters } from "../scripts/build-bible.js";
-import { buildChronology } from "../scripts/build-chronology.js";
+import { readBibleChapters } from "../scripts/data/build-bible.js";
+import { buildChronology } from "../scripts/data/build-chronology.js";
 import { createBibleClient } from "../src/data/bible/client.ts";
 import type {
   BibleChapter,

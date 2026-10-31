@@ -33,8 +33,10 @@ const LOCAL = [
 const MAINTAINED = [
   "src/main.tsx",
   "src/study/words.ts",
-  "scripts/snapshot.mjs",
-  "scripts/build-data.js",
+  "scripts/quality/snapshot.mjs",
+  "scripts/data/build-data.js",
+  "scripts/build/data-versions.ts",
+  "scripts/cloudflare-app.mjs",
   "hosting/cloudflare-app/_headers",
   "tests/snapshot.test.ts",
   "tests/browser/ai.spec.ts",

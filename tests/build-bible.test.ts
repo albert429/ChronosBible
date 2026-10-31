@@ -15,7 +15,7 @@ import {
   buildBible,
   prepareBible,
   readBibleChapters,
-} from "../scripts/build-bible.js";
+} from "../scripts/data/build-bible.js";
 import { catalog } from "../src/domain/scripture/catalog.ts";
 import { validBibleChapter } from "../src/data/bible/client.ts";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
