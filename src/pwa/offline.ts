@@ -4,18 +4,31 @@ import { dataUrl } from "../lib/dataVersion.ts";
 import { PLAN_DAYS } from "../plan/schedule.ts";
 import { DATA_CACHE, SAVE_HEADER } from "./rules.ts";
 
-/** Scripture text (every mode) or the New Testament study notes. */
+/** Scripture text (every mode) or verse study for the whole Bible. */
 export type Pack = "text" | "study";
 
 const DAYS = Array.from({ length: PLAN_DAYS }, (_, index) => index + 1);
 const AT_ONCE = 6;
 
+/**
+ * Every chapter's study index, words and translations, as the build's
+ * inventory lists them (a chapter may be split into verse ranges). The
+ * lexicon shards serve only AI explanations, which need a connection anyway.
+ */
+async function studyUrls() {
+  const response = await fetch(dataUrl("/study/v2/inventory.json"));
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const { files } = (await response.json()) as { files?: unknown };
+  if (!files || typeof files !== "object")
+    throw new Error("Invalid study inventory");
+  return Object.keys(files)
+    .filter((path) => !path.startsWith("lex/"))
+    .map((path) => dataUrl(`/study/v2/${path}`));
+}
+
 /** Every file a pack needs, at this build's versioned addresses. */
 export async function packUrls(pack: Pack): Promise<string[]> {
-  if (pack === "study")
-    return DAYS.flatMap((day) =>
-      ["", ".tr", ".lex"].map((part) => dataUrl(`/study/${day}${part}.json`)),
-    );
+  if (pack === "study") return studyUrls();
   const chronologies = await Promise.all([
     chronologyCatalogs.load("OT"),
     chronologyCatalogs.load("NT"),

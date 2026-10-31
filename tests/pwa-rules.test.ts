@@ -44,12 +44,16 @@ test("only versioned Scripture data is kept; everything else passes", () => {
     route(request("/bible/GEN/1.json?v=abc"), ORIGIN, shell),
     "data",
   );
-  assert.equal(
-    route(request("/study/3.lex.json?v=abc"), ORIGIN, shell),
-    "data",
-  );
+  for (const path of [
+    "/study/v2/GEN/1/index.json?v=abc",
+    "/study/v2/GEN/1/1-31.words.json.gz?v=abc",
+    "/study/v2/GEN/1/1-31.tr.json?v=abc",
+  ])
+    assert.equal(route(request(path), ORIGIN, shell), "data", path);
   for (const path of [
     "/bible/GEN/1.json",
+    "/study/v2/GEN/1/1-31.words.json.gz",
+    "/bible/GEN/1.gz?v=abc",
     "/audio/1.json",
     "/audio/chapters/GEN/1.json",
     "/sw.js",
@@ -89,6 +93,12 @@ test("a regenerated folder's older files are stale; other folders are kept", () 
   assert.equal(staleData(url("/audio/1.json"), versions), false);
   assert.equal(dataFolder(url("/chronology/OT/gen-1.json?v=x")), "chronology");
   assert.equal(dataFolder(url("/bible/GEN/1.txt?v=x")), undefined);
+  assert.equal(
+    staleData(url("/study/v2/GEN/1/1-31.words.json.gz?v=old"), {
+      study: "new",
+    }),
+    true,
+  );
 });
 
 test("cache names separate builds from data", () => {

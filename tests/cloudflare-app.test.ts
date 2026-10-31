@@ -644,7 +644,12 @@ test(
         },
       );
       assert.equal(result.status, 0, result.stderr + result.stdout);
-      assert.match(result.stdout, /# fail 0\b/);
+      // Every test but this one ran: a nested run can silently execute none.
+      const count = (name: string) =>
+        Number(new RegExp(`# ${name} (\\d+)`).exec(result.stdout)?.[1]);
+      assert.equal(count("skipped"), 1, result.stdout);
+      assert.ok(count("pass") > 0, result.stdout);
+      assert.equal(count("pass"), count("tests") - 1, result.stdout);
       assert.equal(outer.git("rev-parse", "HEAD"), head);
       assert.deepEqual(readFileSync(join(outer.root, ".git/index")), index);
       assert.deepEqual(readFileSync(join(outer.root, ".git/config")), config);

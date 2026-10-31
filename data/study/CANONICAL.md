@@ -4,7 +4,8 @@
 chapters. It contains Old Testament original-language tokens, full-Bible
 كتاب الحياة and KJV translations, and Hebrew/Aramaic lemma/gloss metadata.
 The existing `greek.json` and `lexicon.json` remain the New Testament inputs;
-legacy daily resources are generated unchanged. See [LICENSE.md](LICENSE.md)
+the 150-day plan's per-day study files are no longer published, since every
+mode reads this canonical set. See [LICENSE.md](LICENSE.md)
 for the separate data licences.
 
 ## Reproduction and source pins
@@ -12,6 +13,8 @@ for the separate data licences.
 Download the four archives listed in `canonical-sources.json` into a local,
 ignored artifact directory. The importer verifies their SHA-256 checksums
 before processing; a source refresh requires an explicit reviewed pin change.
+eBible.org regenerates its archives at the same addresses, so keep the downloaded
+archives: a later download fails the checksum until its new pin is reviewed.
 STEPBible is pinned to `be4191f0082aeedddb0eff0c02c966292b2bd641`, with the
 TTAraSVD OT 4.0.1 dataset. NT source hashes are pinned independently.
 
@@ -49,6 +52,12 @@ checksums, and require no network, Python, or source archives.
   or in one row. Keep each Hebrew word once per verse, in the row naming the
   fewest Hebrew words (the first on a tie); 35 repeated elements are removed.
   Genesis 19:22 thus pairs קָרָא with «دُعِيَ» only.
+- Word order follows the source rows, which follow the Arabic, as in the NT
+  data; Hebrew word numbers are not published.
+- Where the app's Van Dyck and STEPBible's Arabic text divide verses
+  differently, words keep the source verse with null spans: in Daniel 2:14–15,
+  «أجاب وقال لأريوخ قائد الملك» ends 2:14 in the Van Dyck, so the Aramaic
+  words for it, in 2:15, have no Arabic span.
 - Source Psalm headings are excluded from verse-word lists only after their
   Arabic prefix matches the canonical superscription: 743 tokens in 116 titles.
   The Scripture reader continues to show the original headings.
@@ -72,7 +81,7 @@ in NAV's Acts 15:25–26 **USFM marker only**, preserving the bridge and Scriptu
 wording. This corrects the old importer swallowing that bridge into Acts 15:24.
 KJV 1 Timothy 6:21 spans canonical 21–22; KJV 3 John 1:14 spans canonical 14–15.
 Show each complete KJV verse with its corresponding canonical range label.
-These are the only NT translation differences; daily legacy output is unchanged.
+These are the only NT translation differences from the earlier per-day files.
 
 TBESH's header contains an additional permission note for its Online Bible
 **definitions**. That column is excluded entirely. Only STEP lemma/gloss metadata
@@ -92,7 +101,10 @@ split only between verses. Current maxima are 20,107 compressed / 103,819 decode
 word bytes, 11,499 translation gzip bytes, and 8,087 lexicon gzip bytes.
 
 A build inventory records generated file hashes. Regeneration removes only
-obsolete, unmodified inventory-owned files, preserving legacy and unknown files.
+obsolete, unmodified inventory-owned files, preserving unknown files. The
+offline study pack (`src/pwa/offline.ts`) saves the files it lists, except
+the lexicon shards, which only AI explanations use. Every address carries the
+study folder's content version (`?v=`), so hosting may cache it for good.
 The Cloudflare scanner allows only this exact compressed word path, validates
 bounded decompression and resource identity, and scans decoded content for
 credentials. Existing deployment limits remain unchanged.

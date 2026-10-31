@@ -3,7 +3,9 @@ import {
   closeSheet,
   menuButton,
   menuDialog,
+  openSection,
   ready,
+  study,
   stubConnection,
 } from "./helpers";
 
@@ -42,6 +44,33 @@ test("the app opens offline with the readings already opened", async ({
     .getByRole("button", { name: "الإصحاح التالي", exact: true })
     .click();
   await expect(reading(page).getByRole("alert")).toBeVisible();
+  await context.setOffline(false);
+});
+
+test("verse study opened once, words and translations, stays available offline", async ({
+  page,
+  context,
+}) => {
+  async function openStudy() {
+    await page.locator('#passage-0 .verse[data-v="1"] .verse-number').click();
+    await openSection(page, "الكلمات العبرية");
+    await expect(study(page).locator('bdi[lang="he"]').first()).toHaveText(
+      "בְּ רֵאשִׁ֖ית",
+    );
+    await openSection(page, "ترجمات أخرى");
+    await expect(study(page).locator(".study-english")).toContainText(
+      "In the beginning",
+    );
+    await closeSheet(page);
+  }
+  await page.goto("/?mode=bible&book=GEN&chapter=1");
+  await ready(page);
+  await controlled(page);
+  await openStudy();
+  await context.setOffline(true);
+  await page.reload();
+  await ready(page);
+  await openStudy();
   await context.setOffline(false);
 });
 

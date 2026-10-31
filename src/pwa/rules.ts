@@ -12,11 +12,14 @@ export const DATA_CACHE = "chronos-data-v1";
 export const SAVE_HEADER = "x-chronos-save";
 export const DATA_FOLDERS = ["bible", "readings", "chronology", "study"];
 
-/** A versioned Scripture data address (`/bible/GEN/1.json?v=…`). */
+/**
+ * A versioned Scripture data address (`/bible/GEN/1.json?v=…`), including
+ * the stored gzip of verse-study words (`/study/v2/GEN/1/1-31.words.json.gz`).
+ */
 export function dataFolder(url: URL) {
   const folder = url.pathname.split("/")[1];
   return DATA_FOLDERS.includes(folder) &&
-    url.pathname.endsWith(".json") &&
+    /\.json(\.gz)?$/.test(url.pathname) &&
     url.searchParams.has("v")
     ? folder
     : undefined;
