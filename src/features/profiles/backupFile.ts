@@ -1,11 +1,7 @@
 import { today } from "../../shared/lib/format";
-import {
-  MAX_BACKUP_BYTES,
-  exportBackup,
-  loadProgress,
-  type Reader,
-  type ReaderProfile,
-} from "../../domain/profiles/state";
+import { type Reader, type ReaderProfile } from "../../domain/profiles/state";
+import { MAX_BACKUP_BYTES, exportBackup } from "../../domain/profiles/backup";
+import { loadProgress } from "./storage";
 
 /** Downloads a v2 backup with the reader's latest stored places. */
 export function downloadBackup(reader: Reader | ReaderProfile) {

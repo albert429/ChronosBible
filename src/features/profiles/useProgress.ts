@@ -1,6 +1,13 @@
 import { useSyncExternalStore } from "react";
 import type { AnyReadingLocation } from "../../domain/reading/types";
 import {
+  emptyCompletion,
+  type GuestState,
+  type ReadOn,
+  type ReaderProfile,
+  type TrackCompletion,
+} from "../../domain/profiles/state";
+import {
   PROGRESS_KEY,
   STATE_KEY,
   createReader,
@@ -9,13 +16,8 @@ import {
   migrateProgress,
   selectReader,
   setCompletion,
-  emptyCompletion,
   setReadingCompletion,
-  type GuestState,
-  type ReadOn,
-  type ReaderProfile,
-  type TrackCompletion,
-} from "../../domain/profiles/state";
+} from "./storage";
 
 type Snapshot = {
   profiles: ReaderProfile[];

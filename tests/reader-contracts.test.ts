@@ -16,25 +16,27 @@ import {
   isChronologicalReadingData,
 } from "../src/data/chronology/validate.ts";
 import {
+  isReadingComplete,
+  readerCompletion,
+  readerPlaces,
+  validChapterId,
+} from "../src/domain/profiles/state.ts";
+import { exportBackup } from "../src/domain/profiles/backup.ts";
+import {
   PROGRESS_KEY,
   STATE_KEY,
   createReader,
   currentReader,
-  exportBackup,
   importBackup,
-  isReadingComplete,
   loadProgress,
   migrateProgress,
-  readerCompletion,
-  readerPlaces,
   saveReaderPlaces,
   selectReader,
   setCompletion,
-  validChapterId,
   setReadingCompletion,
-} from "../src/domain/profiles/state.ts";
-import {
   LOCATION_KEY,
+} from "../src/features/profiles/storage.ts";
+import {
   currentPlace,
   parseTrackPlaces,
   trackPlace,

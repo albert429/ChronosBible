@@ -5,7 +5,7 @@ import {
   loadPreferences,
   planLocation,
   withLocation,
-} from "../src/domain/reading/places.ts";
+} from "../src/domain/profiles/legacy.ts";
 import {
   readingPosition,
   saveReadingPosition,

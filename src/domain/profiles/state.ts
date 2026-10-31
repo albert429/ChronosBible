@@ -1,3 +1,9 @@
+/**
+ * The v2 profile state (`bible-reader-state-v2`) as pure data: its schema
+ * and validation, per-track completion and dates, and the transitions the
+ * storage adapter applies. Nothing here reads or writes storage; every
+ * transition returns a new state and never mutates one.
+ */
 import { catalog, findBibleBook } from "../scripture/catalog.ts";
 import { type AnyReadingLocation } from "../reading/types.ts";
 import { trackOf, type ReadingTrack } from "../reading/identity.ts";
@@ -6,14 +12,10 @@ import {
   isChronologyId,
 } from "../reading/chronology.ts";
 import {
-  LOCATION_KEY,
   freshPlaces,
-  loadPreferences,
   parseReaderPlaces,
-  placesFromPreferences,
   type ReaderPlaces,
 } from "../reading/places.ts";
-import { today } from "../../shared/lib/format.ts";
 import { PLAN_DAYS, isPlanDay } from "../reading/schedule.ts";
 
 /** The youth-plan view of a reader; `completed` lists finished plan days. */
@@ -58,22 +60,12 @@ export type ProgressState = {
 };
 /** The reader portion of a version 2 backup file. */
 export type BackupReader = Omit<ReaderProfile, "id" | "completed">;
-type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
-/** Legacy v1 progress; read only to migrate, never written or removed. */
-export const PROGRESS_KEY = "nt-reading-progress-v1";
-export const STATE_KEY = "bible-reader-state-v2";
 export const MAX_READERS = 100;
-export const MAX_BACKUP_BYTES = 262144;
 const MAX_ID = 100;
 const BIBLE_CHAPTERS = catalog.reduce((sum, book) => sum + book.chapters, 0);
 
-const INVALID = "بيانات القراءة غير صالحة. اختر نسخة احتياطية صحيحة.";
-const BLOCKED = "لا يسمح المتصفح بحفظ التقدم. اسمح بتخزين بيانات الموقع أولًا.";
-const UNREADABLE =
-  "تعذر قراءة التقدم المحفوظ. لم نغيّر بياناتك. جرّب استعادة نسخة احتياطية على متصفح آخر.";
-const UNSAVED =
-  "لم يتم الحفظ. مساحة المتصفح ممتلئة أو التخزين محظور. احتفظ بنسخة احتياطية وحاول مجددًا.";
+export const INVALID = "بيانات القراءة غير صالحة. اختر نسخة احتياطية صحيحة.";
 
 export function validDate(value: unknown): value is string {
   return (
@@ -85,11 +77,11 @@ export function validDate(value: unknown): value is string {
     new Date(value).toISOString().slice(0, 10) === value
   );
 }
-const record = (value: unknown): value is Record<string, unknown> =>
+export const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
-const onlyKeys = (value: Record<string, unknown>, keys: string[]) =>
+export const onlyKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
-const validId = (id: unknown): id is string =>
+export const validId = (id: unknown): id is string =>
   typeof id === "string" && !!id && id.length <= MAX_ID;
 export const validChapterId = (value: unknown): value is string => {
   if (typeof value !== "string") return false;
@@ -101,7 +93,7 @@ export const validChapterId = (value: unknown): value is string => {
 const unique = <T>(items: T[]) => [...new Set(items)];
 const days = (items: number[]) => unique(items).sort((a, b) => a - b);
 
-function validateReader(value: unknown): Omit<Reader, "id"> {
+export function validateReader(value: unknown): Omit<Reader, "id"> {
   const r = value as Partial<Reader> | null;
   if (
     !r ||
@@ -126,7 +118,7 @@ export const emptyCompletion = (plan: number[] = []): TrackCompletion => ({
   "chrono:OT": [],
   "chrono:NT": [],
 });
-function parseCompletion(value: unknown): TrackCompletion {
+export function parseCompletion(value: unknown): TrackCompletion {
   if (
     !record(value) ||
     !onlyKeys(value, ["bible", "plan", "chrono:OT", "chrono:NT"])
@@ -188,7 +180,7 @@ const places = (value: unknown) => {
   return parsed;
 };
 /** A v2 backup reader or stored profile body, rebuilt from known fields. */
-function parseBackupReader(value: unknown): BackupReader {
+export function parseBackupReader(value: unknown): BackupReader {
   if (!record(value)) throw Error(INVALID);
   const completion = parseCompletion(value.completion);
   const { name, startDate } = validateReader({
@@ -206,7 +198,8 @@ const profile = (id: string, body: BackupReader): ReaderProfile => ({
   ...body,
   completed: body.completion.plan,
 });
-const freshState = (): ProgressState => ({
+/** No saved state at all: the guest at Genesis 1, no readers. */
+export const freshState = (): ProgressState => ({
   version: 2,
   activeId: null,
   profiles: [],
@@ -214,7 +207,8 @@ const freshState = (): ProgressState => ({
   continuous: false,
 });
 
-function parseState(raw: string): ProgressState {
+/** A stored v2 state, strictly validated; throws on anything unexpected. */
+export function parseState(raw: string): ProgressState {
   const data: unknown = JSON.parse(raw);
   if (
     !record(data) ||
@@ -253,101 +247,8 @@ function parseGuest(value: unknown): GuestState {
   );
 }
 
-/** Legacy v1 progress, validated exactly as before. */
-function legacyProgress(raw: string) {
-  const data = JSON.parse(raw);
-  if (
-    data.version !== 1 ||
-    !Array.isArray(data.profiles) ||
-    data.profiles.length > MAX_READERS
-  )
-    throw Error();
-  const profiles: Reader[] = data.profiles.map((p: Reader) => {
-    if (!validId(p.id)) throw Error();
-    return { id: p.id, ...validateReader(p) };
-  });
-  if (new Set(profiles.map((p) => p.id)).size !== profiles.length)
-    throw Error();
-  if (data.activeId !== null && !profiles.some((p) => p.id === data.activeId))
-    throw Error();
-  return { activeId: data.activeId as string | null, profiles };
-}
-
-/**
- * The v2 state built from v1 progress and v1 device places. Readers keep
- * their mode and places; v1 completed days are youth plan days. Without any
- * v1 data this is the fresh state (the Bible at Genesis 1).
- */
-export function migrateLegacy(
-  progress: string | null,
-  location: string | null,
-): ProgressState {
-  if (!progress && !location) return freshState();
-  const preferences = loadPreferences(location);
-  const { activeId, profiles } = progress
-    ? legacyProgress(progress)
-    : { activeId: null, profiles: [] };
-  return {
-    version: 2,
-    activeId,
-    profiles: profiles.map((r) => ({
-      ...r,
-      ...placesFromPreferences(preferences, r.id),
-      completion: emptyCompletion(r.completed),
-    })),
-    guest: {
-      ...placesFromPreferences(preferences, ""),
-      completion: emptyCompletion(),
-    },
-    continuous: preferences.continuous,
-  };
-}
-
-function readItem(storage: StorageLike, key: string) {
-  try {
-    return storage.getItem(key);
-  } catch {
-    throw Error(BLOCKED);
-  }
-}
-type Loaded = { state: ProgressState; source: "v2" | "legacy" | "fresh" };
-/**
- * The last stored text and its parsed state. Every change builds a new state
- * (nothing here mutates one), so an unchanged text is not parsed and checked
- * again on each navigation and completion.
- */
-let parsed: { raw: string; state: ProgressState } | undefined;
-function load(storage: StorageLike): Loaded {
-  const raw = readItem(storage, STATE_KEY);
-  try {
-    if (raw) {
-      if (parsed?.raw !== raw) parsed = { raw, state: parseState(raw) };
-      return { state: parsed.state, source: "v2" };
-    }
-    const progress = readItem(storage, PROGRESS_KEY);
-    let location: string | null = null;
-    try {
-      location = storage.getItem(LOCATION_KEY);
-    } catch {
-      /* places are optional */
-    }
-    return {
-      state: migrateLegacy(progress, location),
-      source: progress || location ? "legacy" : "fresh",
-    };
-  } catch (err) {
-    if ((err as Error).message === BLOCKED) throw err;
-    throw Error(UNREADABLE, { cause: err });
-  }
-}
-/**
- * The device's state. Before the first v2 write this is migrated in memory
- * from the untouched v1 keys, so a failed write is simply retried later.
- */
-export const loadProgress = (storage: StorageLike): ProgressState =>
-  load(storage).state;
-
-const serialize = (state: ProgressState) =>
+/** The stored text for a state; known fields only, in a fixed order. */
+export const serializeState = (state: ProgressState) =>
   JSON.stringify({
     version: 2,
     activeId: state.activeId,
@@ -364,49 +265,7 @@ const serialize = (state: ProgressState) =>
     guest: state.guest,
     continuous: state.continuous,
   });
-/** One atomic write of the whole state, confirmed by reading it back. */
-function persist(storage: StorageLike, state: ProgressState) {
-  const text = serialize(state);
-  try {
-    // Unchanged (for example, a place saved again): nothing to write.
-    if (storage.getItem(STATE_KEY) === text) return;
-    storage.setItem(STATE_KEY, text);
-    if (storage.getItem(STATE_KEY) !== text) throw Error();
-  } catch {
-    throw Error(UNSAVED);
-  }
-}
-const update = (
-  storage: StorageLike,
-  change: (state: ProgressState) => ProgressState,
-) => {
-  const next = change(loadProgress(storage));
-  persist(storage, next);
-  return next;
-};
 
-/**
- * Commit a pending v1 migration. Safe to repeat: v1 keys are never changed,
- * and until a v2 write succeeds every load migrates again.
- */
-export function migrateProgress(storage: StorageLike): {
-  state: ProgressState;
-  migrated: boolean;
-} {
-  const { state, source } = load(storage);
-  if (source !== "legacy") return { state, migrated: source === "v2" };
-  try {
-    persist(storage, state);
-    return { state, migrated: true };
-  } catch {
-    return { state, migrated: false };
-  }
-}
-
-export function currentReader(storage: StorageLike) {
-  const s = loadProgress(storage);
-  return s.profiles.find((p) => p.id === s.activeId) || null;
-}
 /** A reader's places; "" (or an unknown id) is the guest. */
 export function readerPlaces(state: ProgressState, id: string): ReaderPlaces {
   const reader =
@@ -422,46 +281,46 @@ export function readerCompletion(
     ? state.profiles.find((p) => p.id === id)?.completion
     : state.guest.completion;
 }
-function addProfile(
-  storage: StorageLike,
-  body: BackupReader | ((state: ProgressState) => BackupReader),
-): ReaderProfile {
-  let created: ReaderProfile | undefined;
-  update(storage, (s) => {
-    if (s.profiles.length >= MAX_READERS)
-      throw Error("وصلت إلى الحد الأقصى للقراء على هذا الجهاز.");
-    created = profile(
-      crypto.randomUUID(),
-      typeof body === "function" ? body(s) : body,
-    );
-    return { ...s, activeId: created.id, profiles: [...s.profiles, created] };
-  });
-  return created!;
+
+/** Adds a reader with this id and makes them active. */
+export function addReader(
+  state: ProgressState,
+  id: string,
+  body: BackupReader,
+): { state: ProgressState; reader: ReaderProfile } {
+  if (state.profiles.length >= MAX_READERS)
+    throw Error("وصلت إلى الحد الأقصى للقراء على هذا الجهاز.");
+  const reader = profile(id, body);
+  return {
+    state: {
+      ...state,
+      activeId: reader.id,
+      profiles: [...state.profiles, reader],
+    },
+    reader,
+  };
 }
 /**
- * A new active reader. They keep the current reading choice and Bible and
- * chronology places; the youth plan opens on their own scheduled day.
+ * A new reader's body, from a reader checked with `validateReader`. They
+ * keep the current reading choice and Bible and chronology places; the
+ * youth plan opens on their own scheduled day.
  */
-export function createReader(
-  storage: StorageLike,
-  name: string,
-  startDate: string,
-  completed: number[] = [],
-): ReaderProfile {
-  const reader = validateReader({ name, startDate, completed });
-  return addProfile(storage, (s) => {
-    const { track, places: from } = readerPlaces(s, s.activeId ?? "");
-    const kept = { ...from };
-    delete kept.plan;
-    return {
-      name: reader.name,
-      startDate: reader.startDate,
-      track,
-      places: kept,
-      completion: emptyCompletion(reader.completed),
-    };
-  });
+export function newReader(
+  state: ProgressState,
+  reader: Omit<Reader, "id">,
+): BackupReader {
+  const { track, places: from } = readerPlaces(state, state.activeId ?? "");
+  const kept = { ...from };
+  delete kept.plan;
+  return {
+    name: reader.name,
+    startDate: reader.startDate,
+    track,
+    places: kept,
+    completion: emptyCompletion(reader.completed),
+  };
 }
+
 /** The completion entry for a place: plan day, `USFM:chapter` or reading id. */
 export function completionEntry(location: AnyReadingLocation) {
   if (location.mode === "plan") return location.day;
@@ -520,155 +379,77 @@ function stamp<T extends Completed>(
   return withReadOn(rest, Object.keys(next).length ? next : undefined) as T;
 }
 /**
- * Mark or unmark one reading as completed for a profile, or for the guest
- * when `id` is "". Only that one track's entry changes; completion is only
- * ever explicit, never from opening, reading or listening.
+ * Mark or unmark one reading as completed on `date` for a profile, or for
+ * the guest when `id` is "". Only that one track's entry changes;
+ * completion is only ever explicit, never from opening, reading or
+ * listening.
  */
-export function setReadingCompletion(
-  storage: StorageLike,
+export function withReadingCompletion(
+  state: ProgressState,
   id: string,
   location: AnyReadingLocation,
   completed: boolean,
-  date = today(),
-): ReaderProfile | GuestState {
-  let updated: ReaderProfile | GuestState | undefined;
-  update(storage, (s) => {
-    if (!id) {
-      const guest = stamp(
-        {
-          ...s.guest,
-          completion: toggle(s.guest.completion, location, completed),
-        },
-        location,
-        completed,
-        date,
-      );
-      updated = guest;
-      return { ...s, guest };
-    }
-    const reader = s.profiles.find((p) => p.id === id);
-    if (!reader) throw Error("اختر القارئ أولًا.");
-    const completion = toggle(reader.completion, location, completed);
-    const profile = stamp(
-      { ...reader, completion, completed: completion.plan },
+  date: string,
+): { state: ProgressState; updated: ReaderProfile | GuestState } {
+  if (!id) {
+    const guest = stamp(
+      {
+        ...state.guest,
+        completion: toggle(state.guest.completion, location, completed),
+      },
       location,
       completed,
       date,
     );
-    updated = profile;
-    return {
-      ...s,
-      profiles: s.profiles.map((p) => (p.id === id ? profile : p)),
-    };
-  });
-  return updated!;
-}
-/** Youth plan days for a profile; kept for existing callers. */
-export function setCompletion(
-  storage: StorageLike,
-  id: string,
-  day: number,
-  completed: boolean,
-): ReaderProfile {
-  if (!isPlanDay(day)) throw Error("اليوم غير صالح.");
-  if (!id) throw Error("اختر القارئ أولًا.");
-  return setReadingCompletion(
-    storage,
-    id,
-    { mode: "plan", day },
+    return { state: { ...state, guest }, updated: guest };
+  }
+  const reader = state.profiles.find((p) => p.id === id);
+  if (!reader) throw Error("اختر القارئ أولًا.");
+  const completion = toggle(reader.completion, location, completed);
+  const profile = stamp(
+    { ...reader, completion, completed: completion.plan },
+    location,
     completed,
-  ) as ReaderProfile;
+    date,
+  );
+  return {
+    state: {
+      ...state,
+      profiles: state.profiles.map((p) => (p.id === id ? profile : p)),
+    },
+    updated: profile,
+  };
 }
-export function selectReader(storage: StorageLike, id: string | null) {
-  let selected: ReaderProfile | null = null;
-  update(storage, (s) => {
-    if (id !== null && !s.profiles.some((p) => p.id === id))
-      throw Error("القارئ غير موجود.");
-    selected = s.profiles.find((p) => p.id === id) || null;
-    return { ...s, activeId: id };
-  });
-  return selected;
+/** Make a reader active, or nobody (the guest) with null. */
+export function withActiveReader(
+  state: ProgressState,
+  id: string | null,
+): { state: ProgressState; selected: ReaderProfile | null } {
+  if (id !== null && !state.profiles.some((p) => p.id === id))
+    throw Error("القارئ غير موجود.");
+  return {
+    state: { ...state, activeId: id },
+    selected: state.profiles.find((p) => p.id === id) || null,
+  };
 }
 /**
- * Save a reader's places ("" is the guest) and, optionally, continuous play.
- * Completion is untouched.
+ * A reader's places ("" is the guest) and, optionally, continuous play.
+ * `parsed` comes from `parseReaderPlaces`. Completion is untouched.
  */
-export function saveReaderPlaces(
-  storage: StorageLike,
+export function withReaderPlaces(
+  state: ProgressState,
   id: string,
-  places: ReaderPlaces,
+  parsed: ReaderPlaces,
   continuous?: boolean,
-) {
-  const parsed = parseReaderPlaces(places);
-  if (!parsed) throw Error(INVALID);
-  update(storage, (s) => {
-    if (id && !s.profiles.some((p) => p.id === id))
-      throw Error("القارئ غير موجود.");
-    return {
-      ...s,
-      guest: id ? s.guest : { ...s.guest, ...parsed },
-      profiles: id
-        ? s.profiles.map((p) => (p.id === id ? { ...p, ...parsed } : p))
-        : s.profiles,
-      continuous: continuous ?? s.continuous,
-    };
-  });
-}
-
-/** A version 2 backup: every track's completion and place for one reader. */
-export function exportBackup(reader: Reader | ReaderProfile) {
-  const completion =
-    "completion" in reader
-      ? parseCompletion(reader.completion)
-      : emptyCompletion(reader.completed);
-  const body = parseBackupReader({
-    name: reader.name,
-    startDate: reader.startDate,
-    ...("track" in reader
-      ? { track: reader.track, places: reader.places }
-      : { track: "plan", places: {} }),
-    completion,
-    readOn: (reader as ReaderProfile).readOn,
-  });
-  return JSON.stringify({ version: 2, reader: body }, null, 2);
-}
-/**
- * Import a v1 (youth plan days only) or v2 backup as a separate new reader,
- * so no existing progress is overwritten.
- */
-export function importBackup(storage: StorageLike, text: string) {
-  if (text.length > MAX_BACKUP_BYTES)
-    throw Error("ملف النسخة الاحتياطية كبير جدًا.");
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw Error("اختر ملف نسخة احتياطية بصيغة JSON.");
-  }
-  if (record(data) && data.version === 1) {
-    const r = validateReader(data.reader);
-    return addProfile(storage, {
-      name: r.name,
-      startDate: r.startDate,
-      track: "plan",
-      places: {},
-      completion: emptyCompletion(r.completed),
-    });
-  }
-  if (!record(data) || data.version !== 2)
-    throw Error("نسخة احتياطية غير مدعومة.");
-  if (
-    !onlyKeys(data, ["version", "reader"]) ||
-    !record(data.reader) ||
-    !onlyKeys(data.reader, [
-      "name",
-      "startDate",
-      "track",
-      "places",
-      "completion",
-      "readOn",
-    ])
-  )
-    throw Error(INVALID);
-  return addProfile(storage, parseBackupReader(data.reader));
+): ProgressState {
+  if (id && !state.profiles.some((p) => p.id === id))
+    throw Error("القارئ غير موجود.");
+  return {
+    ...state,
+    guest: id ? state.guest : { ...state.guest, ...parsed },
+    profiles: id
+      ? state.profiles.map((p) => (p.id === id ? { ...p, ...parsed } : p))
+      : state.profiles,
+    continuous: continuous ?? state.continuous,
+  };
 }

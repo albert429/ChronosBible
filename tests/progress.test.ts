@@ -1,17 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { validDate } from "../src/domain/profiles/state.ts";
+import { exportBackup } from "../src/domain/profiles/backup.ts";
 import {
   createReader,
   currentReader,
   setCompletion,
   selectReader,
-  exportBackup,
   importBackup,
   loadProgress,
-  validDate,
   PROGRESS_KEY,
   STATE_KEY,
-} from "../src/domain/profiles/state.ts";
+} from "../src/features/profiles/storage.ts";
 function storage() {
   const values = new Map<string, string>();
   return {

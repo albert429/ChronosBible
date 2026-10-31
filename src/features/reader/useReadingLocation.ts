@@ -17,21 +17,23 @@ import {
   type ReadingTrack,
   sameLocation,
 } from "../../domain/reading/identity";
+import { readerPlaces } from "../../domain/profiles/state";
 import {
   loadProgress,
-  readerPlaces,
   saveReaderPlaces,
-} from "../../domain/profiles/state";
+  LOCATION_KEY,
+} from "../profiles/storage";
 import {
   currentPlace,
   freshPlaces,
-  LOCATION_KEY,
-  loadPreferences,
-  placesFromPreferences,
   trackPlace,
   withPlace,
   type ReaderPlaces,
 } from "../../domain/reading/places";
+import {
+  loadPreferences,
+  placesFromPreferences,
+} from "../../domain/profiles/legacy";
 import { saveReadingPosition } from "./position";
 import { topVisibleVerse } from "./scriptureDom";
 
