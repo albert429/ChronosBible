@@ -6,7 +6,7 @@ import {
   aiBuildConfig,
   DEFAULT_MODELS,
   ROUTER_MODEL,
-} from "../src/ai/config.ts";
+} from "../src/features/ai/config.ts";
 
 // The same VITE_* variables as the build: an explicit --mode, else the
 // production env files, then the development ones (where docs/development.md

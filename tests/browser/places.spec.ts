@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
-import { PROGRESS_KEY } from "../../src/plan/progress.ts";
+import { PROGRESS_KEY } from "../../src/domain/profiles/state.ts";
 import {
   MODES,
   article,

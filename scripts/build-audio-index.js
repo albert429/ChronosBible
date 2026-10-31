@@ -1,7 +1,10 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import { readingTranscript, validManifest } from "../src/audio/manifest.ts";
+import {
+  readingTranscript,
+  validManifest,
+} from "../src/domain/audio/manifest.ts";
 import { readBibleChapters } from "./build-bible.js";
 import { fileURLToPath } from "node:url";
 

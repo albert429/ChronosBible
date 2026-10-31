@@ -4,8 +4,12 @@ import {
   classifyStatus,
   createOpenRouter,
   type OpenRouterOptions,
-} from "../src/ai/providers/openrouter.ts";
-import { AiError, type AiErrorKind, type AiRequest } from "../src/ai/types.ts";
+} from "../src/features/ai/providers/openrouter.ts";
+import {
+  AiError,
+  type AiErrorKind,
+  type AiRequest,
+} from "../src/features/ai/types.ts";
 
 type Call = {
   url: string;

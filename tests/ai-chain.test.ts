@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { runChain } from "../src/ai/chain.ts";
+import { runChain } from "../src/features/ai/chain.ts";
 import {
   AiError,
   type AiErrorKind,
   type AiMeta,
   type AiRequest,
   type StreamCallbacks,
-} from "../src/ai/types.ts";
+} from "../src/features/ai/types.ts";
 
 const request: AiRequest = { system: "s", prompt: "p", maxOutputTokens: 10 };
 const sleep = (ms: number, signal?: AbortSignal) =>

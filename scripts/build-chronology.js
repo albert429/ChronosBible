@@ -2,12 +2,12 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { catalog as books } from "../src/bible/catalog.ts";
+import { catalog as books } from "../src/domain/scripture/catalog.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
-} from "../src/chronology/validate.ts";
-import { ar } from "../src/lib/format.ts";
+} from "../src/data/chronology/validate.ts";
+import { ar } from "../src/shared/lib/format.ts";
 import { readBibleChapters } from "./build-bible.js";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));

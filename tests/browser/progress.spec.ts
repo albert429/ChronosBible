@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { STATE_KEY } from "../../src/plan/progress.ts";
+import { STATE_KEY } from "../../src/domain/profiles/state.ts";
 import {
   article,
   chooseFromMenu,

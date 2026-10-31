@@ -3,15 +3,15 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import react from "@vitejs/plugin-react";
-import { audioUrl } from "./src/audio/url.ts";
-import { aiBuildConfig } from "./src/ai/config.ts";
-import { chapterAvailability } from "./src/audio/availability.ts";
+import { audioUrl } from "./src/domain/audio/url.ts";
+import { aiBuildConfig } from "./src/features/ai/config.ts";
+import { chapterAvailability } from "./src/domain/audio/availability.ts";
 import {
   advertisedAudio,
   manifestOutputPath,
-} from "./src/audio/publication.ts";
-import { catalog } from "./src/bible/catalog.ts";
-import { DATA_FOLDERS } from "./src/pwa/rules.ts";
+} from "./src/domain/audio/publication.ts";
+import { catalog } from "./src/domain/scripture/catalog.ts";
+import { DATA_FOLDERS } from "./src/features/offline/rules.ts";
 
 const json = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 const optional = (path: string) => (existsSync(path) ? json(path) : undefined);
@@ -97,7 +97,7 @@ function serviceWorker(versions: Record<string, string>): Plugin {
           emptyOutDir: false,
           copyPublicDir: false,
           lib: {
-            entry: resolve(root, "src/pwa/sw.ts"),
+            entry: resolve(root, "src/features/offline/sw.ts"),
             formats: ["iife"],
             name: "sw",
             fileName: () => "sw.js",

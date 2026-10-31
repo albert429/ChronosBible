@@ -11,7 +11,7 @@ import {
   validDate,
   PROGRESS_KEY,
   STATE_KEY,
-} from "../src/plan/progress.ts";
+} from "../src/domain/profiles/state.ts";
 function storage() {
   const values = new Map<string, string>();
   return {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { packUrls, savePack } from "../src/pwa/offline.ts";
+import { packUrls, savePack } from "../src/features/offline/offline.ts";
 
 const globals = globalThis as unknown as {
   caches?: unknown;

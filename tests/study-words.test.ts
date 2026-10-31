@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { WordToken } from "../src/study/types.ts";
+import type { WordToken } from "../src/domain/study/types.ts";
 import {
   originalWord,
   verseWordsTitle,
   wordGroups,
   wordsTitle,
-} from "../src/study/verse.ts";
-import { buildPrompt } from "../src/ai/prompt.ts";
+} from "../src/domain/study/words.ts";
+import { buildPrompt } from "../src/features/ai/prompt.ts";
 
 const hebrew: WordToken = ["בְּ", "be", "H9003", "HR", "in", 0, 1, "he"];
 const aramaic: WordToken = [

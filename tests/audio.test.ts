@@ -9,9 +9,9 @@ import {
   cueAt,
   type LegacyAudioManifest,
   type Cue,
-} from "../src/audio/manifest.ts";
-import { audioUrl } from "../src/audio/url.ts";
-import type { Day } from "../src/plan/readings.ts";
+} from "../src/domain/audio/manifest.ts";
+import { audioUrl } from "../src/domain/audio/url.ts";
+import type { Day } from "../src/data/plan/client.ts";
 
 const reading: Day = {
   day: 1,

@@ -22,7 +22,7 @@ import {
   manifestOutputPath,
   publicationErrors,
   publishedMedia,
-} from "../src/audio/publication.ts";
+} from "../src/domain/audio/publication.ts";
 import {
   planUploads,
   prepareRelease,

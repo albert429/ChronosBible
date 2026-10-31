@@ -25,7 +25,7 @@ const viteKeys = (env: Record<string, string | undefined>) =>
 
 test("Every reference configuration sets every VITE_ variable the build reads", () => {
   const read_ = new Set(
-    [read("vite.config.ts"), read("src/ai/config.ts")]
+    [read("vite.config.ts"), read("src/features/ai/config.ts")]
       .join("\n")
       .match(/VITE_[A-Z_]+/g),
   );

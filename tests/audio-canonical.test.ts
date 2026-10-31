@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { BibleChapter } from "../src/bible/types.ts";
-import type { Day } from "../src/plan/readings.ts";
+import type { BibleChapter } from "../src/domain/reading/types.ts";
+import type { Day } from "../src/data/plan/client.ts";
 import {
   activeCueIndex,
   announcementAt,
@@ -11,7 +11,7 @@ import {
   stepCueIndex,
   validManifest,
   type AudioManifestV2,
-} from "../src/audio/manifest.ts";
+} from "../src/domain/audio/manifest.ts";
 const reading: BibleChapter = {
   mode: "bible",
   usfm: "GEN",

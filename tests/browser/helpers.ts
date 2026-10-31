@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
-import { PROGRESS_KEY, STATE_KEY } from "../../src/plan/progress.ts";
+import { PROGRESS_KEY, STATE_KEY } from "../../src/domain/profiles/state.ts";
 
 export const profile = {
   id: "reader-one",

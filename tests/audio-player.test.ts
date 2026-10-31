@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { scrollDelta } from "../src/audio/highlightScroll.ts";
+import { scrollDelta } from "../src/features/audio/highlightScroll.ts";
 import {
   initialMediaState,
   isPlaying,
@@ -9,8 +9,8 @@ import {
   type MediaAction,
   type MediaState,
   type MediaStatus,
-} from "../src/audio/mediaStatus.ts";
-import { nextRate } from "../src/audio/speed.ts";
+} from "../src/features/audio/mediaStatus.ts";
+import { nextRate } from "../src/features/audio/speed.ts";
 
 const run = (actions: MediaAction[], from: MediaState = initialMediaState) =>
   actions.reduce(mediaReducer, from);

@@ -13,8 +13,14 @@ import { createHash } from "node:crypto";
 import { basename, delimiter, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { pathToFileURL } from "node:url";
-import { AUDIO_MAX_BYTES, AUDIO_MEDIA_PATTERN } from "../src/audio/contract.ts";
-import { manifestMedia, publishedMedia } from "../src/audio/publication.ts";
+import {
+  AUDIO_MAX_BYTES,
+  AUDIO_MEDIA_PATTERN,
+} from "../src/domain/audio/contract.ts";
+import {
+  manifestMedia,
+  publishedMedia,
+} from "../src/domain/audio/publication.ts";
 
 /** One wrangler process uploads this many objects at most (tokens can expire). */
 export const UPLOAD_BATCH_SIZE = 300;

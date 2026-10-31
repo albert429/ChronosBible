@@ -4,8 +4,8 @@ import {
   adjacentChapter,
   parseReadingLocation,
   readingSearch,
-} from "../src/bible/navigation.ts";
-import { readingKey, type BibleBook } from "../src/bible/types.ts";
+} from "../src/domain/reading/location.ts";
+import { readingKey, type BibleBook } from "../src/domain/reading/types.ts";
 
 const catalog: BibleBook[] = [
   {

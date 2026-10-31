@@ -18,7 +18,7 @@ import {
   study,
   tap,
 } from "./helpers";
-import { STATE_KEY } from "../../src/plan/progress.ts";
+import { STATE_KEY } from "../../src/domain/profiles/state.ts";
 import { AI_KEY, AI_URL, STUB_URL } from "./ai-stub";
 
 const GEMMA = "google/gemma-4-31b-it:free";

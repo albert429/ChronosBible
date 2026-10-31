@@ -4,7 +4,7 @@ import {
   END_ACTION_LABELS,
   endAction,
   nextEndAction,
-} from "../src/audio/endAction.ts";
+} from "../src/features/audio/endAction.ts";
 
 test("repeating wins; otherwise the continuous preference decides", () => {
   assert.equal(endAction(false, false), "stop");

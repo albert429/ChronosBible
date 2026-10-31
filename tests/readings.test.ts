@@ -4,8 +4,8 @@ import {
   createReadingsClients,
   type Day,
   type PlanEntry,
-} from "../src/plan/readings.ts";
-import { scheduledDay, dayIndex } from "../src/plan/schedule.ts";
+} from "../src/data/plan/client.ts";
+import { scheduledDay, dayIndex } from "../src/domain/reading/schedule.ts";
 
 const day = (n: number): Day => ({
   day: n,

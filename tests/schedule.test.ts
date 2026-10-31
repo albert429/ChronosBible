@@ -11,7 +11,7 @@ import {
   isPlanDay,
   pageFor,
   scheduledDay,
-} from "../src/plan/schedule.ts";
+} from "../src/domain/reading/schedule.ts";
 
 test("Day numbers count from the start date, inclusive", () => {
   assert.equal(dayIndex("2026-10-01", "2026-10-01"), 1);

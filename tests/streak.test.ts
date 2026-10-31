@@ -8,8 +8,8 @@ import {
   loadProgress,
   setReadingCompletion,
   STATE_KEY,
-} from "../src/plan/progress.ts";
-import { streakStats } from "../src/plan/streak.ts";
+} from "../src/domain/profiles/state.ts";
+import { streakStats } from "../src/domain/profiles/streak.ts";
 
 /** Read dates as a `readOn` record (the keys don't matter for streaks). */
 const on = (...dates: string[]) =>

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   displayArabic,
   stripArabicDiacritics,
-} from "../src/lib/arabicDisplay.ts";
+} from "../src/shared/lib/arabicDisplay.ts";
 
 test("strips vowel marks, tanwin, shadda, sukun and superscript alef", () => {
   assert.equal(stripArabicDiacritics("فِي ٱلْبَدْءِ"), "في ٱلبدء");

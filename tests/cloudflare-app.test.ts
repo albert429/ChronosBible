@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { audioUrl } from "../src/audio/url.ts";
+import { audioUrl } from "../src/domain/audio/url.ts";
 import {
   AUDIO_BASE_URL,
   buildEnvironment,

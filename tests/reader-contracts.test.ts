@@ -5,18 +5,18 @@ import {
   parseReadingLocation,
   readingSearch,
   validChronologicalLocation,
-} from "../src/bible/navigation.ts";
-import { catalog } from "../src/bible/catalog.ts";
+} from "../src/domain/reading/location.ts";
+import { catalog } from "../src/domain/scripture/catalog.ts";
 import {
   readingKey,
   trackOf,
   type ChronologicalLocation,
-} from "../src/bible/types.ts";
+} from "../src/domain/reading/types.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
   isChronologicalReadingData,
-} from "../src/chronology/validate.ts";
+} from "../src/data/chronology/validate.ts";
 import {
   PROGRESS_KEY,
   STATE_KEY,
@@ -34,7 +34,7 @@ import {
   setCompletion,
   validChapterId,
   setReadingCompletion,
-} from "../src/plan/progress.ts";
+} from "../src/domain/profiles/state.ts";
 import {
   LOCATION_KEY,
   currentPlace,
@@ -42,7 +42,7 @@ import {
   parseTrackPlaces,
   trackPlace,
   withPlace,
-} from "../src/reader/location.ts";
+} from "../src/domain/reading/places.ts";
 
 type Store = ReturnType<typeof storage>;
 function storage(entries: Record<string, string> = {}) {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { adjacentLocation } from "../src/navigation/adjacent.ts";
-import type { ChronologyCatalog } from "../src/chronology/types.ts";
+import { adjacentLocation } from "../src/domain/reading/adjacent.ts";
+import type { ChronologyCatalog } from "../src/domain/reading/chronology.ts";
 
 test("canonical neighbours cross books but stop at Genesis 1 and Revelation 22", () => {
   const genesis = { mode: "bible", book: "GEN", chapter: 1 } as const;

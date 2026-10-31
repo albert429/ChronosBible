@@ -13,13 +13,13 @@ import {
   verseSequence,
 } from "../scripts/build-chronology.js";
 import { readBibleChapters } from "../scripts/build-bible.js";
-import type { BibleChapter } from "../src/bible/types.ts";
-import { catalog as books } from "../src/bible/catalog.ts";
-import type { Day } from "../src/plan/readings.ts";
+import type { BibleChapter } from "../src/domain/reading/types.ts";
+import { catalog as books } from "../src/domain/scripture/catalog.ts";
+import type { Day } from "../src/data/plan/client.ts";
 import type {
   ChronologicalReadingDefinition,
   ChronologyCatalog,
-} from "../src/chronology/types.ts";
+} from "../src/domain/reading/chronology.ts";
 
 const root = new URL("../", import.meta.url).pathname;
 const built = prepareChronology(root);

@@ -13,8 +13,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildAudioIndex } from "../scripts/build-audio-index.js";
-import { readingHash } from "../src/audio/manifest.ts";
-import type { Day } from "../src/plan/readings.ts";
+import { readingHash } from "../src/domain/audio/manifest.ts";
+import type { Day } from "../src/data/plan/client.ts";
 
 const reading: Day = {
   day: 1,

@@ -5,11 +5,11 @@ import { join } from "node:path";
 import { after, test } from "node:test";
 import { readBibleChapters } from "../scripts/build-bible.js";
 import { buildChronology } from "../scripts/build-chronology.js";
-import { createBibleClient } from "../src/bible/client.ts";
+import { createBibleClient } from "../src/data/bible/client.ts";
 import type {
   BibleChapter,
   ChronologicalLocation,
-} from "../src/bible/types.ts";
+} from "../src/domain/reading/types.ts";
 import {
   adjacentChronologicalLocation,
   chronologicalKeyLocation,
@@ -18,12 +18,12 @@ import {
   createChronologyClients,
   firstChronologicalLocation,
   resumeChronologicalLocation,
-} from "../src/chronology/client.ts";
+} from "../src/data/chronology/client.ts";
 import type {
   ChronologicalReading,
   ChronologyCatalog,
-} from "../src/chronology/types.ts";
-import { isChronologicalReadingData } from "../src/chronology/validate.ts";
+} from "../src/domain/reading/chronology.ts";
+import { isChronologicalReadingData } from "../src/data/chronology/validate.ts";
 
 const root = new URL("../", import.meta.url).pathname;
 const out = mkdtempSync(join(tmpdir(), "chronology-"));

@@ -8,7 +8,7 @@ import {
   route,
   shellCache,
   staleData,
-} from "../src/pwa/rules.ts";
+} from "../src/features/offline/rules.ts";
 
 const ORIGIN = "https://chronosbible.com";
 const shell = new Set(["/", "/assets/index-abc.js", "/manifest.json"]);

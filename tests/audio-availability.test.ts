@@ -3,8 +3,8 @@ import { test } from "node:test";
 import {
   chapterAvailability,
   chapterHasAudio,
-} from "../src/audio/availability.ts";
-import { catalog } from "../src/bible/catalog.ts";
+} from "../src/domain/audio/availability.ts";
+import { catalog } from "../src/domain/scripture/catalog.ts";
 
 test("Chapter availability is one flag per canonical chapter in catalog order", () => {
   const published = ["bible:GEN:1", "bible:PSA:119", "bible:REV:22"];

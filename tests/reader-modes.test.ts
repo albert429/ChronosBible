@@ -5,8 +5,8 @@ import {
   continueReading,
   durationLabel,
   minutesLabel,
-} from "../src/navigation/modes.ts";
-import { READING_TRACKS } from "../src/bible/types.ts";
+} from "../src/domain/reading/modes.ts";
+import { READING_TRACKS } from "../src/domain/reading/types.ts";
 
 test("Every reading track has a distinct Arabic name", () => {
   const names = READING_TRACKS.map((track) => TRACK_NAMES[track]);

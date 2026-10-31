@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { appShareData } from "../src/navigation/share.ts";
-import { APP_INFO } from "../src/appInfo.ts";
+import { appShareData } from "../src/features/navigation/share.ts";
+import { APP_INFO } from "../src/shared/lib/appInfo.ts";
 
 test("Share data is the app title and description with the page address, never its query or hash", () => {
   Object.assign(globalThis, {

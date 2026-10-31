@@ -10,8 +10,8 @@ import {
   saveReadingPosition,
   validLocation,
   withLocation,
-} from "../src/reader/location.ts";
-import { chapterSegments } from "../src/reader/chapterSegments.ts";
+} from "../src/domain/reading/places.ts";
+import { chapterSegments } from "../src/features/reader/chapterSegments.ts";
 
 test("each reader's last plan place, the Bible place and the mode are remembered", () => {
   const saved = {

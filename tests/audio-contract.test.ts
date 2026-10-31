@@ -26,7 +26,7 @@ import {
   AUDIO_MEDIA_PREFIXES,
   AUDIO_HOST_ORIGIN,
   AUDIO_R2_BUCKET,
-} from "../src/audio/contract.ts";
+} from "../src/domain/audio/contract.ts";
 import { copyMedia } from "../scripts/prepare-audio-r2.mjs";
 import { bulkPutArguments } from "../scripts/upload-audio-r2.mjs";
 

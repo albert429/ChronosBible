@@ -1,11 +1,11 @@
-import "./styles/tokens.css";
-import "./styles/base.css";
-import "./styles/global.css";
+import "./shared/styles/tokens.css";
+import "./shared/styles/base.css";
+import "./shared/styles/global.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import { initAppearance } from "./navigation/appearance";
-import { afterStartup } from "./lib/afterStartup";
+import App from "./app/App";
+import { initAppearance } from "./features/appearance/appearance";
+import { afterStartup } from "./shared/browser/afterStartup";
 
 initAppearance();
 // Chromium offers installation once, often before offline support loads:
@@ -22,7 +22,7 @@ createRoot(document.getElementById("root")!).render(
 // Offline support loads apart from the reader, once the page has settled.
 afterStartup(
   () =>
-    void import("./pwa/register").then(
+    void import("./features/offline/register").then(
       (module) => module.registerServiceWorker(),
       () => {},
     ),

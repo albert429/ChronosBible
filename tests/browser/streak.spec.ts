@@ -16,7 +16,7 @@ import {
   storedState,
   undoButton,
 } from "./helpers";
-import { STATE_KEY } from "../../src/plan/progress.ts";
+import { STATE_KEY } from "../../src/domain/profiles/state.ts";
 
 const ribbon = (page: Page) =>
   page.getByRole("dialog").getByRole("region", { name: "سلسلة القراءة" });

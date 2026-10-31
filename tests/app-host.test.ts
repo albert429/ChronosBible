@@ -5,7 +5,7 @@ import { AUDIO_BASE_URL } from "../scripts/cloudflare-app.mjs";
 import {
   AUDIO_HOST_ORIGIN,
   AUDIO_MEDIA_PREFIXES,
-} from "../src/audio/contract.ts";
+} from "../src/domain/audio/contract.ts";
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));

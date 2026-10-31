@@ -32,20 +32,20 @@ test("Only the lazy run module (and its declaration) references the AI key confi
       .filter((f) => f.text.includes("__AI_CONFIG__"))
       .map((f) => f.name)
       .sort(),
-    ["ai/run.ts", "vite-env.d.ts"]
+    ["features/ai/run.ts", "vite-env.d.ts"]
       .filter((name) => files.some((f) => f.name === name))
       .sort(),
   );
 });
 
 test("AI modules never touch reading progress or storage outside the cache module", () => {
-  for (const f of files.filter((f) => f.name.startsWith("ai/"))) {
+  for (const f of files.filter((f) => f.name.startsWith("features/ai/"))) {
     assert.doesNotMatch(
       f.text,
       /nt-reading-progress|from "[./]*progress/,
       f.name,
     );
-    if (f.name !== "ai/cache.ts")
+    if (f.name !== "features/ai/cache.ts")
       assert.doesNotMatch(f.text, /localStorage/, f.name);
   }
 });

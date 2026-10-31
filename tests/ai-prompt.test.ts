@@ -9,9 +9,9 @@ import {
   plainArabic,
   SYSTEM_PROMPT,
   type Material,
-} from "../src/ai/prompt.ts";
-import type { Passage, Verse } from "../src/plan/readings.ts";
-import type { GreekToken } from "../src/study/types.ts";
+} from "../src/features/ai/prompt.ts";
+import type { Passage, Verse } from "../src/data/plan/client.ts";
+import type { GreekToken } from "../src/domain/study/types.ts";
 
 const verses: Verse[] = [
   {
