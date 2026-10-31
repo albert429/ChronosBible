@@ -1,7 +1,11 @@
 // Word resources are stored as gzip to stay inside the static-host asset budget.
 // Hosts may already decode Content-Encoding, so inspect bytes rather than headers.
-const MAX_BYTES = 256 * 1024;
-const MAX_COMPRESSED = 30000;
+// This is the browser adapter; build and hosting tools decode in Node.
+import {
+  STUDY_WORDS_GZIP_LIMIT as MAX_COMPRESSED,
+  STUDY_WORDS_RAW_LIMIT as MAX_BYTES,
+} from "../../domain/study/limits.ts";
+
 const tooLarge = () => new Error("Study response exceeds size limit");
 
 function joined(chunks: Uint8Array[], length: number) {

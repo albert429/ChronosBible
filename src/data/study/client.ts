@@ -1,6 +1,11 @@
 import { dataUrl } from "../dataVersion.ts";
 import { createJsonClient } from "../jsonClient.ts";
 import { decodeStudyWords } from "./decodeWords.ts";
+import {
+  STUDY_UNAVAILABLE,
+  studyChapterParts,
+  studyReference,
+} from "../../domain/study/reference.ts";
 import type {
   StudyChapterIndex,
   StudyLexicon,
@@ -11,45 +16,19 @@ import type {
   WordToken,
 } from "../../domain/study/types.ts";
 
-const message = () => "تعذر تحميل دراسة الآية. تحقق من الاتصال وحاول مرة أخرى.";
+const message = () => STUDY_UNAVAILABLE;
 const translationsMessage = () =>
   "تعذر تحميل الترجمات. تحقق من الاتصال وحاول مرة أخرى.";
 const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const positive = (value: unknown): value is number =>
   typeof value === "number" && Number.isSafeInteger(value) && value > 0;
-const bookCode = /^[1-3]?[A-Z]{2,3}$/;
 
-/** IDs are canonical references, never a reading-plan day or passage offset. */
-export function studyReference(id: string) {
-  const [book, chapter, verse, extra] = id.split(".");
-  if (
-    !bookCode.test(book) ||
-    !/^[1-9]\d*$/.test(chapter ?? "") ||
-    !/^[1-9]\d*$/.test(verse ?? "") ||
-    extra !== undefined ||
-    !positive(Number(chapter)) ||
-    !positive(Number(verse))
-  )
-    throw new Error(message());
-  return { book, chapter: Number(chapter), verse: Number(verse) };
-}
-function chapterParts(key: string) {
-  const [book, chapter, extra] = key.split("/");
-  if (
-    extra !== undefined ||
-    !bookCode.test(book) ||
-    !/^[1-9]\d*$/.test(chapter ?? "") ||
-    !positive(Number(chapter))
-  )
-    throw new Error(message());
-  return { book, chapter: Number(chapter) };
-}
 function rangeParts(key: string) {
   const [book, chapter, range, extra] = key.split("/");
   const { start, end } = parseRange(range);
   if (extra !== undefined) throw new Error(message());
-  return { ...chapterParts(`${book}/${chapter}`), start, end };
+  return { ...studyChapterParts(`${book}/${chapter}`), start, end };
 }
 function parseRange(key: string) {
   const match = /^([1-9]\d*)-([1-9]\d*)$/.exec(key ?? "");
@@ -93,11 +72,11 @@ const wordToken = (token: unknown): token is WordToken =>
 
 export const studyChapter = createJsonClient<StudyChapterIndex>({
   url: (key) => {
-    chapterParts(key);
+    studyChapterParts(key);
     return dataUrl(`/study/v2/${key}/index.json`);
   },
   validate: (data, key): data is StudyChapterIndex => {
-    const { book, chapter } = chapterParts(key);
+    const { book, chapter } = studyChapterParts(key);
     if (
       !object(data) ||
       data.v !== 2 ||

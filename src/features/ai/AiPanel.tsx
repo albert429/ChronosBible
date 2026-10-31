@@ -42,7 +42,7 @@ import { ar, today } from "../../shared/lib/format";
 import type { Passage, Verse } from "../../domain/scripture/types";
 import AiAnswer from "./AiAnswer";
 import AiSpark from "./AiSpark";
-import { reveal } from "../study/Section";
+import { reveal } from "../../shared/ui/reveal";
 import "../../shared/ui/form.css";
 
 type Problem = AiErrorKind | "cap" | "attempts" | "stopped";

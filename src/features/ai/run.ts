@@ -4,8 +4,8 @@ import {
   verseTranslations,
   verseWords,
   wordDefinitions,
-  studyReference,
 } from "../../data/study/client.ts";
+import { studyReference } from "../../domain/study/reference.ts";
 import type { WordToken } from "../../domain/study/types.ts";
 import { runChain } from "./chain.ts";
 import { buildPrompt, type Material } from "./prompt.ts";
