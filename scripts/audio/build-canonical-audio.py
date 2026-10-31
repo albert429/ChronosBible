@@ -83,6 +83,17 @@ def encode(reading, source, aligned, output, manifests, trim=None, readings=None
             **({'trimEnd': end} if end is not None else {})}
 
 
+def stray_manifests(manifests, chapters):
+    """Manifest files (CODE/N.json) for chapters the Bible source no longer has.
+
+    Reported, never deleted: the catalog lists built chapters only, and media
+    under public/audio is immutable and content-named.
+    """
+    expected = {f"{reading['usfm']}/{reading['chapter']}.json" for _, reading in chapters}
+    found = {path.relative_to(manifests).as_posix() for path in Path(manifests).rglob('*.json')}
+    return sorted(found - expected)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ot', type=Path, required=True)
@@ -99,6 +110,10 @@ def main():
     if len(chapters) != 1189:
         raise ValueError(f'Expected 1189 chapters, got {len(chapters)}')
     files = source_files(args.ot, args.nt, chapters)
+    stray = [] if args.chapters or not args.manifests.exists() else stray_manifests(args.manifests, chapters)
+    if stray:
+        raise ValueError(f'{args.manifests} holds manifests for chapters outside the Bible source: {stray[:5]}; '
+                         'review and remove them first')
     readings = {f"bible:{r['usfm']}:{r['chapter']}": r for _, r in chapters}
     trims = load_source_trims(args.trims)
     if set(trims) - set(readings):
