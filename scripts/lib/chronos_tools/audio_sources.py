@@ -4,16 +4,8 @@ import json
 import re
 from pathlib import Path
 
-from audio_text import chapter_text_hash, digest
-
-
-def file_hash(path):
-    import hashlib
-    value = hashlib.sha256()
-    with Path(path).open('rb') as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b''):
-            value.update(block)
-    return value.hexdigest()
+from .audio_text import chapter_text_hash
+from .media import run_ffmpeg
 
 
 def bible_chapters(path):
@@ -148,11 +140,10 @@ def check_source_trim(trim, record, reading, appended, evidence):
 
 def detect_silences(source, start, end, noise='-35dB', minimum=0.3):
     """[(start, end)] silences of `source` between start and end seconds (ffmpeg)."""
-    import subprocess
     start = max(0.0, start)
-    log = subprocess.run(['ffmpeg', '-nostdin', '-hide_banner', '-ss', f'{start:.3f}', '-to', f'{end:.3f}',
-                          '-i', str(source), '-af', f'silencedetect=n={noise}:d={minimum}', '-f', 'null', '-'],
-                         check=True, capture_output=True, text=True).stderr
+    log = run_ffmpeg(['-hide_banner', '-ss', f'{start:.3f}', '-to', f'{end:.3f}', '-i', source,
+                      '-af', f'silencedetect=n={noise}:d={minimum}', '-f', 'null', '-'],
+                     loglevel='info', capture_output=True, text=True).stderr
     found, opened = [], None
     for kind, value in re.findall(r'silence_(start|end): (-?[\d.]+)', log):
         if kind == 'start':

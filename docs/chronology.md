@@ -9,7 +9,7 @@ about ten minutes. The PDF and page renders are not committed.
 
 ## Pipeline
 
-1. `scripts/import-chronology.py <pdf>` (needs `pypdf`; run with `-I`) checks
+1. `scripts/data/import-chronology.py <pdf>` (needs `pypdf`; run with `-I`) checks
    the hash and parses the extracted table text into
    `data/chronology/source.json`. Every occurrence keeps a stable id
    (`g060-2` = group 60, second entry), its page and group, the reference in

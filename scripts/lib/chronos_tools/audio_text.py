@@ -1,19 +1,12 @@
-"""Transcript and chapter-text hashing shared by build-audio.py and align-audio.py.
+"""Transcript and chapter-text hashing shared by the audio tools.
 
 Standard library only. The reading transcript is also built by
 src/audio/manifest.ts (readingTranscript); tests/fixtures/transcript.json pins
 both implementations to the same bytes.
 """
-import hashlib
 import json
 
-
-def compact(value):
-    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
-
-
-def digest(data):
-    return hashlib.sha256(data).hexdigest()
+from .fingerprints import compact, digest
 
 
 def reading_transcript(day):

@@ -1,5 +1,5 @@
 """Deterministic Arabic reference drafts. Human text/voice review remains required."""
-from audio_text import compact, digest
+from .fingerprints import digest
 
 MASC = ['', 'الْأَوَّل', 'الثَّانِي', 'الثَّالِث', 'الرَّابِع', 'الْخَامِس', 'السَّادِس', 'السَّابِع', 'الثَّامِن', 'التَّاسِع', 'الْعَاشِر']
 FEM = ['', 'الْأُولَى', 'الثَّانِيَة', 'الثَّالِثَة', 'الرَّابِعَة', 'الْخَامِسَة', 'السَّادِسَة', 'السَّابِعَة', 'الثَّامِنَة', 'التَّاسِعَة', 'الْعَاشِرَة']

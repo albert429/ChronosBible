@@ -47,7 +47,7 @@ to numbered-verse/audio transcript hashes.
 Regenerate from the pinned archive with the standard library only:
 
 ```sh
-python3 -I scripts/import-bible.py /path/to/arb-vd_usfm.zip
+python3 -I scripts/data/import-bible.py /path/to/arb-vd_usfm.zip
 python3 -I -m unittest discover -s scripts/tests -p 'test_import_bible.py'
 npm run build
 ```

@@ -4,7 +4,6 @@ release is recorded, prepared files are not, and immutable paths stay immutable.
 Standard library only: `python3 -I -m unittest discover -s scripts/tests`.
 """
 import hashlib
-import importlib.util
 import io
 import json
 import re
@@ -15,10 +14,9 @@ from contextlib import redirect_stderr, redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("verify_audio_host", ROOT / "scripts/verify-audio-host.py")
-verify = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(verify)
+from _support import load_script
+
+verify = load_script("hosting/verify-audio-host.py", "verify_audio_host")
 
 DAY = "/audio/days/001-abc.m4a"
 CHAPTER = "/audio/chapters/assets/GEN-1-abc.m4a"

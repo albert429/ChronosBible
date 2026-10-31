@@ -1,18 +1,14 @@
 """Playlist and clip planning for chronological readings (no ffmpeg, no audio)."""
 import hashlib
-import importlib.util
 import json
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
-spec = importlib.util.spec_from_file_location("build_reading_audio", ROOT / "scripts/build-reading-audio.py")
-build = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(build)
-from audio_text import chapter_text_hash, reading_hash  # noqa: E402
+from _support import load_script
+from chronos_tools.audio_text import chapter_text_hash, reading_hash
+
+build = load_script("audio/build-reading-audio.py", "build_reading_audio")
 
 VERSES = [{"number": n, "text": f"v{n}"} for n in range(1, 6)]
 READING = {"usfm": "GEN", "book": "التكوين", "chapter": 2,

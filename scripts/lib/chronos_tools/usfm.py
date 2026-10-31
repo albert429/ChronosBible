@@ -7,10 +7,12 @@ SKIP_LINE = re.compile(r"^\\(?:id|ide|h|toc\d|mt\d?|ms\d?|mr|s\d?|sr|r|d|cl|rem|
 # Van Dyck epistle subscriptions ("\p -كُتِبَتْ إِلَى …-") are colophons, not verse text.
 SUBSCRIPTION = re.compile(r"^\\p\s+-.*-\s*$", re.M)
 TOKEN = re.compile(r"\\c\s+(\d+)|\\v\s+(\d+)(?:-(\d+))?\s")
+# One source line: marker and the text after it (importers that keep structure).
+MARKER_LINE = re.compile(r"^\\([a-z0-9]+)(?:\s+(.*))?$")
 
 
 def clean(value: str) -> str:
-    # Notes and markers as in scripts/import.py, plus word attributes
+    # Notes and markers (shared by every importer), plus word attributes
     # (\w word|strong="G3056"\w*), nested \+ markers and KJV pilcrows.
     value = re.sub(r"\\f .*?\\f\*|\\x .*?\\x\*", "", value, flags=re.S)
     value = re.sub(r"\|[^\\]*(?=\\\+?[a-z0-9]+\*)", "", value)

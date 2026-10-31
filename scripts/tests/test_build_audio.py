@@ -5,26 +5,22 @@ plan text, reference wording and tracked chapter alignments are used, with
 synthetic WAV clips and synthetic "source recordings" whose hashes are
 substituted into copies of the alignments.
 """
-import importlib.util
 from array import array
 import io
 import json
 import math
-import sys
 import tempfile
 import unittest
 import wave
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
+from _support import ROOT, load_script
 
-from audio_references import ONE_CHAPTER, reference_id  # noqa: E402
-from audio_text import chapter_text_hash, chapter_verses, compact, digest  # noqa: E402
+from chronos_tools.audio_references import ONE_CHAPTER, reference_id  # noqa: E402
+from chronos_tools.audio_text import chapter_text_hash, chapter_verses
+from chronos_tools.fingerprints import compact, digest
 
-spec = importlib.util.spec_from_file_location("build_audio", ROOT / "scripts/build-audio.py")
-build = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(build)
+build = load_script("audio/build-audio.py", "build_audio")
 RATE = build.RATE
 
 

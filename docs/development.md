@@ -7,36 +7,51 @@ the current application, not that proposed architecture.
 
 ## Structure
 
-| Path                                                            | Responsibility                                                                                                             |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`, `src/App.tsx`                                   | React bootstrap; app shell wiring reader, plan, navigation, and dialogs                                                    |
-| `src/appInfo.ts`                                                | App credits, contact links, and Scripture source                                                                           |
-| `src/lib/`                                                      | Shared helpers: `jsonClient` (cache, deduplication, timeout), `useResource`, `network`, `format`, `useNotice`, `useToday`  |
-| `src/bible/`                                                    | Verse and reference parsing; canonical catalog, chapter client, reading identity (`plan:N`, `bible:USFM:N`), navigation    |
-| `src/plan/`                                                     | Plan state: `readings` loading, `progress` profiles, `useProgress`, `schedule`, `backup`, `labels`, `PlanView`, `Calendar` |
-| `src/plan/dialogs/`                                             | Join, Invite, Settings, and restore dialogs, loaded on demand                                                              |
-| `src/reader/`                                                   | Reader, Scripture and chapter rendering, remembered places and links, verse taps, completion bar, listen button, prefetch  |
-| `src/navigation/`                                               | Toolbar, menu, day details, appearance panel and preferences, share, About                                                 |
-| `src/components/`                                               | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles              |
-| `src/audio/`                                                    | Player and controls, manifests (v1 days, v2 days/chapters), media element, Media Session, highlighting, contract, flags    |
-| `src/study/`                                                    | Lazy full-Bible study: translations, Greek/Hebrew/Aramaic words, and optional AI explanations                              |
-| `src/ai/`                                                       | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting |
-| `src/styles/`                                                   | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                 |
-| `data/`                                                         | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)   |
-| `data/bible/`                                                   | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                           |
-| `data/study/`                                                   | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                        |
-| `data/audio/`                                                   | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                    |
-| `scripts/build-data.js`                                         | Runs the static-data builders below into `public/` (`predev`/`prebuild`)                                                   |
-| `scripts/build-{readings,bible,study,audio-index}.js`           | Split plan, 1,189 chapters, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` shared  |
-| `scripts/import*.py`, `extract-plan.py`, `usfm.py`              | Source extraction and importers, with coverage gates                                                                       |
-| `scripts/{align,build}-audio.py`, `audio_*.py`                  | Alignment (NT/OT), daily build with optional spoken references; `scripts/tests/` holds the Python tests                    |
-| `scripts/{build,verify}-canonical-audio.py`                     | Encode and verify the 1,189 chapter recordings; `import-bible.py` imports the full text                                    |
-| `scripts/{prepare,upload}-audio-r2.mjs`, `verify-audio-host.py` | Stage, upload and verify the R2 audio host                                                                                 |
-| `scripts/{build,review}-*audio*.py`                             | Chronological playlists and clips; alignment review. Evidence limits and publication gate: `docs/audio.md`                 |
-| `scripts/snapshot.mjs`                                          | Build-output snapshot and compare tool (`npm run snapshot`)                                                                |
-| `scripts/`                                                      | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                          |
-| `tests/`                                                        | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                          |
-| `docs/assets/`                                                  | README artwork and actual app screenshot; never shipped in the app                                                         |
+| Path                                                                            | Responsibility                                                                                                                                                                            |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`, `src/App.tsx`                                                   | React bootstrap; app shell wiring reader, plan, navigation, and dialogs                                                                                                                   |
+| `src/appInfo.ts`                                                                | App credits, contact links, and Scripture source                                                                                                                                          |
+| `src/lib/`                                                                      | Shared helpers: `jsonClient` (cache, deduplication, timeout), `useResource`, `network`, `format`, `useNotice`, `useToday`                                                                 |
+| `src/bible/`                                                                    | Verse and reference parsing; canonical catalog, chapter client, reading identity (`plan:N`, `bible:USFM:N`), navigation                                                                   |
+| `src/plan/`                                                                     | Plan state: `readings` loading, `progress` profiles, `useProgress`, `schedule`, `backup`, `labels`, `PlanView`, `Calendar`                                                                |
+| `src/plan/dialogs/`                                                             | Join, Invite, Settings, and restore dialogs, loaded on demand                                                                                                                             |
+| `src/reader/`                                                                   | Reader, Scripture and chapter rendering, remembered places and links, verse taps, completion bar, listen button, prefetch                                                                 |
+| `src/navigation/`                                                               | Toolbar, menu, day details, appearance panel and preferences, share, About                                                                                                                |
+| `src/components/`                                                               | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles                                                                             |
+| `src/audio/`                                                                    | Player and controls, manifests (v1 days, v2 days/chapters), media element, Media Session, highlighting, contract, flags                                                                   |
+| `src/study/`                                                                    | Lazy full-Bible study: translations, Greek/Hebrew/Aramaic words, and optional AI explanations                                                                                             |
+| `src/ai/`                                                                       | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting                                                                |
+| `src/styles/`                                                                   | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                                                                                |
+| `data/`                                                                         | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)                                                                  |
+| `data/bible/`                                                                   | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                                                                                          |
+| `data/study/`                                                                   | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                                                                                       |
+| `data/audio/`                                                                   | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                                                                                   |
+| `scripts/build-data.js`                                                         | Runs the static-data builders below into `public/` (`predev`/`prebuild`)                                                                                                                  |
+| `scripts/build-{readings,bible,study,audio-index}.js`                           | Split plan, 1,189 chapters, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` shared                                                                 |
+| `scripts/data/*.py`, `scripts/lib/chronos_tools/`                               | Python source extraction and importers (`import*.py`, `extract-plan.py`) with coverage gates; shared importable helpers (books, USFM, study text, fingerprints, ffmpeg, output ownership) |
+| `scripts/audio/{align,build}-audio.py`                                          | Alignment (NT/OT), daily build with optional spoken references; `scripts/tests/` holds the Python tests                                                                                   |
+| `scripts/audio/{build,verify}-canonical-audio.py`                               | Encode and verify the 1,189 chapter recordings; `scripts/data/import-bible.py` imports the full text                                                                                      |
+| `scripts/{prepare,upload}-audio-r2.mjs`, `scripts/hosting/verify-audio-host.py` | Stage, upload and verify the R2 audio host                                                                                                                                                |
+| `scripts/audio/{build,review}-*audio*.py`                                       | Chronological playlists and clips; alignment review. Evidence limits and publication gate: `docs/audio.md`                                                                                |
+| `scripts/snapshot.mjs`                                                          | Build-output snapshot and compare tool (`npm run snapshot`)                                                                                                                               |
+| `scripts/`                                                                      | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                                                                                         |
+| `tests/`                                                                        | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                                                                                         |
+| `docs/assets/`                                                                  | README artwork and actual app screenshot; never shipped in the app                                                                                                                        |
+
+### Python tools
+
+Python scripts are grouped by workflow: `scripts/data/` (importers),
+`scripts/audio/` (alignment, encoding, review, verification),
+`scripts/hosting/` and `scripts/assets/`. Each is a standalone command (run it
+with `python3 -I`); shared code is the importable package
+`scripts/lib/chronos_tools/` (repository paths, the book table, USFM cleanup,
+study-text helpers, fingerprints, ffmpeg/ffprobe calls and inventory-owned
+output). The previous top-level paths (`scripts/import-study.py`,
+`scripts/verify-audio-host.py`, and so on) remain as thin aliases that run the
+grouped script with the same arguments. Python is never needed to build or
+deploy the app. Generators that publish many files into a tracked folder record
+them in an `inventory.json` and remove only unmodified files they wrote earlier
+(`chronos_tools.ownership`); they never delete media or unrelated files.
 
 ## Commands
 
@@ -372,9 +387,9 @@ If the app shows **تعذر تحميل القراءة**, verify that `/readings/
 The supplied `New_Testament_150_Day_Arabic.docx` controls passage order. The original table is retained in `data/source-plan.json`; the importer normalizes the document's reversed RTL reference notation.
 
 ```sh
-python3 scripts/extract-plan.py /path/to/New_Testament_150_Day_Arabic.docx
+python3 scripts/data/extract-plan.py /path/to/New_Testament_150_Day_Arabic.docx
 curl -L --fail https://ebible.org/Scriptures/arb-vd_usfm.zip -o /tmp/arb-vd.zip
-python3 scripts/import.py /tmp/arb-vd.zip
+python3 scripts/data/import.py /tmp/arb-vd.zip
 npm run validate
 ```
 
@@ -394,7 +409,7 @@ curl -L --fail https://ebible.org/Scriptures/arbnav_usfm.zip -o "$S/arbnav.zip"
 curl -L --fail https://ebible.org/Scriptures/eng-kjv_usfm.zip -o "$S/eng-kjv.zip"
 curl -L --fail "$STEP/Tagged-Bibles/Arabic%20Bibles/TTAraSVD%20-%20Translation%20Tags%20for%20Arabic%20SVD%20-%20STEPBible.org%20CC%20BY-SA_NT_4_0_1.txt" -o "$S/ttarasvd-nt.txt"
 curl -L --fail "$STEP/Lexicons/TBESG%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Greek%20-%20STEPBible.org%20CC%20BY.txt" -o "$S/tbesg.txt"
-python3 -I scripts/import-study.py --vd "$S/arb-vd.zip" --nav "$S/arbnav.zip" --kjv "$S/eng-kjv.zip" --tbesg "$S/tbesg.txt" --ttarasvd "$S/ttarasvd-nt.txt"
+python3 -I scripts/data/import-study.py --vd "$S/arb-vd.zip" --nav "$S/arbnav.zip" --kjv "$S/eng-kjv.zip" --tbesg "$S/tbesg.txt" --ttarasvd "$S/ttarasvd-nt.txt"
 npm run validate
 ```
 
@@ -404,7 +419,7 @@ The importer fails unless at least 99.5% of NT verses have Textus Receptus Greek
 
 `build-study-canonical.js` shortens Greek lexicon definitions to **160** characters in the shared lexicon shards, within their 35KB gzip budget; full 400-character definitions did not fit the former per-day files.
 
-To regenerate committed font and logo assets, install Python packages `fonttools brotli pillow` and run `python3 scripts/optimize-assets.py`. Production deployment does not require Python. Original fonts and logo sources are preserved; license texts are bundled under `public/fonts/`.
+To regenerate committed font and logo assets, install Python packages `fonttools brotli pillow` and run `python3 scripts/assets/optimize-assets.py`. Production deployment does not require Python. Original fonts and logo sources are preserved; license texts are bundled under `public/fonts/`.
 
 The Bible favicon is drawn in `src/assets/favicon.svg`. Edit that vector source and run `npm run icons:build` to export its 32px PNG fallback and the installed app's icons in `public/icons/` (requires the installed Playwright Chromium browser). The church logo regeneration script handles only the church artwork.
 

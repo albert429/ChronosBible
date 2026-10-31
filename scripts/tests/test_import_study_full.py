@@ -1,16 +1,14 @@
 """Regression checks for full-Bible study reference and word normalization."""
 import gzip
-import importlib.util
 import json
 from pathlib import Path
 import tempfile
 import unittest
 import zipfile
 
-ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("full_study", ROOT / "scripts/import-study-full.py")
-study = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(study)
+from _support import ROOT, load_script
+
+study = load_script("data/import-study-full.py", "full_study")
 
 
 class FullStudyImportTests(unittest.TestCase):

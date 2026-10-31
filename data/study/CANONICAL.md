@@ -19,7 +19,7 @@ STEPBible is pinned to `be4191f0082aeedddb0eff0c02c966292b2bd641`, with the
 TTAraSVD OT 4.0.1 dataset. NT source hashes are pinned independently.
 
 ```sh
-python3 scripts/import-study-full.py \
+python3 scripts/data/import-study-full.py \
   --ot /path/to/ot.zip --tbesh /path/to/tbesh.txt \
   --nav /path/to/nav.zip --kjv /path/to/kjv.zip \
   --report artifacts/study-import-report.json

@@ -102,7 +102,7 @@ Recordings are immutable, content-hashed files in the R2 bucket
 `chronosbible-audio`, served at `https://audio.chronosbible.com`. A build
 advertises only media that `data/audio/publication.json` lists as verified.
 Publish with `npm run audio:host:prepare`, `npm run audio:host:upload`, then
-`scripts/verify-audio-host.py https://audio.chronosbible.com --publish`, and
+`scripts/hosting/verify-audio-host.py https://audio.chronosbible.com --publish`, and
 commit the updated inventory.
 
 ## Data & Configuration Safeguards
