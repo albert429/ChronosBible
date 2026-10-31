@@ -1,5 +1,5 @@
 // The build's audio inputs: which daily, chapter and chronological recordings
-// this build may advertise, and the manifests it must therefore not ship.
+// this build may advertise, and so the only manifests it ships.
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { chapterAvailability } from "../../src/domain/audio/availability.ts";
@@ -16,8 +16,8 @@ export interface AudioPublication {
   advertised: ReturnType<typeof advertisedAudio>;
   /** Compact per-chapter flags for __AUDIO_CHAPTERS__. */
   chapterFlags: string;
-  /** Output paths (under the build's outDir) of catalogued manifests not advertised. */
-  unpublished: string[];
+  /** Output paths (under the build's outDir) of the advertised manifests. */
+  published: string[];
 }
 
 /**
@@ -70,15 +70,15 @@ export function audioPublication(
     local: (src) => existsSync(resolve(root, "public", "." + src)),
     inventory: optional("data/audio/publication.json"),
   });
-  const unpublished = [
-    ...days.filter((key) => !advertised.days.includes(key)),
-    ...chapters.filter((key) => !advertised.chapters.includes(key)),
-    ...readings.filter((key) => !advertised.readings.includes(key)),
+  const published = [
+    ...advertised.days,
+    ...advertised.chapters,
+    ...advertised.readings,
   ].map(manifestOutputPath);
   return {
     base: VITE_AUDIO_BASE_URL,
     advertised,
     chapterFlags: chapterAvailability(catalog, advertised.chapters),
-    unpublished,
+    published,
   };
 }

@@ -22,7 +22,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [
       react(),
-      removeUnpublishedManifests(audio.unpublished),
+      removeUnpublishedManifests(audio.published),
       serviceWorker(versions),
       dataVersionsHtml(versions),
     ],

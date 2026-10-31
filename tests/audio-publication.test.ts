@@ -23,6 +23,7 @@ import {
   publicationErrors,
   publishedMedia,
 } from "../src/domain/audio/publication.ts";
+import { AUDIO_MANIFEST_PATH } from "../scripts/lib/audio-manifests.js";
 import {
   planUploads,
   prepareRelease,
@@ -416,8 +417,56 @@ test("The build removes manifests it does not advertise", async () => {
     assert.ok(!existsSync(join(root, "dist/audio/1.json")));
     assert.ok(existsSync(join(root, "dist/audio/chapters/GEN/1.json")));
     assert.ok(!existsSync(join(root, "dist/audio/chrono/OT/a.json")));
+    // A manifest no catalog lists (a stale copy left in public/audio) never
+    // ships either; recordings and other files beside them stay.
+    for (const path of [
+      "dist/audio/99.json",
+      "dist/audio/chapters/EXO/2.json",
+      "dist/audio/chrono/NT/old-reading.json",
+    ]) {
+      write(path, "{}");
+      (plugin.closeBundle as () => void)();
+      assert.ok(!existsSync(join(root, path)), path);
+    }
+    for (const path of [
+      "dist/audio/days/001-aa.m4a",
+      "dist/audio/chapters/assets/GEN-1-aa.m4a",
+      "dist/audio/notes.txt",
+    ]) {
+      write(path, "x");
+      (plugin.closeBundle as () => void)();
+      assert.ok(existsSync(join(root, path)), path);
+    }
   } finally {
     process.chdir(original);
     process.env = saved;
   }
+});
+
+test("Every manifest output path has the generated manifest name the filter and builder own", () => {
+  for (const key of [
+    1,
+    150,
+    "bible:GEN:1",
+    "bible:1CO:16",
+    "bible:PSA:119",
+    "chrono:OT:1ch-10-1",
+    "chrono:NT:mat-1-1",
+  ])
+    assert.match(
+      manifestOutputPath(key).replace(/^audio\//, ""),
+      AUDIO_MANIFEST_PATH,
+      String(key),
+    );
+  for (const path of [
+    "days/001-abc.m4a",
+    "chapters/assets/GEN-1-abc.m4a",
+    "clips/GEN-2-4-25-0a1b.m4a",
+    "chapters/GEN/0.json",
+    "0.json",
+    "../1.json",
+    "chrono/XT/a.json",
+    "publication.json",
+  ])
+    assert.doesNotMatch(path, AUDIO_MANIFEST_PATH, path);
 });

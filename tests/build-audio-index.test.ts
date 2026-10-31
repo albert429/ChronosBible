@@ -105,3 +105,34 @@ test("A catalog day that is not in the plan fails the build", async () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("A manifest dropped from the catalog leaves public/audio on the next build; media stays", async () => {
+  const hash = await readingHash(reading);
+  const root = repository([1], hash);
+  const out = join(root, "public/audio");
+  const inventory = join(root, "artifacts/generated-output/audio.json");
+  try {
+    buildAudioIndex({ root, out, inventory });
+    assert.ok(existsSync(join(out, "1.json")));
+    // Local recordings and unrelated files share the folder.
+    mkdirSync(join(out, "days"), { recursive: true });
+    writeFileSync(join(out, "days/001-abc123.m4a"), "media");
+    writeFileSync(join(out, "notes.txt"), "mine");
+    writeFileSync(
+      join(root, "data/audio/catalog.json"),
+      JSON.stringify({ days: [] }),
+    );
+    assert.match(
+      buildAudioIndex({ root, out, inventory }),
+      /Prepared 0 audio manifests/,
+    );
+    assert.equal(existsSync(join(out, "1.json")), false);
+    assert.equal(
+      readFileSync(join(out, "days/001-abc123.m4a"), "utf8"),
+      "media",
+    );
+    assert.equal(readFileSync(join(out, "notes.txt"), "utf8"), "mine");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
