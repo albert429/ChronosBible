@@ -761,7 +761,7 @@ test("«إيقاف» works while the study files are still loading, and nothing 
 }) => {
   await seedAi(page);
   // The translations file never arrives.
-  await page.route("**/study/10.tr.json", () => {});
+  await page.route("**/study/10.tr.json*", () => {});
   await start(page);
   await chip(page, "اشرح الآية").click();
   await expect(answerArea(page)).toHaveAttribute("aria-busy", "true");

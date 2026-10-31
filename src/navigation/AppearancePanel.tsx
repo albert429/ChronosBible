@@ -1,6 +1,7 @@
-import { Minus, Plus, Sun, Moon } from "lucide-react";
+import { Minus, Plus, Sun, Moon, SunMoon } from "lucide-react";
 import { ar } from "../lib/format";
 import { FONT_MIN, FONT_MAX, useAppearance } from "./appearance";
+import { useEndAction } from "../audio/endAction";
 import "./AppearancePanel.css";
 
 export default function AppearancePanel({
@@ -10,8 +11,10 @@ export default function AppearancePanel({
   continuous: boolean;
   setContinuous: (enabled: boolean) => void;
 }) {
-  const { font, setFont, dark, setDark, diacritics, setDiacritics } =
+  const { font, setFont, theme, setTheme, diacritics, setDiacritics } =
     useAppearance();
+  // The same choice as the player's «عند الانتهاء» button.
+  const [endAction, setEndAction] = useEndAction(continuous, setContinuous);
   return (
     <>
       <div className="appearance-row">
@@ -39,11 +42,13 @@ export default function AppearancePanel({
         </div>
       </div>
       <label className="appearance-row continuous-option">
-        <span>استماع متواصل للإصحاحات</span>
+        <span>استماع متواصل</span>
         <input
           type="checkbox"
-          checked={continuous}
-          onChange={(event) => setContinuous(event.target.checked)}
+          checked={endAction === "next"}
+          onChange={(event) =>
+            setEndAction(event.target.checked ? "next" : "stop")
+          }
         />
       </label>
       <label className="appearance-row continuous-option">
@@ -58,8 +63,8 @@ export default function AppearancePanel({
         <button
           className="theme-option"
           aria-label="الوضع النهاري"
-          aria-pressed={!dark}
-          onClick={() => setDark(false)}
+          aria-pressed={theme === "light"}
+          onClick={() => setTheme("light")}
         >
           <Sun size={20} aria-hidden="true" />
           نهاري
@@ -67,11 +72,20 @@ export default function AppearancePanel({
         <button
           className="theme-option"
           aria-label="الوضع الليلي"
-          aria-pressed={dark}
-          onClick={() => setDark(true)}
+          aria-pressed={theme === "dark"}
+          onClick={() => setTheme("dark")}
         >
           <Moon size={20} aria-hidden="true" />
           ليلي
+        </button>
+        <button
+          className="theme-option"
+          aria-label="حسب إعداد الجهاز"
+          aria-pressed={theme === "auto"}
+          onClick={() => setTheme("auto")}
+        >
+          <SunMoon size={20} aria-hidden="true" />
+          تلقائي
         </button>
       </div>
     </>

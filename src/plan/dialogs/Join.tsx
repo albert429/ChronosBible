@@ -1,6 +1,6 @@
 import { ArrowLeft, Upload } from "lucide-react";
 import type { FormEvent } from "react";
-import { ar } from "../../lib/format";
+import { daysLabel } from "../../lib/days";
 import { useToday } from "../../lib/useToday";
 import { useProgress } from "../useProgress";
 import RestoreButton from "./RestoreButton";
@@ -42,7 +42,7 @@ export default function Join({
             </option>
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id}>
-                {profile.name} · {ar(profile.completed.length)} يومًا ·{" "}
+                {profile.name} · {daysLabel(profile.completed.length)} ·{" "}
                 {profile.startDate}
               </option>
             ))}
@@ -83,7 +83,8 @@ export default function Join({
         استعادة نسخة احتياطية
       </RestoreButton>
       <p className="privacy-note">
-        نزّل نسخة احتياطية من الإعدادات قبل تغيير جهازك أو مسح بيانات المتصفح.
+        نزّل نسخة احتياطية من «النسخ الاحتياطي والاستعادة» في القائمة قبل تغيير
+        جهازك أو مسح بيانات المتصفح.
       </p>
     </>
   );

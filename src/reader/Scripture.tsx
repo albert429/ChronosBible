@@ -1,7 +1,7 @@
 import { memo, Fragment, type Ref } from "react";
 import { ar } from "../lib/format";
 import { displayArabic } from "../lib/arabicDisplay";
-import { useAppearance } from "../navigation/appearance";
+import { useDiacritics } from "../navigation/appearance";
 import {
   isBibleChapter,
   isChronologicalReading,
@@ -27,7 +27,8 @@ type Props = {
 const passageStructure = (passage: Passage) =>
   (passage as Passage & { structure?: BibleBlock[] }).structure;
 
-function PlainVerses({
+// Memoized: the listen toggle and other title-row changes skip the text.
+const PlainVerses = memo(function PlainVerses({
   passage,
   diacritics,
 }: {
@@ -56,7 +57,7 @@ function PlainVerses({
       ))}
     </div>
   );
-}
+});
 
 export default memo(function Scripture({
   reading,
@@ -65,7 +66,7 @@ export default memo(function Scripture({
   onToggleListen,
   listenButton,
 }: Props) {
-  const { diacritics } = useAppearance();
+  const diacritics = useDiacritics();
   const chapter = isBibleChapter(reading);
   const chronological = isChronologicalReading(reading);
   return (

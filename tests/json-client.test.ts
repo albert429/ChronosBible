@@ -87,3 +87,29 @@ test("Invalidating a key drops only that cached value", async () => {
   assert.deepEqual(await client.load("a"), { key: "a" });
   assert.deepEqual(urls, ["/data/a.json", "/data/b.json", "/data/a.json"]);
 });
+
+test("A response started by the page's inline script serves the first load of its address", async () => {
+  const urls: string[] = [];
+  const client = createJsonClient(options, async (url) => {
+    urls.push(String(url));
+    return Response.json({ key: String(url).slice(6, 7) });
+  });
+  Object.assign(globalThis, {
+    __earlyData: {
+      "/data/e.json": Promise.resolve(Response.json({ key: "e" })),
+      // A failed early request: the client fetches as usual.
+      "/data/f.json": Promise.resolve(undefined),
+    },
+  });
+  try {
+    assert.deepEqual(await client.load("e"), { key: "e" });
+    assert.deepEqual(await client.load("f"), { key: "f" });
+    assert.deepEqual(urls, ["/data/f.json"]);
+    // Each early response is used once; a later load fetches.
+    client.invalidate("e");
+    assert.deepEqual(await client.load("e"), { key: "e" });
+    assert.deepEqual(urls, ["/data/f.json", "/data/e.json"]);
+  } finally {
+    delete (globalThis as { __earlyData?: unknown }).__earlyData;
+  }
+});

@@ -48,10 +48,14 @@ export function chapterHasAudio(
 }
 
 export type AdvertisedAudio = {
-  days: readonly number[];
+  days: { includes(day: number): boolean } | ReadonlySet<number>;
   chapters: string;
-  readings: readonly string[];
+  readings: { includes(key: string): boolean } | ReadonlySet<string>;
 };
+const has = <T>(
+  list: { includes(value: T): boolean } | ReadonlySet<T>,
+  value: T,
+) => ("has" in list ? list.has(value) : list.includes(value));
 
 /**
  * Whether «استمع» may be offered: a prepared day, a published chapter, or a
@@ -65,7 +69,7 @@ export function audioAvailable(
 ): boolean {
   const mode = "mode" in target ? target.mode : "plan";
   if (mode === "chronological")
-    return advertised.readings.includes(readingKey(target));
+    return has(advertised.readings, readingKey(target));
   if (mode === "bible") {
     const chapter = target as BibleLocation | BibleChapter;
     return chapterHasAudio(books, advertised.chapters, {
@@ -73,19 +77,26 @@ export function audioAvailable(
       chapter: chapter.chapter,
     });
   }
-  return advertised.days.includes((target as PlanLocation | Day).day);
+  return has(advertised.days, (target as PlanLocation | Day).day);
 }
 
 // Inlined by vite.config.ts: verified chronological playlists, as reading
 // keys. Declared here, not in the shared src/vite-env.d.ts.
 declare const __AUDIO_READINGS__: string[];
 
-/** `audioAvailable` for this build's advertised audio (vite.config.ts). */
+let advertised: AdvertisedAudio | undefined;
+/**
+ * `audioAvailable` for this build's advertised audio (vite.config.ts), built
+ * once: the inlined lists become sets instead of new arrays on every call.
+ */
 export const readingHasAudio = (
   target: AnyReadingLocation | AnyScriptureReading,
 ) =>
-  audioAvailable(target, {
-    days: __AUDIO_DAYS__,
-    chapters: __AUDIO_CHAPTERS__,
-    readings: __AUDIO_READINGS__,
-  });
+  audioAvailable(
+    target,
+    (advertised ??= {
+      days: new Set(__AUDIO_DAYS__),
+      chapters: __AUDIO_CHAPTERS__,
+      readings: new Set(__AUDIO_READINGS__),
+    }),
+  );

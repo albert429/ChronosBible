@@ -238,3 +238,80 @@ test.describe("200% reflow", () => {
     }
   });
 });
+
+test.describe("appearance", () => {
+  const theme = (page: Page) =>
+    page.evaluate(() => [
+      document.documentElement.dataset.theme,
+      document
+        .querySelector('meta[name="theme-color"]')!
+        .getAttribute("content"),
+    ]);
+
+  test("the theme follows the device until the reader chooses one", async ({
+    page,
+  }) => {
+    // Until now everyone stored "false"; that old default now means auto.
+    await page.addInitScript(() => {
+      if (!sessionStorage.getItem("seeded")) {
+        sessionStorage.setItem("seeded", "1");
+        localStorage.setItem("word-dark", "false");
+      }
+    });
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await ready(page);
+    expect(await theme(page)).toEqual(["dark", "#181e1a"]);
+    const sheet = await openAppearance(page);
+    const auto = sheet.getByRole("button", { name: "حسب إعداد الجهاز" });
+    await expect(auto).toHaveAttribute("aria-pressed", "true");
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect.poll(() => theme(page)).toEqual(["light", "#f7f5ef"]);
+    await sheet.getByRole("button", { name: "الوضع الليلي" }).click();
+    await page.reload();
+    await ready(page);
+    expect(await theme(page)).toEqual(["dark", "#181e1a"]);
+    await openAppearance(page);
+    await auto.click();
+    expect(await theme(page)).toEqual(["light", "#f7f5ef"]);
+    await expectAccessible(page, { wcag: true });
+  });
+
+  test("verse numbers, headings and titles grow with large text", async ({
+    page,
+  }) => {
+    const sizes = () =>
+      page.evaluate(() =>
+        [".verse sup", ".passage h2"].map((selector) =>
+          parseFloat(
+            getComputedStyle(document.querySelector(selector)!).fontSize,
+          ),
+        ),
+      );
+    await page.goto("/?mode=bible&book=PSA&chapter=23");
+    await ready(page);
+    const [number, title] = await sizes();
+    expect(number).toBeCloseTo(12, 0);
+    expect(title).toBeCloseTo(24, 0);
+    await page.evaluate(() => localStorage.setItem("word-font", "38"));
+    await page.reload();
+    await ready(page);
+    const [large, largeTitle] = await sizes();
+    expect(large).toBeGreaterThan(16);
+    expect(largeTitle).toBeGreaterThan(32);
+    // The number's own target reaches 24×24px without growing the line.
+    const target = await page
+      .locator(".verse-number")
+      .first()
+      .evaluate((el) => {
+        const after = getComputedStyle(el, "::after");
+        const box = el.getBoundingClientRect();
+        return [
+          box.width - 2 * parseFloat(after.left),
+          box.height - 2 * parseFloat(after.top),
+        ];
+      });
+    expect(target[0]).toBeGreaterThanOrEqual(24);
+    expect(target[1]).toBeGreaterThanOrEqual(24);
+  });
+});

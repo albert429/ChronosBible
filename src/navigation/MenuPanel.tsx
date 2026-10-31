@@ -1,4 +1,12 @@
-import { Suspense, useId, useRef, type ChangeEvent } from "react";
+import {
+  lazy,
+  Suspense,
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ComponentType,
+} from "react";
 import {
   BookOpen,
   CalendarDays,
@@ -24,6 +32,10 @@ import {
 } from "./modes";
 import logo from "../assets/favicon.svg";
 import "./MenuPanel.css";
+// Offline saving and installing load when their section is first opened.
+const OfflinePanel = lazy<ComponentType>(() =>
+  import("../pwa/OfflinePanel").catch(() => ({ default: () => null })),
+);
 
 type Props = {
   /** The current track, or undefined away from reading (the calendar). */
@@ -82,6 +94,7 @@ export default function MenuPanel({
   const planHeading = useId();
   const readerHeading = useId();
   const input = useRef<HTMLInputElement>(null);
+  const [offline, setOffline] = useState(false);
   const days = completion.plan.length;
   const choose = (next: ReadingTrack) => close(() => chooseTrack(next));
   async function restore(event: ChangeEvent<HTMLInputElement>) {
@@ -202,6 +215,21 @@ export default function MenuPanel({
               : "تُستعاد النسخة كقارئ منفصل، دون تغيير قراءتك الحالية."}
           </p>
         </details>
+        {"caches" in window && (
+          <details
+            className="menu-backup"
+            onToggle={(event) => {
+              if (event.currentTarget.open) setOffline(true);
+            }}
+          >
+            <summary>القراءة دون اتصال وتثبيت التطبيق</summary>
+            {offline && (
+              <Suspense fallback={null}>
+                <OfflinePanel />
+              </Suspense>
+            )}
+          </details>
+        )}
       </section>
       <footer className="menu-footer">
         <div className="menu-source">

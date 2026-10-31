@@ -1,6 +1,15 @@
 # Copied into dist/ by the Cloudflare build only (see wrangler.json).
 # Workers static assets already answer "public, max-age=0, must-revalidate",
-# which is what /, /index.html, /readings/*, /study/* and /audio/<day>.json
-# need, so only the fingerprinted bundle is overridden here.
+# which is what /, /index.html, /sw.js and /audio/<day>.json need. The
+# fingerprinted bundle, and the Scripture data the app always requests with
+# its folder's content version (?v=, src/lib/dataVersion.ts), never change.
 /assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/bible/*
+  Cache-Control: public, max-age=31536000, immutable
+/chronology/*
+  Cache-Control: public, max-age=31536000, immutable
+/readings/*
+  Cache-Control: public, max-age=31536000, immutable
+/study/*
   Cache-Control: public, max-age=31536000, immutable

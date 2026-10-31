@@ -4,6 +4,26 @@ type Options<T> = {
   message: (key: string) => string;
 };
 
+/**
+ * Responses the inline script in index.html started before the app ran, by
+ * address (undefined where that request failed). Each serves the first load
+ * of its address; the entries stay, so the page shows what was started.
+ */
+type EarlyResponses = Record<string, Promise<Response | undefined>>;
+const usedEarly = new Set<string>();
+function takeEarly(href: string) {
+  const early = (globalThis as { __earlyData?: EarlyResponses }).__earlyData;
+  if (!early?.[href] || usedEarly.has(href)) return;
+  usedEarly.add(href);
+  return early[href];
+}
+const aborted = (signal: AbortSignal) =>
+  new Promise<never>((_, reject) =>
+    signal.addEventListener("abort", () => reject(signal.reason), {
+      once: true,
+    }),
+  );
+
 // Static public JSON only. A shared pending request survives component unmounts
 // and React Strict Mode; failures are never cached, so a retry fetches again.
 export function createJsonClient<T>(
@@ -21,9 +41,12 @@ export function createJsonClient<T>(
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const request = Promise.resolve()
       .then(async () => {
-        const response = await fetcher(url(key), {
-          signal: controller.signal,
-        });
+        const href = url(key);
+        const early = takeEarly(href);
+        const response =
+          (early &&
+            (await Promise.race([early, aborted(controller.signal)]))) ||
+          (await fetcher(href, { signal: controller.signal }));
         if (!response.ok) throw new Error("HTTP " + response.status);
         const data: unknown = await response.json();
         if (!validate(data, key)) throw new Error("Invalid data");

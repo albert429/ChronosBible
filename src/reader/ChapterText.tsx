@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, memo, useMemo } from "react";
 import type { BibleBlock } from "../bible/types";
 import type { Verse } from "../plan/readings";
 import { ar } from "../lib/format";
@@ -49,7 +49,8 @@ function InlineNote({
 // Verses flow as one text, as in the plan reader; structure only adds line
 // starts and notes, so each verse keeps one `.verse` element for highlighting.
 // A chronological passage passes its own in-range verses and blocks.
-export default function ChapterText({
+// Memoized: the listen toggle and other title-row changes skip the text.
+export default memo(function ChapterText({
   verses,
   structure,
   diacritics = true,
@@ -58,13 +59,21 @@ export default function ChapterText({
   structure: readonly BibleBlock[];
   diacritics?: boolean;
 }) {
+  // One pass over the blocks, not one per verse.
+  const byVerse = useMemo(() => {
+    const groups = new Map<number, BibleBlock[]>();
+    for (const block of structure) {
+      const group = groups.get(block.verse);
+      if (group) group.push(block);
+      else groups.set(block.verse, [block]);
+    }
+    return groups;
+  }, [structure]);
   return (
     <div className="verse-text chapter-text">
       {verses.map((verse, verseIndex) => {
-        const length = Array.from(verse.text).length;
-        const blocks = structure.filter(
-          (block) => block.verse === verse.number,
-        );
+        const blocks = byVerse.get(verse.number) ?? [];
+        const length = blocks.length ? Array.from(verse.text).length : 0;
         const before = blocks.filter((block) => block.offset === 0);
         const after = blocks.filter(
           (block) => block.offset > 0 && block.offset >= length,
@@ -130,4 +139,4 @@ export default function ChapterText({
       })}
     </div>
   );
-}
+});
