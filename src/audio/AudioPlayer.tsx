@@ -138,7 +138,10 @@ export default function AudioPlayer({
       waiting={waiting}
       blocked={media.blocked}
       endAction={endAction}
-      offerComplete={media.ended && endAction === "stop" && !done}
+      // Also when «متابعة» has nowhere to go (the end of the plan or Bible).
+      offerComplete={
+        media.ended && endAction !== "repeat" && !continuation && !done
+      }
       detached={detached}
       onFollow={follow}
       onPrevious={() => step(-1)}

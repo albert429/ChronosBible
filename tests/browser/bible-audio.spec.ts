@@ -195,7 +195,11 @@ test("continuous listening keeps one audio element through a cold chapter load a
       () => !!document.activeElement?.closest(".audio-player"),
     ),
   ).toBe(true);
-  // Revelation 22 is the end: no further chapter, no wrap-around.
+  // Revelation 22 is the end: no further chapter, no wrap-around, and the
+  // last chapter may still be marked read.
+  await expect(
+    player(page).getByRole("button", { name: "نعم، تمت" }),
+  ).toBeVisible();
   await page.waitForTimeout(500);
   await expect(article(page)).toHaveAttribute("data-reading", "bible:REV:22");
   await expect(button(page, "الإصحاح التالي")).toBeDisabled();

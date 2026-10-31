@@ -51,6 +51,7 @@ export async function savedCount(urls: readonly string[]) {
 /**
  * Keep every file not kept yet, a few at a time; an interrupted save resumes
  * where it stopped. The worker leaves these requests alone (SAVE_HEADER).
+ * A failure or cancel stops every request, and no progress follows it.
  */
 export async function savePack(
   urls: readonly string[],
@@ -63,20 +64,35 @@ export async function savePack(
   let saved = urls.length - todo.length;
   let next = 0;
   progress(saved);
+  const stop = new AbortController();
+  const cancel = () => stop.abort(signal.reason);
+  signal.addEventListener("abort", cancel, { once: true });
   async function work() {
     while (next < todo.length) {
-      signal.throwIfAborted();
+      stop.signal.throwIfAborted();
       const url = todo[next++];
       const response = await fetch(url, {
         headers: { [SAVE_HEADER]: "1" },
-        signal,
+        signal: stop.signal,
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       await cache.put(url, response);
+      stop.signal.throwIfAborted();
       progress(++saved);
     }
   }
-  await Promise.all(Array.from({ length: AT_ONCE }, work));
+  try {
+    await Promise.all(
+      Array.from({ length: AT_ONCE }, () =>
+        work().catch((error) => {
+          stop.abort(error);
+          throw error;
+        }),
+      ),
+    );
+  } finally {
+    signal.removeEventListener("abort", cancel);
+  }
   // Ask the browser not to clear saved Scripture under storage pressure.
   await navigator.storage?.persist?.().catch(() => false);
 }

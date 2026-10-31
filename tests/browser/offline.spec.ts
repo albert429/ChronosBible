@@ -82,3 +82,32 @@ test("saving the Scripture text makes every mode readable offline", async ({
   await expect(reading(page)).toHaveAttribute("data-day", "40");
   await context.setOffline(false);
 });
+
+test("an install offer made before offline support loads is kept for the menu", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await ready(page);
+  // Chromium offers installation once, here well before the page settles.
+  await page.evaluate(() => {
+    const offer = new Event("beforeinstallprompt", { cancelable: true });
+    Object.assign(offer, {
+      prompt: async () => {
+        (window as { prompted?: boolean }).prompted = true;
+      },
+    });
+    dispatchEvent(offer);
+  });
+  await menuButton(page).click();
+  const menu = menuDialog(page);
+  await menu.getByText("القراءة دون اتصال وتثبيت التطبيق").click();
+  const install = menu.getByRole("button", { name: "تثبيت التطبيق" });
+  await expect(install).toBeVisible({ timeout: 15000 });
+  await install.click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as { prompted?: boolean }).prompted),
+    )
+    .toBe(true);
+  await expect(install).toHaveCount(0);
+});

@@ -45,12 +45,22 @@ export function useVerseHighlight(cue: Cue | undefined, playing: boolean) {
     if (!playing) return;
     // Wheel, touch and scrolling keys only: the player's own scrolling
     // fires none of them. All passive, so scrolling never waits on this.
-    const away = () => {
+    // Dragging the player's slider does not scroll the page, nor do keys in
+    // a field (arrows on the slider) or Space on a button (play, pause).
+    const inside = (event: Event, selector: string) =>
+      !!(event.target as Element | null)?.closest?.(selector);
+    const away = (event: Event) => {
+      if (inside(event, ".audio-player")) return;
       manual.current = performance.now();
       setDetached(true);
     };
     const key = (event: KeyboardEvent) => {
-      if (SCROLL_KEYS.has(event.key)) away();
+      if (
+        SCROLL_KEYS.has(event.key) &&
+        !inside(event, "input, select, textarea, [contenteditable]") &&
+        !(event.key === " " && inside(event, "button, summary"))
+      )
+        away(event);
     };
     addEventListener("wheel", away, { passive: true });
     addEventListener("touchmove", away, { passive: true });

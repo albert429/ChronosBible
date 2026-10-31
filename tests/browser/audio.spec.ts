@@ -292,6 +292,27 @@ test("text tracking stays on after manual scrolling and late data cannot restart
   await expect(page.locator("audio")).toHaveCount(0);
 });
 
+test("the player's own controls never stop the text from following", async ({
+  page,
+}) => {
+  await openPlayer(page);
+  await expect
+    .poll(() =>
+      page.locator("audio").evaluate((el: HTMLAudioElement) => el.currentTime),
+    )
+    .toBeGreaterThan(0);
+  // Space on the focused pause button pauses; it does not scroll the page.
+  await page.getByRole("button", { name: "إيقاف مؤقت" }).press("Space");
+  await page.getByRole("button", { name: "تشغيل التسجيل" }).click();
+  await expect(page.getByRole("button", { name: "إيقاف مؤقت" })).toBeVisible();
+  await page.waitForTimeout(300);
+  const back = page.getByRole("button", { name: "العودة إلى الآية الحالية" });
+  await expect(back).toHaveCount(0);
+  // Scrolling the text by hand does offer the way back.
+  await page.locator(".scripture").dispatchEvent("wheel", { deltaY: 300 });
+  await expect(back).toBeVisible();
+});
+
 test("media failures retry, final verse stops, and leaving reading releases audio", async ({
   page,
 }) => {

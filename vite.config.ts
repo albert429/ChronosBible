@@ -72,7 +72,6 @@ function serviceWorker(versions: Record<string, string>): Plugin {
           .filter((file) => file.startsWith("assets/"))
           .map((file) => `/${file}`),
       ].sort();
-      // The page itself is not fingerprinted: its text marks the build too.
       // The page, manifest and icons are not fingerprinted: their bytes mark
       // the build too, so changing only them still offers an update.
       const page = bundle["index.html"];

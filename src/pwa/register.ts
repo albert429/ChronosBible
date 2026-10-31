@@ -22,7 +22,13 @@ function set(patch: Partial<State>) {
  * installs in the background and waits for the reader to choose «تحديث».
  */
 export function registerServiceWorker() {
-  // Chromium's own install prompt is replaced by the menu's button.
+  // Chromium's own install prompt is replaced by the menu's button; main.tsx
+  // keeps an offer made before this module loaded.
+  const early = (globalThis as { __installPrompt?: Event }).__installPrompt;
+  if (early) {
+    prompt = early as InstallPrompt;
+    set({ install: true });
+  }
   addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     prompt = event as InstallPrompt;
