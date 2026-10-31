@@ -1,5 +1,10 @@
 # Development guide
 
+The proposed whole-repository architecture refactor is tracked in
+[the implementation handoff](plans/architecture-refactor.md). It targets `dev`
+after PR #16 and the subsequent audio replay fix; the structure below describes
+the current application, not that proposed architecture.
+
 ## Structure
 
 | Path                                                            | Responsibility                                                                                                             |
