@@ -13,7 +13,7 @@ import "./OfflinePanel.css";
 
 const PACKS: { pack: Pack; title: string; size: string }[] = [
   { pack: "text", title: "نص الكتاب المقدس", size: "نحو ٣ ميغابايت للتنزيل" },
-  { pack: "study", title: "ملاحظات الدراسة", size: "نحو ٧ ميغابايت للتنزيل" },
+  { pack: "study", title: "ملاحظات الدراسة", size: "نحو ١٣ ميغابايت للتنزيل" },
 ];
 
 type Status =

@@ -14,7 +14,6 @@ const StudyPanel = lazy(() => import("./StudyPanel"));
 const VerseActions = lazy<ComponentType<VerseActionsProps>>(() =>
   import("./VerseActions").catch(() => ({ default: () => null })),
 );
-const CanonicalStudy = lazy(() => import("./CanonicalStudy"));
 
 export default function VerseStudy({
   open,
@@ -59,16 +58,11 @@ export default function VerseStudy({
       </div>
       <ChunkBoundary>
         <Suspense fallback={<Loading label="جارٍ تحميل دراسة الآية…" />}>
-          {isBibleChapter(reading) ? (
-            <CanonicalStudy reading={reading} verse={verse} />
-          ) : (
-            <StudyPanel
-              day={reading.day}
-              passageIndex={target.passage}
-              passage={passage}
-              verse={verse}
-            />
-          )}
+          <StudyPanel
+            usfm={isBibleChapter(reading) ? reading.usfm : undefined}
+            passage={passage}
+            verse={verse}
+          />
         </Suspense>
       </ChunkBoundary>
     </Sheet>

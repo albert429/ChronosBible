@@ -88,6 +88,47 @@ test("Invalidating a key drops only that cached value", async () => {
   assert.deepEqual(urls, ["/data/a.json", "/data/b.json", "/data/a.json"]);
 });
 
+test("An opt-in LRU bound evicts old entries and keeps shared pending requests", async () => {
+  const urls: string[] = [];
+  const client = createJsonClient(
+    { ...options, maxEntries: 2 },
+    async (url) => {
+      urls.push(String(url));
+      return Response.json({ key: String(url).slice(6, -5) });
+    },
+  );
+  await client.load("a");
+  await client.load("b");
+  await client.load("a"); // a becomes the most recently used entry.
+  const first = client.load("c");
+  assert.equal(first, client.load("c"));
+  await first;
+  assert.equal(client.peek("b"), undefined);
+  assert.deepEqual(client.peek("a"), { key: "a" });
+  assert.deepEqual(client.peek("c"), { key: "c" });
+  await client.load("b");
+  assert.deepEqual(urls, [
+    "/data/a.json",
+    "/data/b.json",
+    "/data/c.json",
+    "/data/b.json",
+  ]);
+});
+
+test("Custom decoders still validate before caching and failed parsing retries", async () => {
+  let calls = 0;
+  const client = createJsonClient(
+    {
+      ...options,
+      parse: async (response) => ({ key: await response.text() }),
+    },
+    async () => new Response(++calls === 1 ? "wrong" : "a"),
+  );
+  await assert.rejects(client.load("a"), /تعذر تحميل/);
+  assert.equal(client.peek("a"), undefined);
+  assert.deepEqual(await client.load("a"), { key: "a" });
+});
+
 test("A response started by the page's inline script serves the first load of its address", async () => {
   const urls: string[] = [];
   const client = createJsonClient(options, async (url) => {

@@ -48,7 +48,6 @@ import type { Passage, Verse } from "../plan/readings";
 import AiAnswer from "./AiAnswer";
 import AiSpark from "./AiSpark";
 import { reveal } from "./Section";
-import type { GreekToken } from "./types";
 import "../components/form.css";
 
 type Problem = AiErrorKind | "cap" | "attempts" | "stopped";
@@ -132,17 +131,13 @@ const finished = (chip: ChipId) =>
     : `اكتملت الإجابة: ${CHIPS.find((c) => c.id === chip)?.label}`;
 
 export default function AiPanel({
-  day,
   id,
   passage,
   verse,
-  g,
 }: {
-  day: number;
   id: string;
   passage: Passage;
   verse: Verse;
-  g: GreekToken[];
 }) {
   const storage = useMemo(browserStorage, []);
   const [on, setOn] = useState(() => !isTurnedOff(storage));
@@ -281,9 +276,8 @@ export default function AiPanel({
       const meta = await ask(
         {
           chip,
-          day,
           id,
-          material: { book: passage.book, passage, verse, g },
+          material: { book: passage.book, passage, verse },
           question: text,
         },
         current.signal,

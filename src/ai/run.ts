@@ -1,6 +1,12 @@
 // The only module that holds the provider configuration (and so the public
 // key). It is a separate lazy chunk, loaded on the first uncached request.
-import { studyLex, studyTr } from "../study/client.ts";
+import {
+  verseTranslations,
+  verseWords,
+  wordDefinitions,
+  studyReference,
+} from "../study/canonicalClient.ts";
+import type { WordToken } from "../study/types.ts";
 import { runChain } from "./chain.ts";
 import { buildPrompt, type Material } from "./prompt.ts";
 import { createOpenRouter } from "./providers/openrouter.ts";
@@ -19,7 +25,7 @@ const disabled = new Set<string>();
 
 export type AskInput = {
   chip: ChipId;
-  day: number;
+  /** The canonical verse (GEN.1.1). */
   id: string;
   material: Omit<Material, "tr" | "lex">;
   question?: string;
@@ -35,23 +41,33 @@ export async function ask(
   callbacks: StreamCallbacks,
   onSend?: () => void,
 ): Promise<AiMeta> {
-  const day = String(input.day);
-  // Shared with the study cards' cache; a failure only omits a block. They
-  // race the signal: «إيقاف» must not wait for them (they finish for the cards).
-  const greek = input.chip === "words" || input.chip === "ask";
-  const [tr, lex] = await abortable(
+  if (signal.aborted) throw new AiError("aborted");
+  const needsWords = input.chip === "words" || input.chip === "ask";
+  const verse = String(studyReference(input.id).verse);
+  const wordContext = async () => {
+    if (!needsWords) return undefined;
+    const data = await verseWords.load(input.id);
+    const words = data.verses[verse]?.w ?? [];
+    return { words, lex: await wordDefinitions(words) };
+  };
+  // Each resource is optional context. Stop cancels the AI run immediately,
+  // while deduplicated static requests may finish for an open study section.
+  const [tr, context] = await abortable(
     Promise.allSettled([
-      studyTr.load(day),
-      greek ? studyLex.load(day) : Promise.resolve(undefined),
+      verseTranslations.load(input.id).then((data) => data.verses[verse]),
+      wordContext(),
     ]),
     signal,
   );
+  const words: WordToken[] | undefined =
+    context.status === "fulfilled" ? context.value?.words : undefined;
   const request = buildPrompt(
     input.chip,
     {
       ...input.material,
-      tr: tr.status === "fulfilled" ? tr.value.verses[input.id] : undefined,
-      lex: lex.status === "fulfilled" ? lex.value?.lex : undefined,
+      words: words ?? input.material.words,
+      tr: tr.status === "fulfilled" ? tr.value : undefined,
+      lex: context.status === "fulfilled" ? context.value?.lex : undefined,
     },
     input.question,
   );

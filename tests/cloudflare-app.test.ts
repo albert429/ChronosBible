@@ -12,6 +12,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
+import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { audioUrl } from "../src/audio/url.ts";
@@ -33,6 +34,11 @@ function checkout(branch = "main") {
       stdio: ["ignore", "pipe", "pipe"],
     }).trim();
   git("init", "-b", branch);
+  mkdirSync(join(root, "data"));
+  copyFileSync(
+    new URL("../data/books.json", import.meta.url),
+    join(root, "data/books.json"),
+  );
   writeFileSync(join(root, ".gitignore"), ".env*\npublic/\ndist/\n");
   copyFileSync(
     new URL("../wrangler.json", import.meta.url),
@@ -638,7 +644,12 @@ test(
         },
       );
       assert.equal(result.status, 0, result.stderr + result.stdout);
-      assert.match(result.stdout, /# pass 18\b/);
+      // Every test but this one ran: a nested run can silently execute none.
+      const count = (name: string) =>
+        Number(new RegExp(`# ${name} (\\d+)`).exec(result.stdout)?.[1]);
+      assert.equal(count("skipped"), 1, result.stdout);
+      assert.ok(count("pass") > 0, result.stdout);
+      assert.equal(count("pass"), count("tests") - 1, result.stdout);
       assert.equal(outer.git("rev-parse", "HEAD"), head);
       assert.deepEqual(readFileSync(join(outer.root, ".git/index")), index);
       assert.deepEqual(readFileSync(join(outer.root, ".git/config")), config);
@@ -647,3 +658,54 @@ test(
     }
   },
 );
+
+test("Study gzip assets retain identity, byte limits, and credential scanning", () => {
+  const root = mkdtempSync(join(tmpdir(), "cloudflare-study-test-"));
+  const folder = join(root, "study/v2/GEN/1");
+  mkdirSync(folder, { recursive: true });
+  const path = join(folder, "1-1.words.json.gz");
+  const valid = {
+    v: 2,
+    book: "GEN",
+    chapter: 1,
+    start: 1,
+    end: 1,
+    verses: { "1": { w: [] } },
+  };
+  const write = (value: unknown) =>
+    writeFileSync(path, gzipSync(JSON.stringify(value)));
+  try {
+    write(valid);
+    scanAssets(root, {});
+    write(null);
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, book: "EXO" });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, start: 2 });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, verses: {} });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    writeFileSync(path, "not gzip");
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    writeFileSync(path, gzipSync("not JSON"));
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    write({ ...valid, extra: "x".repeat(256 * 1024) });
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    writeFileSync(path, Buffer.alloc(30_001));
+    assert.throws(() => scanAssets(root, {}), /request budget/);
+    write({ ...valid, extra: "known-private-study-value-123" });
+    assert.throws(
+      () => scanAssets(root, { API_TOKEN: "known-private-study-value-123" }),
+      /credential/,
+    );
+    write({ ...valid, extra: "sk-or-v1-12345678901234567890" });
+    assert.throws(() => scanAssets(root, {}), /credential/);
+    write({ ...valid, extra: "-----BEGIN PRIVATE KEY-----" });
+    assert.throws(() => scanAssets(root, {}), /credential/);
+    rmSync(path);
+    writeFileSync(join(root, "other.json.gz"), gzipSync("{}"));
+    assert.throws(() => scanAssets(root, {}), /unexpected file type/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

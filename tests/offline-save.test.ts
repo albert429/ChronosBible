@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { savePack } from "../src/pwa/offline.ts";
+import { packUrls, savePack } from "../src/pwa/offline.ts";
 
 const globals = globalThis as unknown as {
   caches?: unknown;
@@ -94,4 +94,29 @@ test("a cancelled save reports nothing more, even for files being written", asyn
   await outcome;
   await tick();
   assert.deepEqual(reported, [0]);
+});
+
+test("the study pack is every chapter's study files from the build inventory", async () => {
+  const requested: string[] = [];
+  globals.fetch = (async (url: string) => {
+    requested.push(url);
+    return Response.json({
+      v: 2,
+      files: {
+        "GEN/1/index.json": "a",
+        "GEN/1/1-31.words.json.gz": "b",
+        "GEN/1/1-31.tr.json": "c",
+        "lex/H00.json": "d",
+      },
+    });
+  }) as typeof fetch;
+  assert.deepEqual(await packUrls("study"), [
+    "/study/v2/GEN/1/index.json",
+    "/study/v2/GEN/1/1-31.words.json.gz",
+    "/study/v2/GEN/1/1-31.tr.json",
+  ]);
+  assert.deepEqual(requested, ["/study/v2/inventory.json"]);
+  globals.fetch = (async () =>
+    new Response("{}", { status: 404 })) as unknown as typeof fetch;
+  await assert.rejects(packUrls("study"), /HTTP 404/);
 });

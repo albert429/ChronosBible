@@ -1,0 +1,25 @@
+{
+  "stepCommit": "be4191f0082aeedddb0eff0c02c966292b2bd641",
+  "sources": {
+    "kjv": {
+      "sha256": "67561758cf58d9e767e89226a99171dba722579157d3894767c2f27538bcb38e",
+      "url": "https://ebible.org/Scriptures/eng-kjv_usfm.zip"
+    },
+    "nav": {
+      "sha256": "600a359129b3c41a57e48aea673828b4b26c3b023e73fcc2d700a9714098653b",
+      "url": "https://ebible.org/Scriptures/arbnav_usfm.zip"
+    },
+    "ot": {
+      "sha256": "cb3c5b7b7492f23b27ac57cc6a3ae317575f80fabafff214006c3f678db4f330",
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/be4191f0082aeedddb0eff0c02c966292b2bd641/Tagged-Bibles/Arabic%20Bibles/TTAraSVD%20-%20Translation%20Tags%20for%20Arabic%20SVD%20-%20STEPBible.org%20CC%20BY-SA_OT_4_0_1.txt.zip"
+    },
+    "tbesh": {
+      "sha256": "464dccadd95fd8620dd05fa0d7a4caba58ec3c4d5db3ebf38e43d046ca25b591",
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/be4191f0082aeedddb0eff0c02c966292b2bd641/Lexicons/TBESH%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Hebrew%20-%20STEPBible.org%20CC%20BY.txt"
+    }
+  },
+  "legacyNt": {
+    "greek.json": "ae503d4ab71591985330859bc26b4f55c32ee91bf768aa0cfe0d93cce2e3907d",
+    "lexicon.json": "8b7b645b4fee139c4c09d78a99fe13e71177d76095b6b4c9e9673764af7b5bc2"
+  }
+}
