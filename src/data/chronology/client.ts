@@ -4,8 +4,8 @@ import {
   readingKey,
   type BibleChapter,
   type ChronologicalLocation,
-  type Testament,
 } from "../../domain/reading/types.ts";
+import type { Testament } from "../../domain/scripture/types.ts";
 import { createJsonClient } from "../jsonClient.ts";
 import { dataUrl } from "../dataVersion.ts";
 import { isChronologyId } from "../../domain/reading/chronology.ts";

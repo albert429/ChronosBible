@@ -5,7 +5,8 @@ import {
   parseReadingLocation,
   readingSearch,
 } from "../src/domain/reading/location.ts";
-import { readingKey, type BibleBook } from "../src/domain/reading/types.ts";
+import { readingKey } from "../src/domain/reading/types.ts";
+import type { BibleBook } from "../src/domain/scripture/types.ts";
 
 const catalog: BibleBook[] = [
   {

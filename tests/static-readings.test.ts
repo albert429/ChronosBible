@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildReadings } from "../scripts/build-readings.js";
-import type { Day } from "../src/data/plan/client.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 test("All static readings exactly preserve the validated source, independent of the API", (t) => {
   const out = mkdtempSync(join(tmpdir(), "readings-"));
   t.after(() => rmSync(out, { recursive: true, force: true }));

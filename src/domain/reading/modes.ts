@@ -1,5 +1,6 @@
 import { ar } from "../../shared/lib/format.ts";
-import type { ReadingTrack, Testament } from "./types.ts";
+import type { ReadingTrack } from "./types.ts";
+import type { Testament } from "../scripture/types.ts";
 import type { ChronologicalReadingSummary } from "./chronology.ts";
 
 export const TESTAMENT_NAMES: Record<Testament, string> = {

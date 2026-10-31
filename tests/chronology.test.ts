@@ -15,7 +15,7 @@ import {
 import { readBibleChapters } from "../scripts/build-bible.js";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
 import { catalog as books } from "../src/domain/scripture/catalog.ts";
-import type { Day } from "../src/data/plan/client.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 import type {
   ChronologicalReadingDefinition,
   ChronologyCatalog,

@@ -2,7 +2,7 @@ import "./study.css";
 import { lazy, Suspense } from "react";
 import { catalog } from "../../domain/scripture/catalog";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
-import type { Passage, Verse } from "../../data/plan/client";
+import type { Passage, Verse } from "../../domain/scripture/types";
 import OriginalWords from "./OriginalWords";
 import AiSpark from "../ai/AiSpark";
 import OtherTranslation from "./OtherTranslation";

@@ -5,7 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import type { Day } from "../../data/plan/client";
+import type { Day } from "../../domain/reading/types";
 import type { View } from "./Navigation";
 import { dateLabel } from "../../shared/lib/format";
 import {

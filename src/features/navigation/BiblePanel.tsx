@@ -1,6 +1,5 @@
 import { useId, useState } from "react";
-import { catalog } from "../../domain/scripture/catalog";
-import { findBibleBook } from "../../domain/reading/location";
+import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import type { BibleLocation } from "../../domain/reading/types";
 import { ar } from "../../shared/lib/format";
 import { useProgress } from "../profiles/useProgress";

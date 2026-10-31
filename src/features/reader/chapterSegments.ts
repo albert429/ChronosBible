@@ -1,4 +1,4 @@
-import type { BibleBlock } from "../../domain/reading/types.ts";
+import type { BibleBlock } from "../../domain/scripture/types.ts";
 
 /** Source offsets count Unicode codepoints, preserving Arabic marks verbatim. */
 export function chapterSegments(text: string, blocks: readonly BibleBlock[]) {

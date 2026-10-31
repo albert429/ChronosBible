@@ -11,7 +11,7 @@ import {
   type Cue,
 } from "../src/domain/audio/manifest.ts";
 import { audioUrl } from "../src/domain/audio/url.ts";
-import type { Day } from "../src/data/plan/client.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 
 const reading: Day = {
   day: 1,

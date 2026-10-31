@@ -1,9 +1,9 @@
-/**
- * Pure contracts for the self-paced Old and New Testament chronologies.
- * Types only: catalogs and readings are fetched on demand, never imported.
- */
-import type { BibleBlock, Testament } from "./types.ts";
-import type { Passage, PassageRef } from "../../data/plan/client.ts";
+import type {
+  BibleBlock,
+  Testament,
+  Passage,
+  PassageRef,
+} from "../scripture/types.ts";
 
 /**
  * Where an item comes from in the source PDF. `page`/`pageEnd` are 1-based

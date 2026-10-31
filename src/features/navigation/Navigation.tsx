@@ -14,18 +14,17 @@ import {
   Settings,
   Share2,
 } from "lucide-react";
-import { catalog } from "../../domain/scripture/catalog";
-import { findBibleBook } from "../../domain/reading/location";
+import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
   trackOf,
   type AnyReadingLocation,
   type BibleLocation,
   type ChronologicalLocation,
   type ReadingTrack,
+  type Day,
 } from "../../domain/reading/types";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
 import { ar } from "../../shared/lib/format";
-import type { Day } from "../../data/plan/client";
 import type { TrackCompletion } from "../../domain/profiles/state";
 import { shareApp } from "./share";
 import { dayLabel, readingLabel } from "../../domain/reading/labels";

@@ -19,7 +19,7 @@ import {
 import { catalog } from "../src/domain/scripture/catalog.ts";
 import { validBibleChapter } from "../src/data/bible/client.ts";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
-import type { Day } from "../src/data/plan/client.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 
 const root = new URL("../", import.meta.url).pathname;
 const chapters: BibleChapter[] = readBibleChapters(root);

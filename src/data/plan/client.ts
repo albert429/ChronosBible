@@ -1,21 +1,7 @@
 import { createJsonClient } from "../jsonClient.ts";
 import { dataUrl } from "../dataVersion.ts";
 import { PLAN_DAYS, isPlanDay } from "../../domain/reading/schedule.ts";
-
-export type Verse = { number: number; text: string; heading?: string };
-export type PassageRef = {
-  book: string;
-  chapter: number;
-  start: number;
-  end: number;
-};
-export type Passage = PassageRef & { verses: Verse[] };
-export type PlanEntry = {
-  day: number;
-  verseCount: number;
-  passages: PassageRef[];
-};
-export type Day = Omit<PlanEntry, "passages"> & { passages: Passage[] };
+import type { Day, PlanEntry } from "../../domain/reading/types.ts";
 
 const validEntry = (entry: PlanEntry) =>
   entry && Number.isInteger(entry.day) && Array.isArray(entry.passages);

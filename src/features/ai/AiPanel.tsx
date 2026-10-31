@@ -39,7 +39,7 @@ import {
 import { abortable, AiError, type AiErrorKind, type ChipId } from "./types.ts";
 import { APP_INFO } from "../../shared/lib/appInfo";
 import { ar, today } from "../../shared/lib/format";
-import type { Passage, Verse } from "../../data/plan/client";
+import type { Passage, Verse } from "../../domain/scripture/types";
 import AiAnswer from "./AiAnswer";
 import AiSpark from "./AiSpark";
 import { reveal } from "../study/Section";

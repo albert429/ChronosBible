@@ -1,6 +1,5 @@
 import { Fragment, memo, useMemo } from "react";
-import type { BibleBlock } from "../../domain/reading/types";
-import type { Verse } from "../../data/plan/client";
+import type { BibleBlock, Verse } from "../../domain/scripture/types";
 import { ar } from "../../shared/lib/format";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { chapterSegments } from "./chapterSegments";

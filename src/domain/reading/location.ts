@@ -1,15 +1,13 @@
+import { findBibleBook } from "../scripture/catalog.ts";
 import { isChronologyId } from "./chronology.ts";
 import { isPlanDay } from "./schedule.ts";
 import type {
   AnyReadingLocation,
-  BibleBook,
   BibleLocation,
   ChronologicalLocation,
   ReadingLocation,
 } from "./types.ts";
-
-export const findBibleBook = (catalog: readonly BibleBook[], code: string) =>
-  catalog.find((book) => book.usfm === code);
+import type { BibleBook } from "../scripture/types.ts";
 
 const validVerse = (verse: unknown) =>
   verse === undefined ||

@@ -7,8 +7,7 @@ import {
   Suspense,
 } from "react";
 import { readingHasAudio } from "../../domain/audio/availability";
-import { catalog } from "../../domain/scripture/catalog";
-import { findBibleBook } from "../../domain/reading/location";
+import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import {
   isChronologicalReading,
   readingKey,

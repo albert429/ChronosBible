@@ -1,5 +1,4 @@
-import { catalog } from "../scripture/catalog.ts";
-import { findBibleBook } from "../reading/location.ts";
+import { catalog, findBibleBook } from "../scripture/catalog.ts";
 import {
   trackOf,
   type AnyReadingLocation,

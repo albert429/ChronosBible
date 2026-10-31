@@ -6,7 +6,7 @@ import { getEventListeners } from "node:events";
 import type { AiBuildConfig } from "../src/features/ai/config.ts";
 import type { AskInput } from "../src/features/ai/run.ts";
 import type { AiError, ChipId } from "../src/features/ai/types.ts";
-import type { Verse } from "../src/data/plan/client.ts";
+import type { Verse } from "../src/domain/scripture/types.ts";
 
 const requests: string[] = [];
 const pending: (() => void)[] = [];

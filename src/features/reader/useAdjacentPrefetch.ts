@@ -7,13 +7,14 @@ import {
   readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
+  type Day,
 } from "../../domain/reading/types";
 import {
   adjacentChronologicalLocation,
   chronologicalReadings,
 } from "../../data/chronology/client";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import { days, type Day } from "../../data/plan/client.ts";
+import { days } from "../../data/plan/client.ts";
 
 /**
  * Run `prefetch` once the selected reading and its fonts settle, unless the

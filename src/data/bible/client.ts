@@ -1,10 +1,7 @@
 import { createJsonClient } from "../jsonClient.ts";
 import { dataUrl } from "../dataVersion.ts";
-import { catalog } from "../../domain/scripture/catalog.ts";
-import {
-  findBibleBook,
-  validBibleLocation,
-} from "../../domain/reading/location.ts";
+import { catalog, findBibleBook } from "../../domain/scripture/catalog.ts";
+import { validBibleLocation } from "../../domain/reading/location.ts";
 import {
   readingKey,
   type BibleChapter,

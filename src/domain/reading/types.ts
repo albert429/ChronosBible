@@ -1,24 +1,19 @@
-import type { Day, Passage } from "../../data/plan/client.ts";
+import type {
+  BibleBlock,
+  Passage,
+  PassageRef,
+  Testament,
+} from "../scripture/types.ts";
 import type { ChronologicalReading } from "./chronology.ts";
 
-export type Testament = "OT" | "NT";
-
-export type BibleBook = {
-  usfm: string;
-  name: string;
-  testament: Testament;
-  chapters: number;
-  verseCounts: number[];
+/** A youth-plan day in the plan index: its passages, without text. */
+export type PlanEntry = {
+  day: number;
+  verseCount: number;
+  passages: PassageRef[];
 };
-
-/** A source block anchored before a verse, or at a Unicode codepoint within it. */
-export type BibleBlock = {
-  kind: "heading" | "superscription" | "acrostic" | "paragraph" | "poetry";
-  marker: string;
-  verse: number;
-  offset: number;
-  text?: string;
-};
+/** A fetched youth-plan day with its Scripture text. */
+export type Day = Omit<PlanEntry, "passages"> & { passages: Passage[] };
 
 export type BibleChapter = {
   mode: "bible";

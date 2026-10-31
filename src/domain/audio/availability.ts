@@ -3,12 +3,12 @@ import {
   readingKey,
   type AnyReadingLocation,
   type AnyScriptureReading,
-  type BibleBook,
   type BibleChapter,
   type BibleLocation,
   type PlanLocation,
+  type Day,
 } from "../reading/types.ts";
-import type { Day } from "../../data/plan/client.ts";
+import type { BibleBook } from "../scripture/types.ts";
 
 /**
  * Published canonical recordings as one "1"/"0" per chapter in catalog order:

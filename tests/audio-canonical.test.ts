@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
-import type { Day } from "../src/data/plan/client.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 import {
   activeCueIndex,
   announcementAt,

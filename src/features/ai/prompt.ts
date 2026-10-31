@@ -1,4 +1,4 @@
-import type { Passage, Verse } from "../../data/plan/client.ts";
+import type { Passage, Verse } from "../../domain/scripture/types.ts";
 import type {
   GreekToken,
   LexEntry,

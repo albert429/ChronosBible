@@ -1,5 +1,4 @@
-/** Pure structural checks for chronology data; no catalog is imported. */
-import type { BibleBook, Testament } from "../../domain/reading/types.ts";
+import type { BibleBook, Testament } from "../../domain/scripture/types.ts";
 import {
   MAX_CHRONOLOGY_READINGS,
   PROVENANCE_EXCEPTION_KINDS,
