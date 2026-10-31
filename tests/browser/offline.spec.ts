@@ -67,6 +67,9 @@ test("verse study opened once, words and translations, stays available offline",
   await page.goto("/?mode=bible&book=GEN&chapter=1");
   await ready(page);
   await controlled(page);
+  // The first visit's chapter loaded before the worker took control.
+  await page.reload();
+  await ready(page);
   await openStudy();
   await context.setOffline(true);
   await page.reload();
