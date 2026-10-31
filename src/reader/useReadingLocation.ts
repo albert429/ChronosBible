@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { catalog } from "../bible/catalog";
 import {
   parseAnyReadingLocation,
   parseReadingLocation,
 } from "../bible/navigation";
-import type {
-  AnyReadingLocation,
-  ChronologicalLocation,
-  PlanLocation,
-  ReadingLocation,
-  ReadingTrack,
+import {
+  readingKey,
+  type AnyReadingLocation,
+  type ChronologicalLocation,
+  type PlanLocation,
+  type ReadingLocation,
+  type ReadingTrack,
 } from "../bible/types";
 import { loadProgress, readerPlaces, saveReaderPlaces } from "../plan/progress";
 import {
@@ -20,11 +21,23 @@ import {
   locationSearch,
   placesFromPreferences,
   sameLocation,
+  saveReadingPosition,
   trackPlace,
   validAnyLocation,
   withPlace,
   type ReaderPlaces,
 } from "./location";
+import { topVisibleVerse } from "./scriptureDom";
+
+// The reader restores its own places (see `restore` below).
+if (typeof history !== "undefined") history.scrollRestoration = "manual";
+
+/** Saves the top visible verse of the place on screen, before leaving it. */
+function remember(place: AnyReadingLocation) {
+  const identity = readingKey(place);
+  const position = topVisibleVerse(identity);
+  if (position !== null) saveReadingPosition(identity, position);
+}
 
 function savedPlaces(reader: string) {
   try {
@@ -95,6 +108,25 @@ export function useReadingLocation(
       ? (trackPlace(places, "bible", state.scheduled) as ReadingLocation)
       : here;
   const [navigation, setNavigation] = useState(0);
+  // Opening the app, Back/Forward and returning to a mode resume where the
+  // reader was; moving on to another place starts at its top.
+  const [restore, setRestore] = useState(true);
+  const shown = useRef(here);
+  useLayoutEffect(() => {
+    shown.current = here;
+  });
+  useEffect(() => {
+    const leave = () => remember(shown.current);
+    const hide = () => {
+      if (document.visibilityState === "hidden") leave();
+    };
+    addEventListener("pagehide", leave);
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      removeEventListener("pagehide", leave);
+      document.removeEventListener("visibilitychange", hide);
+    };
+  }, []);
   useEffect(() => {
     // An address that already names this place, such as an explicit ?day=
     // link, is kept so that a reload returns to it.
@@ -119,6 +151,8 @@ export function useReadingLocation(
         ? (event.state.scripture as AnyReadingLocation)
         : parse(location.search);
       if (next) {
+        remember(shown.current);
+        setRestore(true);
         setState((saved) => ({
           ...saved,
           places: withPlace(saved.places, next),
@@ -130,8 +164,16 @@ export function useReadingLocation(
     return () => removeEventListener("popstate", pop);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chronological]);
-  function go(next: AnyReadingLocation, replace = false) {
+  /**
+   * Opens a place. Choosing the reading already open is still a manual
+   * selection (it restarts that reading), but adds no history entry.
+   */
+  function go(next: AnyReadingLocation, replace = false, resume = false) {
     if (!allowed(next)) return;
+    if (next.verse === undefined && readingKey(next) === readingKey(here))
+      replace = true;
+    remember(here);
+    setRestore(resume);
     const url = `${location.pathname}${locationSearch(next)}${location.hash}`;
     history[replace ? "replaceState" : "pushState"](
       { ...history.state, scripture: next },
@@ -149,6 +191,8 @@ export function useReadingLocation(
     track: places.track,
     places: places as ReaderPlaces,
     navigation,
+    /** Whether the reader should resume its remembered position. */
+    restore,
     plan,
     preferences: { continuous: state.continuous },
     go,
@@ -159,11 +203,13 @@ export function useReadingLocation(
     chooseMode(track: ReadingTrack, start?: ChronologicalLocation): boolean {
       const next = trackPlace(places, track, state.scheduled) ?? start;
       if (!next || !allowed(next)) return false;
-      go(next);
+      go(next, false, true);
       return true;
     },
     /** Switch to another reader's places; returns their plan day. */
     selectReader(nextReader: string, nextScheduled: number) {
+      remember(here);
+      setRestore(true);
       const next = savedPlaces(nextReader).places;
       setState((saved) => ({
         ...saved,

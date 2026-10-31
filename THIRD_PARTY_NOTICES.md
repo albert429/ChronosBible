@@ -36,9 +36,11 @@ The church logo and the 150-day plan were supplied for this app. Their inclusion
 
 ## Documentation artwork
 
-The README banner and community illustration were created with the built-in image generation tool for this repository. They illustrate the purpose of the app; they are not Scripture sources, screenshots, or depictions of identifiable church members. The screenshot in the README was captured from the running app. [Prompts and provenance](docs/design/image-prompts.md).
+The README's community illustration was generated with Codex's built-in image generation tool, and the photograph of the devices in the README banner with the Antigravity CLI's image generator, for this repository. They illustrate the purpose of the app; they are not Scripture sources or depictions of identifiable church members. The app on the banner's screens and in the README's phone screenshots was captured from the live app. [Prompts and provenance](docs/design/image-prompts.md).
 
-The banner includes an eBible.org attribution and logo based on the [official logo asset](https://ebible.org/icon/eBibleorglogo.svg). The eBible.org identity belongs to its owner; the Scripture edition's public-domain status does not extend to the logo.
+The banner includes an eBible.org attribution with the [official logo asset](https://ebible.org/icon/eBibleorglogo.svg), reproduced unaltered. The eBible.org identity belongs to its owner; the Scripture edition's public-domain status does not extend to the logo.
+
+The banner's laptop and phone are generated likenesses of Apple products. Mac, MacBook Air and iPhone are trademarks of Apple Inc.; this project is not affiliated with or endorsed by Apple.
 
 ## Software dependencies
 

@@ -12,12 +12,81 @@
       content="الكتاب المقدس: قراءة واستماع، بالترتيب المعتاد أو الزمني."
     />
     <script>
+      // The saved theme before first paint (see src/navigation/appearance.ts).
       try {
-        if (localStorage.getItem("word-dark") === "true") {
+        var theme =
+          localStorage.getItem("word-theme") ||
+          (localStorage.getItem("word-dark") === "true" ? "dark" : "auto");
+        if (
+          theme === "dark" ||
+          (theme === "auto" &&
+            matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
           document.documentElement.dataset.theme = "dark";
           document.querySelector('meta[name="theme-color"]').content =
             "#181e1a";
         }
+      } catch {}
+    </script>
+    <script>
+      // Fetch the reading the app will open alongside its code, not after it
+      // (see src/reader/preload.ts); a wrong guess costs one small request.
+      // The app takes these responses over (src/lib/jsonClient.ts): unlike a
+      // <link rel=preload>, a fetch started here is reused by every browser.
+      try {
+        (function (versions) {
+          var query = new URLSearchParams(location.search);
+          var mode = query.get("mode");
+          var paths;
+          if (mode === "bible")
+            paths = [
+              "/bible/" +
+                query.get("book") +
+                "/" +
+                query.get("chapter") +
+                ".json",
+            ];
+          else if (mode === "chronological")
+            paths = [
+              "/chronology/" + query.get("testament") + ".json",
+              "/chronology/" +
+                query.get("testament") +
+                "/" +
+                query.get("reading") +
+                ".json",
+            ];
+          else if (mode) paths = [];
+          else if (query.has("day"))
+            paths = ["/readings/" + query.get("day") + ".json"];
+          else {
+            var saved = localStorage.getItem("bible-reader-preload-v1");
+            // A fresh reader opens Genesis 1; an older one, their own place.
+            paths = saved
+              ? JSON.parse(saved)
+              : localStorage.getItem("bible-reader-state-v2") ||
+                  localStorage.getItem("bible-reader-location-v1") ||
+                  localStorage.getItem("nt-reading-progress-v1")
+                ? []
+                : ["/bible/GEN/1.json"];
+          }
+          var early = (window.__earlyData = {});
+          paths.forEach(function (path) {
+            if (
+              !/^\/(bible|readings|chronology)\/[\w-]+(\/[\w-]+)?\.json$/.test(
+                path,
+              )
+            )
+              return;
+            var version = versions[path.split("/")[1]];
+            var href = version ? path + "?v=" + version : path;
+            early[href] = fetch(href).then(
+              function (response) {
+                return response.ok ? response : undefined;
+              },
+              function () {},
+            );
+          });
+        })(__DATA_VERSIONS_JSON__);
       } catch {}
     </script>
     <link
@@ -26,6 +95,8 @@
       sizes="32x32"
       href="/src/assets/favicon.png"
     />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link
       rel="icon"
       type="image/svg+xml"

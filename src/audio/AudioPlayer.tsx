@@ -8,6 +8,7 @@ import { chapterVerse } from "../bible/reference";
 import { dayLabel } from "../plan/labels";
 import { ar } from "../lib/format";
 import AudioControls from "./AudioControls";
+import { nextEndAction, useEndAction } from "./endAction";
 import {
   activeCueIndex,
   announcementAt,
@@ -35,20 +36,40 @@ export default function AudioPlayer({
   initialTime = 0,
   onPosition,
   next,
+  continuous,
+  setContinuous,
+  done,
+  onComplete,
 }: {
   reading: AnyScriptureReading;
   onClose: () => void;
-  /** Only the parent may opt into an ended handoff; manual navigation unmounts. */
-  onEnded?: () => void;
+  /**
+   * The natural end, with the place to continue to under «متابعة». Only the
+   * parent may hand off; manual navigation unmounts the player.
+   */
+  onEnded?: (next?: AnyReadingLocation) => void;
   initialTime?: number | ((source: string) => number);
   onPosition?: (seconds: number, source: string) => void;
-  /** The continuation target, whose timing JSON may be fetched once playing. */
+  /** Where «متابعة» would continue: the next place with a recording. */
   next?: AnyReadingLocation;
+  /** The «متابعة» preference behind «عند الانتهاء» (see endAction.ts). */
+  continuous: boolean;
+  setContinuous: (enabled: boolean) => void;
+  /** Whether the reading is already marked done. */
+  done: boolean;
+  onComplete: () => void;
 }) {
   const { timeline, error: loadError, retry } = useAudioManifest(reading);
-  const media = useMediaElement(timeline, { initialTime, onEnded, onPosition });
+  const [endAction, setEndAction] = useEndAction(continuous, setContinuous);
+  const continuation = endAction === "next" ? next : undefined;
+  const media = useMediaElement(timeline, {
+    initialTime,
+    onEnded: () => onEnded?.(continuation),
+    onPosition,
+    repeat: endAction === "repeat",
+  });
   const { playing, waiting, time, rate, play, pause, seekTo } = media;
-  useNextManifest(next, playing);
+  useNextManifest(continuation, playing);
   const index = timeline ? activeCueIndex(timeline, time) : -1;
   const cue = timeline?.cues[index];
   const announcement = timeline && announcementAt(timeline, time);
@@ -80,7 +101,7 @@ export default function AudioPlayer({
   };
 
   usePauseOnDialog(pause);
-  useVerseHighlight(cue, playing);
+  const { detached, follow, resume } = useVerseHighlight(cue, playing);
   useMediaSession({
     timeline,
     title: label,
@@ -115,10 +136,21 @@ export default function AudioPlayer({
       duration={timeline?.duration ?? 0}
       error={media.error || loadError || ""}
       waiting={waiting}
+      blocked={media.blocked}
+      endAction={endAction}
+      // Also when «متابعة» has nowhere to go (the end of the plan or Bible).
+      offerComplete={
+        media.ended && endAction !== "repeat" && !continuation && !done
+      }
+      detached={detached}
+      onFollow={follow}
       onPrevious={() => step(-1)}
       onToggle={() => (playing || waiting ? pause() : void play())}
       onNext={() => step(1)}
+      onSeek={seekTo}
       onRate={() => media.setRate(nextRate(rate))}
+      onEndAction={() => setEndAction(nextEndAction(endAction))}
+      onComplete={onComplete}
       onRetry={() => {
         if (timeline) void play();
         else {
@@ -128,7 +160,14 @@ export default function AudioPlayer({
       }}
       onClose={onClose}
     >
-      <audio {...media.audioProps} />
+      <audio
+        {...media.audioProps}
+        onSeeking={() => {
+          media.audioProps.onSeeking();
+          // A jump (slider, verse skip, lock screen) follows the text again.
+          resume();
+        }}
+      />
     </AudioControls>
   );
 }

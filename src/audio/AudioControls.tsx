@@ -1,6 +1,25 @@
 import type { ReactNode } from "react";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import {
+  ChevronDown,
+  CircleStop,
+  ListEnd,
+  Pause,
+  Play,
+  Repeat1,
+  SkipBack,
+  SkipForward,
+  X,
+} from "lucide-react";
+import { ar } from "../lib/format";
+import { clock } from "./clock";
+import { END_ACTION_LABELS, type EndAction } from "./endAction";
 import "./audio.css";
+
+const END_ACTION_ICONS = {
+  stop: CircleStop,
+  next: ListEnd,
+  repeat: Repeat1,
+};
 
 type AudioControlsProps = {
   /** The audio element, rendered inside the player section. */
@@ -20,10 +39,21 @@ type AudioControlsProps = {
   duration: number;
   error: string;
   waiting: boolean;
+  /** The browser wants a direct tap on play before it starts. */
+  blocked: boolean;
+  endAction: EndAction;
+  /** Offer to mark the reading done (it ended and is not done yet). */
+  offerComplete: boolean;
+  /** The reader scrolled away from the verse being read. */
+  detached: boolean;
+  onFollow: () => void;
   onPrevious: () => void;
   onToggle: () => void;
   onNext: () => void;
+  onSeek: (seconds: number) => void;
   onRate: () => void;
+  onEndAction: () => void;
+  onComplete: () => void;
   onRetry: () => void;
   onClose: () => void;
 };
@@ -43,16 +73,32 @@ export default function AudioControls({
   duration,
   error,
   waiting,
+  blocked,
+  endAction,
+  offerComplete,
+  detached,
+  onFollow,
   onPrevious,
   onToggle,
   onNext,
+  onSeek,
   onRate,
+  onEndAction,
+  onComplete,
   onRetry,
   onClose,
 }: AudioControlsProps) {
+  const EndIcon = END_ACTION_ICONS[endAction];
+  const position = Math.min(time, duration);
   return (
     <section className="audio-player" aria-label="مشغل القراءة الصوتية">
       {children}
+      {detached && (
+        <button className="audio-follow" onClick={onFollow}>
+          <ChevronDown size={16} aria-hidden="true" />
+          العودة إلى الآية الحالية
+        </button>
+      )}
       <div className="audio-player-inner">
         <div className="audio-current">
           <span>{label}</span>
@@ -97,17 +143,55 @@ export default function AudioControls({
         >
           <SkipBack size={18} aria-hidden="true" />
         </button>
+        {!error && (
+          <button
+            className="icon-button audio-close"
+            aria-label="إغلاق المشغل"
+            onClick={onClose}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <div className="audio-timeline">
+        <span className="audio-time" aria-hidden="true">
+          {clock(position)}
+        </span>
+        <input
+          type="range"
+          className="audio-seek"
+          aria-label="موضع التسجيل"
+          aria-valuetext={`${clock(position)} من ${clock(duration)}`}
+          min={0}
+          max={duration || 1}
+          step={1}
+          value={position}
+          disabled={!ready || !duration}
+          onChange={(event) => onSeek(Number(event.target.value))}
+        />
+        <span className="audio-time" aria-hidden="true">
+          {clock(duration)}
+        </span>
         <button
           className="icon-button audio-speed"
-          aria-label={`سرعة القراءة: ${rate}×`}
+          aria-label={`سرعة القراءة: ${ar(rate)}×`}
           title="تغيير سرعة القراءة"
           dir="ltr"
           onClick={onRate}
         >
-          {rate}×
+          {ar(rate)}×
+        </button>
+        <button
+          className="icon-button audio-end"
+          aria-label={END_ACTION_LABELS[endAction]}
+          title={END_ACTION_LABELS[endAction]}
+          data-action={endAction}
+          onClick={onEndAction}
+        >
+          <EndIcon size={18} aria-hidden="true" />
         </button>
       </div>
-      {(error || !ready || waiting) && (
+      {error || !ready || waiting ? (
         <div className="audio-status" role={error ? "alert" : "status"}>
           <span>{error || "جارٍ تحميل التسجيل…"}</span>
           {error && (
@@ -121,13 +205,21 @@ export default function AudioControls({
             </button>
           )}
         </div>
+      ) : blocked && !active ? (
+        <div className="audio-status" role="status">
+          <span>اضغط زر التشغيل لبدء الاستماع.</span>
+        </div>
+      ) : (
+        offerComplete && (
+          // Completion stays the reader's own choice: offered, never assumed.
+          <div className="audio-status audio-offer">
+            <span>هل أتممت هذه القراءة؟</span>
+            <button className="text-button" onClick={onComplete}>
+              نعم، تمت
+            </button>
+          </div>
+        )
       )}
-      <progress
-        className="audio-progress"
-        value={time}
-        max={duration || 1}
-        aria-label="تقدم التسجيل"
-      />
     </section>
   );
 }

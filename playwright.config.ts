@@ -27,6 +27,9 @@ export default defineConfig({
   use: {
     baseURL: APP_URL,
     reducedMotion: "reduce",
+    // The offline worker would hide requests from page.route; only
+    // offline.spec.ts allows it.
+    serviceWorkers: "block",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

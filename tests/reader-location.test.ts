@@ -5,7 +5,9 @@ import {
   loadPreferences,
   locationSearch,
   planLocation,
+  readingPosition,
   sameLocation,
+  saveReadingPosition,
   validLocation,
   withLocation,
 } from "../src/reader/location.ts";
@@ -164,4 +166,46 @@ test("reader ids that name Object.prototype members still get their own plan pla
       day: 3,
     });
   }
+});
+
+test("reading positions are remembered per reading, newest fifty only", () => {
+  const store = new Map<string, string>();
+  Object.assign(globalThis, {
+    localStorage: {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+    },
+  });
+  assert.equal(readingPosition("bible:GEN:1"), undefined);
+  saveReadingPosition("bible:GEN:1", { passage: 0, verse: 12, offset: 400 });
+  assert.deepEqual(readingPosition("bible:GEN:1"), {
+    passage: 0,
+    verse: 12,
+    offset: 400,
+  });
+  // Back at the start forgets the place.
+  saveReadingPosition("bible:GEN:1", undefined);
+  assert.equal(readingPosition("bible:GEN:1"), undefined);
+  for (let chapter = 1; chapter <= 60; chapter++)
+    saveReadingPosition(`bible:PSA:${chapter}`, {
+      passage: 0,
+      verse: 2,
+      offset: 0,
+    });
+  const saved = JSON.parse(store.get("bible-reader-scroll-v1")!);
+  assert.equal(Object.keys(saved).length, 50);
+  assert.equal(readingPosition("bible:PSA:10"), undefined);
+  assert.deepEqual(readingPosition("bible:PSA:60"), {
+    passage: 0,
+    verse: 2,
+    offset: 0,
+  });
+  // Damaged entries are ignored rather than trusted.
+  store.set(
+    "bible-reader-scroll-v1",
+    '{"plan:1":[0,-1,0],"plan:2":"x","plan:3":[0,4,1001]}',
+  );
+  assert.equal(readingPosition("plan:3"), undefined);
+  assert.equal(readingPosition("plan:1"), undefined);
+  assert.equal(readingPosition("plan:2"), undefined);
 });

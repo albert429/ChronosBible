@@ -365,21 +365,35 @@ verify that all referenced files are uploaded before setting the variable.
 
 ## Playback behavior and verification
 
-The bottom player supports play/pause, previous/next verse, and a direct speed
-button cycling through 0.75×, 1×, 1.25×, and 1.5×. Text tracking stays on during
-playback, including after manual scrolling; it follows again on the next verse.
-The Listen button changes to Close player while active. Recording credits live
-in About. Opening any dialog pauses audio;
-closing a dialog does not resume it automatically. Changing day, reader, or main
-view stops playback. Listening never completes a day or advances to another day.
+The bottom player has two rows. The first holds the reading and verse, the
+previous/next verse buttons, play/pause and «إغلاق المشغل». The second holds a
+seek slider with elapsed and total times (right to left, like the text), a
+speed button cycling through 0.75×, 1×, 1.25× and 1.5× (kept per device,
+`bible-reader-audio-rate-v1`), and «عند الانتهاء», which chooses what happens
+when a recording ends: stop, continue to the next place, or play the same
+reading again. Text tracking follows the verse being read; after the reader
+scrolls by hand (wheel, touch or scrolling keys) it waits for eight seconds and
+offers «العودة إلى الآية الحالية», and any seek follows again at once. The
+Listen button changes to Close player while active. Recording credits live in
+About. The reading settings and verse study sheets leave playback running
+(they are marked `data-keeps-audio`); any other dialog pauses audio, and
+closing it does not resume. Changing day, reader, or main view stops playback.
+When the browser refuses to start without a tap (Safari after the manifest
+loads), the player says so under its controls.
 
-In Bible mode, «استماع متواصل للإصحاحات» in reader settings continues to the next
-chapter when one ends naturally, in canonical order, and stops after Revelation 22.
-Only the natural end continues: choosing a chapter (even the same one), changing
-mode, Back/Forward, or the arrows stop playback at once. The same audio element
-carries on while the next chapter's text and manifest load, and keyboard focus
-stays in the player. Replaying or seeking an ended chapter re-arms continuation.
-Old Testament chapters currently play without verse highlighting or verse skip.
+«متابعة إلى التالي» (also «استماع متواصل» in reading settings, the existing
+`continuous` preference) continues to the next plan day, canonical chapter or
+chronological reading when one ends naturally, in that mode's order, and stops
+at its end (for example after Revelation 22) or before a place without a
+published recording. «إعادة القراءة» (`bible-reader-audio-repeat-v1`) plays the
+same reading from its start. Only the natural end continues: choosing a chapter
+(even the same one), changing mode, Back/Forward, or the arrows stop playback at
+once. The same audio element carries on while the next chapter's text and
+manifest load, and keyboard focus stays in the player. Replaying or seeking an
+ended chapter re-arms continuation. With «إيقاف», a finished recording asks
+«هل أتممت هذه القراءة؟»; listening itself never marks a reading done.
+Old Testament chapters currently play without verse highlighting or verse skip;
+the slider and the lock screen's skip buttons move through them.
 
 The player remembers the position in each recording, keyed by its immutable
 media path, so a rebuilt recording starts from the beginning. Positions are
@@ -387,7 +401,9 @@ saved every 5 seconds of playback and on pause, end, hiding the page and closing
 the player (`bible-reader-audio-position-v1`, at most 20 recordings), separately
 from plan progress. A continuous handoff starts the next chapter at its beginning.
 
-Media Session supplies lock-screen controls where supported. One continuous file
+Media Session supplies lock-screen controls where supported: play/pause,
+previous/next verse, seeking and ten-second skips. Its position is reported on
+play, pause, rate changes and seeks only, since the system extrapolates it. One continuous file
 per day avoids relying on JavaScript chapter switching while a phone is locked.
 Background playback still depends on the browser/OS and needs physical-device
 verification. Automatic playback after the manifest loads can require a second
@@ -396,6 +412,7 @@ tap on Safari; the play button remains available.
 Run `npm test` and `npx playwright test tests/browser/audio.spec.ts` after building
 the pilot media. Browser tests exercise real playback in Chromium and WebKit,
 lazy requests, cue navigation, retries, stale transcripts, dialog pausing,
+the end choice, seeking, saved speed,
 keyboard focus, widths 320–430, and narrow reflow. They cannot establish that
 every machine-generated timestamp matches the narration or that lock-screen
 behavior works on every phone.

@@ -15,6 +15,8 @@ import {
   mediaReducer,
 } from "./mediaStatus.ts";
 import { PlaylistController } from "./playlistController.ts";
+import { saveRate, savedRate } from "./speed.ts";
+import { audioBlocked } from "./usePauseOnDialog.ts";
 
 const PLAY_ERROR = "تعذر تشغيل التسجيل. تحقق من الاتصال وحاول مرة أخرى.";
 const STALL_ERROR = "تأخر تحميل التسجيل. تحقق من الاتصال وحاول مرة أخرى.";
@@ -32,6 +34,8 @@ export function useMediaElement(
   options: {
     initialTime?: number | ((source: string) => number);
     onEnded?: () => void;
+    /** Play the reading again from its start when it ends. */
+    repeat?: boolean;
     onPosition?: (seconds: number, source: string) => void;
   } = {},
 ) {
@@ -59,7 +63,9 @@ export function useMediaElement(
     initialMediaState,
   );
   const [time, setTime] = useState(0);
-  const [rate, setRate] = useState(1);
+  const [rate, setRate] = useState(savedRate);
+  // The browser refused to start without a direct tap (iOS, autoplay rules).
+  const [blocked, setBlocked] = useState(false);
   const playing = isPlaying(status);
   const waiting = isWaiting(status);
 
@@ -73,13 +79,9 @@ export function useMediaElement(
 
   const play = useCallback(async () => {
     const player = controller.current!;
-    if (
-      !audio.current ||
-      !player.timeline ||
-      document.querySelector("dialog[open]")
-    )
-      return;
+    if (!audio.current || !player.timeline || audioBlocked()) return;
     const current = ++token.current;
+    setBlocked(false);
     dispatch({ type: "request" });
     try {
       await player.play();
@@ -88,6 +90,7 @@ export function useMediaElement(
     } catch (err) {
       if (current !== token.current) return;
       // iOS may require a second, direct tap after the manifest loads.
+      setBlocked((err as Error).name === "NotAllowedError");
       dispatch({
         type: "paused",
         message:
@@ -154,6 +157,7 @@ export function useMediaElement(
 
   useEffect(() => {
     controller.current!.setRate(rate);
+    saveRate(rate);
   }, [rate]);
 
   useEffect(() => {
@@ -196,6 +200,11 @@ export function useMediaElement(
         return;
       }
       if (outcome !== "finished") return;
+      if (callbacks.current.repeat) {
+        // From its start, in the same native event task as a continuation.
+        void play();
+        return;
+      }
       dispatch({ type: "ended" });
       report();
       callbacks.current.onEnded?.();
@@ -213,6 +222,7 @@ export function useMediaElement(
     playing,
     waiting,
     ended: status === "ended",
+    blocked,
     error,
     time,
     rate,

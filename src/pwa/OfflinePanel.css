@@ -1,0 +1,33 @@
+.offline-pack {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.offline-pack-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+.offline-pack-text small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.offline-pack-text progress {
+  width: 100%;
+  height: 4px;
+  margin-top: 6px;
+  accent-color: var(--olive);
+}
+.offline-save {
+  min-height: 44px;
+  padding-block: 6px;
+  font-size: 13px;
+}
+.offline-done {
+  margin-inline-end: 12px;
+  color: var(--olive);
+}

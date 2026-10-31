@@ -315,10 +315,19 @@ function readItem(storage: StorageLike, key: string) {
   }
 }
 type Loaded = { state: ProgressState; source: "v2" | "legacy" | "fresh" };
+/**
+ * The last stored text and its parsed state. Every change builds a new state
+ * (nothing here mutates one), so an unchanged text is not parsed and checked
+ * again on each navigation and completion.
+ */
+let parsed: { raw: string; state: ProgressState } | undefined;
 function load(storage: StorageLike): Loaded {
   const raw = readItem(storage, STATE_KEY);
   try {
-    if (raw) return { state: parseState(raw), source: "v2" };
+    if (raw) {
+      if (parsed?.raw !== raw) parsed = { raw, state: parseState(raw) };
+      return { state: parsed.state, source: "v2" };
+    }
     const progress = readItem(storage, PROGRESS_KEY);
     let location: string | null = null;
     try {
@@ -363,6 +372,8 @@ const serialize = (state: ProgressState) =>
 function persist(storage: StorageLike, state: ProgressState) {
   const text = serialize(state);
   try {
+    // Unchanged (for example, a place saved again): nothing to write.
+    if (storage.getItem(STATE_KEY) === text) return;
     storage.setItem(STATE_KEY, text);
     if (storage.getItem(STATE_KEY) !== text) throw Error();
   } catch {

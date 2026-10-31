@@ -7,6 +7,7 @@ import {
   type Testament,
 } from "../bible/types.ts";
 import { createJsonClient } from "../lib/jsonClient.ts";
+import { dataUrl } from "../lib/dataVersion.ts";
 import { isChronologyId } from "./types.ts";
 import type {
   ChronologicalPassage,
@@ -87,7 +88,7 @@ export function createChronologyClients(
     {
       url: (key) => {
         if (!isTestament(key)) throw new Error("Invalid testament");
-        return `/chronology/${key}.json`;
+        return dataUrl(`/chronology/${key}.json`);
       },
       validate: (data, key): data is ChronologyCatalog =>
         isTestament(key) && isChronologyCatalog(data, key),
@@ -102,7 +103,9 @@ export function createChronologyClients(
       url: (key) => {
         const location = chronologicalKeyLocation(key);
         if (!location) throw new Error("Invalid chronological reading key");
-        return `/chronology/${location.testament}/${location.readingId}.json`;
+        return dataUrl(
+          `/chronology/${location.testament}/${location.readingId}.json`,
+        );
       },
       validate: (data, key): data is ChronologicalReadingDefinition => {
         const location = chronologicalKeyLocation(key);

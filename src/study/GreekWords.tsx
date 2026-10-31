@@ -2,6 +2,8 @@ import { Languages } from "lucide-react";
 import { gloss, greekWord, keyGroups, span } from "./verse";
 import type { GreekToken } from "./types";
 import Section from "./Section";
+import { displayArabic } from "../lib/arabicDisplay";
+import { useDiacritics } from "../navigation/appearance";
 
 export default function GreekWords({
   text,
@@ -10,6 +12,7 @@ export default function GreekWords({
   text: string;
   g: GreekToken[];
 }) {
+  const diacritics = useDiacritics();
   const groups = keyGroups(g);
   if (!groups.length) return null;
   return (
@@ -26,7 +29,7 @@ export default function GreekWords({
               {group.a0 !== null && group.a1 !== null && (
                 <>
                   <span className="greek-ar">
-                    {span(text, group.a0, group.a1)}
+                    {displayArabic(span(text, group.a0, group.a1), diacritics)}
                   </span>
                   <span className="greek-arrow" aria-hidden="true">
                     ←
