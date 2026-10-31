@@ -2,12 +2,19 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
+import {
+  STUDY_WORDS_GZIP_LIMIT,
+  STUDY_WORDS_RAW_LIMIT,
+} from "../../src/domain/study/limits.ts";
 import { publishOwned } from "../lib/ownership.js";
 import { readBibleChapters } from "./build-bible.js";
 
-export const STUDY_WORDS_RAW_LIMIT = 256 * 1024;
+// The word-range limits are the ones the app's decoder and the hosting audit
+// enforce (src/domain/study/limits.ts). Translation and lexicon budgets are
+// build-only: nothing at run time checks them.
+export { STUDY_WORDS_RAW_LIMIT };
 export const STUDY_BUDGETS = {
-  words: 30000,
+  words: STUDY_WORDS_GZIP_LIMIT,
   translations: 30000,
   lexicon: 35000,
 };

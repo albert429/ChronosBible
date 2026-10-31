@@ -10,6 +10,10 @@ import {
 import { extname, isAbsolute, join, relative } from "node:path";
 import { execFileSync } from "node:child_process";
 import { gunzipSync } from "node:zlib";
+import {
+  STUDY_WORDS_GZIP_LIMIT,
+  STUDY_WORDS_RAW_LIMIT,
+} from "../../src/domain/study/limits.ts";
 import { usfmCodes } from "../lib/books.js";
 import { ROOT, isMain } from "../lib/paths.js";
 
@@ -138,11 +142,13 @@ const studyWordsPath =
 
 /** Only the generated study word format may use compressed app assets. */
 function studyWordsBody(body, match) {
-  if (body.length > 30_000)
+  // The same limits as the app's decoder, checked here independently: the
+  // stored size, then a bounded decode of the actual bytes.
+  if (body.length > STUDY_WORDS_GZIP_LIMIT)
     fail("compressed study words exceed request budget");
   let decoded, data;
   try {
-    decoded = gunzipSync(body, { maxOutputLength: 256 * 1024 });
+    decoded = gunzipSync(body, { maxOutputLength: STUDY_WORDS_RAW_LIMIT });
     data = JSON.parse(decoded.toString("utf8"));
   } catch {
     fail("invalid or oversized compressed study words");

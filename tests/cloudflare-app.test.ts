@@ -427,6 +427,7 @@ const HOSTING_FILES = [
   "scripts/hosting/cloudflare-app.mjs",
   "scripts/lib/books.js",
   "scripts/lib/paths.js",
+  "src/domain/study/limits.ts",
 ];
 
 // Each case runs the real wrapper against a fixture checkout whose build script
