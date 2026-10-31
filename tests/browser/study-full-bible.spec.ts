@@ -163,7 +163,10 @@ for (const decoder of ["DecompressionStream", "the fallback decoder"])
     await openVerse(page);
     await openSection(page, "الكلمات العبرية");
     const first = study(page).locator('bdi[lang="he"]').first();
-    await expect(first).toHaveText("בְּ רֵאשִׁ֖ית");
+    // בְּ רֵאשִׁית, in the source's exact mark order.
+    await expect(first).toHaveText(
+      "\u05d1\u05bc\u05b0 \u05e8\u05b5\u05d0\u05e9\u05c1\u05b4\u0596\u05d9\u05ea",
+    );
     await expect(section(page, "الكلمات العبرية")).toHaveAccessibleName(
       /^الكلمات العبرية [٠-٩]+$/,
     );

@@ -55,7 +55,8 @@ test("verse study opened once, words and translations, stays available offline",
     await page.locator('#passage-0 .verse[data-v="1"] .verse-number').click();
     await openSection(page, "الكلمات العبرية");
     await expect(study(page).locator('bdi[lang="he"]').first()).toHaveText(
-      "בְּ רֵאשִׁ֖ית",
+      // בְּ רֵאשִׁית, in the source's exact mark order.
+      "\u05d1\u05bc\u05b0 \u05e8\u05b5\u05d0\u05e9\u05c1\u05b4\u0596\u05d9\u05ea",
     );
     await openSection(page, "ترجمات أخرى");
     await expect(study(page).locator(".study-english")).toContainText(
