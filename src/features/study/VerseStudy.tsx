@@ -6,7 +6,7 @@ import {
 } from "../../domain/reading/types";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
-import { verseNumberButton } from "../reader/scriptureDom";
+import { verseNumberButton } from "../../shared/browser/scriptureDom";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useDiacritics } from "../appearance/appearance";
 import type { VerseActionsProps } from "./VerseActions";

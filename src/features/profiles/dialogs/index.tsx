@@ -1,5 +1,4 @@
 import { BookOpen, Link, Users } from "lucide-react";
-import type { View } from "../../navigation/Navigation";
 import { useProgress } from "../useProgress";
 import Invite from "./Invite";
 import Join from "./Join";
@@ -11,7 +10,8 @@ export type Modal =
   { kind: "join" } | { kind: "settings" } | { kind: "invite"; text: string };
 export type Actions = {
   close: () => void;
-  navigate: (view: View) => void;
+  /** Dialogs only ever return to the reading. */
+  navigate: (view: "read") => void;
   setNotice: (notice: string) => void;
 };
 type Props = Actions & {

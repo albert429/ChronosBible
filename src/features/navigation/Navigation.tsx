@@ -34,7 +34,7 @@ import {
 } from "../../domain/reading/labels";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
-import { passageElement } from "../reader/scriptureDom";
+import { passageElement } from "../../shared/browser/scriptureDom";
 import { connectionAllowsPrefetch } from "../../shared/browser/network";
 import MenuPanel from "./MenuPanel";
 import logo from "../../assets/favicon.svg";

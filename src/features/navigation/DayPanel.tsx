@@ -19,7 +19,7 @@ import { useProgress } from "../profiles/useProgress";
 import { useToday } from "../../shared/hooks/useToday";
 import { ChunkBoundary, Loading, LoadError } from "../../shared/ui/Feedback";
 import PassageReference from "../../shared/ui/PassageReference";
-import { passageId } from "../reader/scriptureDom";
+import { passageId } from "../../shared/browser/scriptureDom";
 import "./DayPanel.css";
 
 /** Also called from the day button, so the grid is ready when the menu opens. */

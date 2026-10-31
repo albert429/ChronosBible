@@ -8,7 +8,7 @@ import {
   isVerseNumber,
   markSelected,
   verseLocation,
-} from "./scriptureDom";
+} from "../../shared/browser/scriptureDom";
 
 export function useVerseTap(reading: AnyScriptureReading | undefined) {
   const [target, setTarget] = useState<StudyTarget | null>(null);

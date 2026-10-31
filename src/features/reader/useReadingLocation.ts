@@ -35,7 +35,7 @@ import {
   placesFromPreferences,
 } from "../../domain/profiles/legacy";
 import { saveReadingPosition } from "./position";
-import { topVisibleVerse } from "./scriptureDom";
+import { topVisibleVerse } from "./verseScroll";
 
 // The reader restores its own places (see `restore` below).
 if (typeof history !== "undefined") history.scrollRestoration = "manual";

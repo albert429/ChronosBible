@@ -11,7 +11,7 @@ import type { BibleBlock, Passage } from "../../domain/scripture/types";
 import ChapterText from "./ChapterText";
 import PassageReference from "../../shared/ui/PassageReference";
 import ListenButton from "./ListenButton";
-import { passageHeadingId, passageId } from "./scriptureDom";
+import { passageHeadingId, passageId } from "../../shared/browser/scriptureDom";
 import "./Scripture.css";
 
 type Props = {

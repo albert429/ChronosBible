@@ -33,10 +33,10 @@ import { useSwipePaging } from "./useSwipePaging";
 import {
   clearSelected,
   markSelected,
-  scrollToVerse,
   verseElement,
   verseNumberButton,
-} from "./scriptureDom";
+} from "../../shared/browser/scriptureDom";
+import { scrollToVerse } from "./verseScroll";
 import { readingPosition } from "./position";
 import { playbackPosition, savePlaybackPosition } from "../audio/position";
 import "./Reader.css";

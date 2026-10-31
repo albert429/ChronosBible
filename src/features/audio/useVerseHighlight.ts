@@ -3,7 +3,7 @@ import {
   clearListening,
   markListening,
   verseElement,
-} from "../reader/scriptureDom";
+} from "../../shared/browser/scriptureDom";
 import { scrollDelta } from "./highlightScroll.ts";
 import type { Cue } from "../../domain/audio/manifest";
 
