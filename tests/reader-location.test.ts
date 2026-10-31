@@ -4,10 +4,12 @@ import {
   initialPreferences,
   loadPreferences,
   planLocation,
-  readingPosition,
-  saveReadingPosition,
   withLocation,
 } from "../src/domain/reading/places.ts";
+import {
+  readingPosition,
+  saveReadingPosition,
+} from "../src/features/reader/position.ts";
 import {
   locationSearch,
   validLocation,

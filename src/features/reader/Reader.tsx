@@ -37,11 +37,8 @@ import {
   verseElement,
   verseNumberButton,
 } from "./scriptureDom";
-import {
-  playbackPosition,
-  readingPosition,
-  savePlaybackPosition,
-} from "../../domain/reading/places";
+import { readingPosition } from "./position";
+import { playbackPosition, savePlaybackPosition } from "../audio/position";
 import "./Reader.css";
 const AudioPlayer = lazy(() => import("../audio/AudioPlayer"));
 const VerseStudy = lazy(loadVerseStudy);

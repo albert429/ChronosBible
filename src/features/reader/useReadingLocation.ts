@@ -28,11 +28,11 @@ import {
   LOCATION_KEY,
   loadPreferences,
   placesFromPreferences,
-  saveReadingPosition,
   trackPlace,
   withPlace,
   type ReaderPlaces,
 } from "../../domain/reading/places";
+import { saveReadingPosition } from "./position";
 import { topVisibleVerse } from "./scriptureDom";
 
 // The reader restores its own places (see `restore` below).
