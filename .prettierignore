@@ -21,3 +21,14 @@ public/bible/
 data/audio/readings/
 data/audio/review/
 data/audio/reading-catalog.json
+
+# Local or Git-ignored work (keep in step with eslint.config.js)
+worktrees/
+.agents/
+.claude/worktrees/
+.claude/settings.local.json
+.wrangler/
+.vercel/
+.playwright-mcp/
+assets/video/
+assets/reel*/
