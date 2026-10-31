@@ -17,7 +17,7 @@ function set(patch: Partial<State>) {
 }
 
 /**
- * Register /sw.js (src/pwa/sw.ts); main.tsx calls this once the page has
+ * Register /sw.js (src/features/offline/sw.ts); main.tsx calls this once the page has
  * settled, so it never competes with the first reading. A new build
  * installs in the background and waits for the reader to choose «تحديث».
  */

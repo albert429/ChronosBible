@@ -53,7 +53,7 @@ for (const [book, chapter] of [
     }),
   );
 writeFileSync(join(root, "public/audio/chapters/assets/GEN-1-abc.m4a"), "");
-// Revelation 22 was uploaded and verified (src/audio/publication.ts).
+// Revelation 22 was uploaded and verified (src/domain/audio/publication.ts).
 writeFileSync(
   join(root, "data/audio/publication.json"),
   JSON.stringify({

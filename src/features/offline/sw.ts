@@ -44,7 +44,7 @@ const shell = new Set(__SW_SHELL__);
 
 worker.addEventListener("install", (event) => {
   // The whole app, so that it opens offline from the next launch on. A new
-  // build waits until the reader accepts it (src/pwa/register.ts).
+  // build waits until the reader accepts it (src/features/offline/register.ts).
   event.waitUntil(
     caches.open(SHELL).then((cache) => cache.addAll(__SW_SHELL__)),
   );

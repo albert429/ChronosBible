@@ -42,7 +42,7 @@ test("AI modules never touch reading progress or storage outside the cache modul
   for (const f of files.filter((f) => f.name.startsWith("features/ai/"))) {
     assert.doesNotMatch(
       f.text,
-      /nt-reading-progress|from "[./]*progress/,
+      /nt-reading-progress|bible-reader-state|from "[^"]*(?:progress|\/profiles\/)/,
       f.name,
     );
     if (f.name !== "features/ai/cache.ts")

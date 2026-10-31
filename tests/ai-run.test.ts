@@ -1,4 +1,4 @@
-// The request path in src/ai/run.ts, with fetch stubbed. Each test file runs
+// The request path in src/features/ai/run.ts, with fetch stubbed. Each test file runs
 // in its own process, so the globals set here stay local.
 import { test } from "node:test";
 import assert from "node:assert/strict";

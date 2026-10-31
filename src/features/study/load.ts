@@ -1,6 +1,6 @@
 /**
  * The verse study sheet loads apart from the reader. The first press on the
- * text warms its code (src/reader/useVerseTap.ts); data loads on opening.
+ * text warms its code (src/features/reader/useVerseTap.ts); data loads on opening.
  */
 export type StudyTarget = { passage: number; verse: number; el: HTMLElement };
 

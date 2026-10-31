@@ -1,5 +1,5 @@
 /**
- * What the service worker (src/pwa/sw.ts) keeps, shared with the page's
+ * What the service worker (src/features/offline/sw.ts) keeps, shared with the page's
  * offline downloads. Pure, so unit tests cover it without a worker.
  */
 

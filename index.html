@@ -12,7 +12,7 @@
       content="الكتاب المقدس: قراءة واستماع، بالترتيب المعتاد أو الزمني."
     />
     <script>
-      // The saved theme before first paint (see src/navigation/appearance.ts).
+      // The saved theme before first paint (see src/features/appearance/appearance.ts).
       try {
         var theme =
           localStorage.getItem("word-theme") ||
@@ -30,8 +30,8 @@
     </script>
     <script>
       // Fetch the reading the app will open alongside its code, not after it
-      // (see src/reader/preload.ts); a wrong guess costs one small request.
-      // The app takes these responses over (src/lib/jsonClient.ts): unlike a
+      // (see src/features/reader/preload.ts); a wrong guess costs one small request.
+      // The app takes these responses over (src/data/jsonClient.ts): unlike a
       // <link rel=preload>, a fetch started here is reused by every browser.
       try {
         (function (versions) {

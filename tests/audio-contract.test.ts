@@ -1,4 +1,4 @@
-// The audio delivery contract (src/audio/contract.ts) against everything that
+// The audio delivery contract (src/domain/audio/contract.ts) against everything that
 // restates it: committed manifests, the R2 staging folder and the upload
 // command.
 import { test } from "node:test";
