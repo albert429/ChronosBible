@@ -1,175 +1,51 @@
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
-import {
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Settings,
-  Share2,
-} from "lucide-react";
-import { catalog, findBibleBook } from "../../domain/scripture/catalog";
-import {
-  type ReadingLocation,
-  type BibleLocation,
-  type ChronologicalLocation,
-  type Day,
-} from "../../domain/reading/types";
-import { trackOf, type ReadingTrack } from "../../domain/reading/identity";
-import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import type { TrackCompletion } from "../../domain/profiles/state";
-import { shareApp } from "./share";
-import {
-  chapterLabel,
-  dayLabel,
-  readingLabel,
-  TRACK_NAMES,
-  TRACK_SHORT_NAMES,
-} from "../../domain/reading/labels";
-import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
-import Sheet from "../../shared/ui/Sheet";
-import { passageElement } from "../../shared/browser/scriptureDom";
+import { useEffect, type RefObject } from "react";
+import type { ReadingLocation } from "../../domain/reading/types";
 import { connectionAllowsPrefetch } from "../../shared/browser/network";
-import MenuPanel from "./MenuPanel";
-import logo from "../../assets/favicon.svg";
-import "./Navigation.css";
-const About = lazy(() => import("./About"));
-// Sheet contents load apart from the reader: warmed when the page is idle,
-// and by pressing or focusing their button, so opening one does not wait.
-// The menu, every reader's way around, stays in the main bundle.
-const loadChronologyPanel = () => import("./ChronologyPanel");
-const ChronologyPanel = lazy(loadChronologyPanel);
-const loadBiblePanel = () => import("./BiblePanel");
-const BiblePanel = lazy(loadBiblePanel);
-const loadDayPanel = () =>
-  Promise.all([import("./DayPanel"), import("./DayJumper")]).then(
-    ([panel]) => panel,
-  );
-const DayPanel = lazy(loadDayPanel);
-const loadAppearancePanel = () => import("../appearance/AppearancePanel");
-const AppearancePanel = lazy(loadAppearancePanel);
-const warm = (load: () => Promise<unknown>) => () =>
-  void load().catch(() => {});
+import { navigationModel, type View } from "./model";
+import { useSheetController } from "./useSheetController";
+import {
+  loadAppearancePanel,
+  loadBiblePanel,
+  loadChronologyPanel,
+  loadDayPanel,
+  warm,
+} from "./panels";
+import Toolbar from "./Toolbar";
+import SheetHost, { type SheetActions, type SheetData } from "./SheetHost";
 
-export type View = "read" | "calendar";
-const ADJACENT_LABELS = {
-  bible: ["الإصحاح السابق", "الإصحاح التالي"],
-  plan: ["اليوم السابق", "اليوم التالي"],
-  chronological: ["القراءة السابقة", "القراءة التالية"],
-} as const;
-type Panel = "menu" | "day" | "appearance" | "about" | "bible" | "chronology";
 type Props = {
   location: ReadingLocation;
   /** The neighbouring places in this mode (see `adjacentLocation`). */
   previous?: ReadingLocation;
   next?: ReadingLocation;
-  go: (location: ReadingLocation) => void;
-  chooseTrack: (track: ReadingTrack) => void;
-  /** The open chronology's summaries (chronological mode only). */
-  chronology?: ChronologyCatalog;
-  chronologyError?: string;
-  retryChronology: () => void;
   /** The current reading's title when the catalog is not loaded. */
   readingTitle: string;
-  completion: TrackCompletion;
-  continuous: boolean;
-  setContinuous: (enabled: boolean) => void;
   view: View;
-  navigate: (view: View) => void;
   menuToggle: RefObject<HTMLButtonElement | null>;
-  readers: () => void;
-  invite: (text: string) => void;
-  notify: (notice: string) => void;
-  selected: number;
-  reading?: Day;
-  readingError?: string;
-  retryReading: () => void;
-  goDay: (day: number) => void;
+  actions: SheetActions;
+  data: SheetData;
 };
+
+/** The toolbar and its sheet, sharing one sheet controller. */
 export default function Navigation({
   location,
   previous,
   next,
-  go,
-  chooseTrack,
-  chronology,
-  chronologyError,
-  retryChronology,
   readingTitle,
-  completion,
-  continuous,
-  setContinuous,
   view,
-  navigate,
   menuToggle,
-  readers,
-  invite,
-  notify,
-  selected,
-  reading,
-  readingError,
-  retryReading,
-  goDay,
+  actions,
+  data,
 }: Props) {
-  const track = trackOf(location);
-  const bible = location.mode === "bible" ? location : undefined;
-  const chrono = location.mode === "chronological" ? location : undefined;
-  const place = bible
-    ? chapterLabel(findBibleBook(catalog, bible.book)!.name, bible.chapter)
-    : chrono
-      ? readingTitle
-      : dayLabel(selected);
-  const [previousLabel, nextLabel] = ADJACENT_LABELS[location.mode];
-  const pickerPanel: Panel = bible ? "bible" : chrono ? "chronology" : "day";
-  const pickerLabel = bible
-    ? `اختيار السفر والإصحاح: ${place}`
-    : chrono
-      ? `فهرس ${TRACK_NAMES[track]}: ${place || "جارٍ التحميل"}`
-      : `تفاصيل ${place} · ${TRACK_NAMES.plan}`;
-  const [panel, setPanel] = useState<Panel>("menu");
-  const [open, setOpen] = useState(false);
-  const [sharing, setSharing] = useState(false);
-  const afterClose = useRef<(() => void) | null>(null);
-  const [sheetTrigger, setSheetTrigger] = useState<HTMLElement | null>(null);
-  function show(next: Panel, trigger: HTMLElement) {
-    afterClose.current = null;
-    setSheetTrigger(trigger);
-    setPanel(next);
-    setOpen(true);
-  }
-  function close(action?: () => void) {
-    if (!open) return;
-    afterClose.current = action || null;
-    setOpen(false);
-  }
-  async function share() {
-    if (sharing) return;
-    setSharing(true);
-    let fallback;
-    try {
-      fallback = await shareApp();
-    } finally {
-      setSharing(false);
-    }
-    if (fallback) close(() => invite(fallback));
-  }
-  function jump(index: number) {
-    close(() => {
-      const target = passageElement(index);
-      target?.focus({ preventScroll: true });
-      target?.scrollIntoView({ block: "start", behavior: "instant" });
-    });
-  }
+  const model = navigationModel(location, {
+    readingTitle,
+    selected: data.selected,
+  });
+  const sheet = useSheetController();
   // After the page settles, fetch the sheets this reader is likely to open.
-  const picker = chrono
+  const picker = model.chrono
     ? loadChronologyPanel
-    : bible
+    : model.bible
       ? loadBiblePanel
       : loadDayPanel;
   useEffect(() => {
@@ -188,164 +64,25 @@ export default function Navigation({
       if (idle) cancelIdleCallback(idle);
     };
   }, [picker]);
-  const titles: Record<Panel, string> = {
-    menu: "القائمة",
-    bible: TRACK_NAMES.bible,
-    day: readingLabel(selected),
-    chronology: TRACK_NAMES[track],
-    about: "عن التطبيق",
-    appearance: "إعدادات القراءة",
-  };
   return (
     <>
-      <a className="skip-link" href="#main">
-        انتقل إلى المحتوى
-      </a>
-      <header className="topbar">
-        <div className="topbar-inner">
-          <button
-            ref={menuToggle}
-            className="icon-button menu-toggle"
-            aria-label="فتح القائمة"
-            aria-haspopup="dialog"
-            aria-expanded={open && panel === "menu"}
-            onClick={(event) => show("menu", event.currentTarget)}
-          >
-            <img src={logo} width="28" height="28" alt="" />
-            <Menu size={16} aria-hidden="true" />
-          </button>
-          {view === "read" ? (
-            <>
-              <button
-                className="icon-button previous-day"
-                disabled={!previous}
-                onClick={() => previous && go(previous)}
-                aria-label={previousLabel}
-              >
-                <ChevronRight size={20} aria-hidden="true" />
-              </button>
-              <h1 className="toolbar-day">
-                <button
-                  className="day-trigger"
-                  aria-label={pickerLabel}
-                  aria-haspopup="dialog"
-                  aria-expanded={open && panel === pickerPanel}
-                  data-track={track}
-                  onPointerDown={warm(picker)}
-                  onFocus={warm(picker)}
-                  onClick={(event) => show(pickerPanel, event.currentTarget)}
-                >
-                  <span className="toolbar-place">
-                    <small aria-hidden="true">{TRACK_SHORT_NAMES[track]}</small>
-                    <span>{place || "…"}</span>
-                  </span>
-                  <ChevronDown size={14} aria-hidden="true" />
-                </button>
-              </h1>
-              <button
-                className="icon-button next-day"
-                disabled={!next}
-                onClick={() => next && go(next)}
-                aria-label={nextLabel}
-              >
-                <ChevronLeft size={20} aria-hidden="true" />
-              </button>
-            </>
-          ) : (
-            <div className="toolbar-title">{TRACK_NAMES.plan}</div>
-          )}
-          <button
-            className="icon-button appearance-toggle"
-            aria-label="إعدادات القراءة"
-            aria-haspopup="dialog"
-            aria-expanded={open && panel === "appearance"}
-            onPointerDown={warm(loadAppearancePanel)}
-            onFocus={warm(loadAppearancePanel)}
-            onClick={(event) => show("appearance", event.currentTarget)}
-          >
-            <Settings size={20} aria-hidden="true" />
-          </button>
-        </div>
-      </header>
-      <Sheet
-        open={open}
-        returnFocusTo={sheetTrigger}
-        title={titles[panel]}
-        keepsAudio={panel === "appearance"}
-        headerActions={
-          panel === "menu" ? (
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="مشاركة التطبيق"
-              disabled={sharing}
-              onClick={share}
-            >
-              <Share2 size={20} aria-hidden="true" />
-            </button>
-          ) : undefined
-        }
-        onClose={() => close()}
-        onAfterClose={() => {
-          const action = afterClose.current;
-          afterClose.current = null;
-          action?.();
-        }}
-      >
-        <ChunkBoundary key={panel}>
-          <Suspense fallback={<Loading label="جارٍ الفتح…" />}>
-            {panel === "menu" ? (
-              <MenuPanel
-                track={view === "read" ? track : undefined}
-                chooseTrack={chooseTrack}
-                readers={readers}
-                notify={notify}
-                close={close}
-                about={() => {
-                  const trigger = sheetTrigger;
-                  close(() => {
-                    if (trigger) show("about", trigger);
-                  });
-                }}
-              />
-            ) : panel === "bible" && bible ? (
-              <BiblePanel
-                location={bible}
-                go={go as (location: BibleLocation) => void}
-                close={close}
-              />
-            ) : panel === "chronology" && chrono ? (
-              <ChronologyPanel
-                chronology={chronology}
-                error={chronologyError}
-                retry={retryChronology}
-                location={chrono}
-                completed={completion[track as `chrono:${"OT" | "NT"}`]}
-                go={go as (location: ChronologicalLocation) => void}
-                close={close}
-              />
-            ) : panel === "day" ? (
-              <DayPanel
-                selected={selected}
-                reading={reading}
-                readingError={readingError}
-                retryReading={retryReading}
-                go={goDay}
-                navigate={navigate}
-                close={close}
-                jump={jump}
-              />
-            ) : panel === "appearance" ? (
-              <AppearancePanel
-                continuous={continuous}
-                setContinuous={setContinuous}
-              />
-            ) : panel === "about" ? (
-              <About />
-            ) : null}
-          </Suspense>
-        </ChunkBoundary>
-      </Sheet>
+      <Toolbar
+        model={model}
+        view={view}
+        sheet={sheet}
+        menuToggle={menuToggle}
+        previous={previous}
+        next={next}
+        go={actions.go}
+        picker={picker}
+      />
+      <SheetHost
+        model={model}
+        view={view}
+        sheet={sheet}
+        actions={actions}
+        data={data}
+      />
     </>
   );
 }

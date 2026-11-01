@@ -1,297 +1,70 @@
-import {
-  Suspense,
-  lazy,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useRef } from "react";
 import { Check, X } from "lucide-react";
-import { useProgress } from "../features/profiles/useProgress";
-import { dayIndex, pageFor, scheduledDay } from "../domain/reading/schedule";
-import { isReadingComplete } from "../domain/profiles/state";
 import Reader from "../features/reader/Reader";
-import Navigation, { type View } from "../features/navigation/Navigation";
+import { passageJump } from "../features/reader/passageJump";
+import Navigation from "../features/navigation/Navigation";
 import PlanView from "../features/plan/PlanView";
-import { ChunkBoundary, Loading } from "../shared/ui/Feedback";
-import type { Modal } from "../features/profiles/dialogs";
-import { useResource } from "../shared/hooks/useResource";
-import { useToday } from "../shared/hooks/useToday";
 import { useNotice } from "../shared/hooks/useNotice";
-import { useModalDialog } from "../shared/ui/useModalDialog";
-import { chapters } from "../data/bible/client";
-import {
-  type ReadingLocation,
-  type ScriptureReading,
-} from "../domain/reading/types";
-import { readingKey, type ReadingTrack } from "../domain/reading/identity";
-import {
-  chronologicalReadings,
-  chronologyCatalogs,
-} from "../data/chronology/client";
-import {
-  chronologicalLocationExists,
-  firstChronologicalLocation,
-} from "../domain/reading/chronologyCatalog";
-import { useReadingLocation } from "../features/reader/useReadingLocation";
-import { days } from "../data/plan/client";
-import { adjacentLocation } from "../domain/reading/adjacent";
-import { afterStartup } from "../shared/browser/afterStartup";
-import { today } from "../shared/lib/format";
-import { TRACK_NAMES, readingTitle } from "../domain/reading/labels";
-const Dialogs = lazy(() => import("../features/profiles/dialogs"));
-const DIALOG_NAMES: Record<Modal["kind"], string> = {
-  join: "القراء على هذا الجهاز",
-  settings: "إعدادات القارئ",
-  invite: "مشاركة التطبيق",
-};
+import { useReadingSession } from "./useReadingSession";
+import { useProfileDialogs } from "./useProfileDialogs";
+import { useKeyboardPaging } from "./useKeyboardPaging";
+import { useDocumentTitle } from "./useDocumentTitle";
+import { useShownPreload } from "./useShownPreload";
+import DialogHost from "./DialogHost";
 
 export default function App() {
-  const progress = useProgress();
-  const { member, error, completion } = progress;
-  const locationState = useReadingLocation(
-    member?.id ?? "",
-    member ? scheduledDay(member.startDate, today()) : 1,
-  );
-  const location = locationState.location;
-  const selected = locationState.plan.day;
-  const [page, setPage] = useState(() => pageFor(selected));
-  const [seenSwitches, setSeenSwitches] = useState(progress.switches);
-  const [view, setView] = useState<View>("read");
-  const [seenNavigation, setSeenNavigation] = useState(
-    locationState.navigation,
-  );
-  if (seenNavigation !== locationState.navigation) {
-    setSeenNavigation(locationState.navigation);
-    setView("read");
-  }
-  const [modal, setModal] = useState<Modal | null>(null);
-  const [notice, setNotice] = useNotice();
-  const [modeError, setModeError] = useState("");
-  const currentDate = useToday();
-  const menuToggle = useRef<HTMLButtonElement>(null);
   const main = useRef<HTMLElement>(null);
-  // The latest mode choice; an older asynchronous choice must not apply.
-  const intent = useRef(0);
-  const latest = useRef({
-    navigation: locationState.navigation,
-    switches: progress.switches,
+  const menuToggle = useRef<HTMLButtonElement>(null);
+  const session = useReadingSession(main);
+  const { member, location, reading, view } = session;
+  const dialogs = useProfileDialogs(session);
+  const { modal } = dialogs;
+  const [notice, setNotice] = useNotice();
+  useShownPreload(location, reading.data);
+  useDocumentTitle(view, session.title);
+  useKeyboardPaging({
+    view,
+    previous: session.previous,
+    next: session.next,
+    go: session.go,
   });
-  useLayoutEffect(() => {
-    latest.current = {
-      navigation: locationState.navigation,
-      switches: progress.switches,
-    };
-  });
-  const start = member?.startDate || currentDate;
-  const current = dayIndex(start, currentDate);
-  const done = isReadingComplete({ completion }, location);
-  const chronological = location.mode === "chronological";
-  const planReading = useResource(
-    days,
-    String(selected),
-    location.mode === "plan",
-  );
-  const chapterReading = useResource(
-    chapters,
-    readingKey(location),
-    location.mode === "bible",
-  );
-  const chronoReading = useResource(
-    chronologicalReadings,
-    readingKey(location),
-    chronological,
-  );
-  // Summaries only: titles, stages and order. Text loads per reading.
-  const chronology = useResource(
-    chronologyCatalogs,
-    chronological ? location.testament : "",
-    chronological,
-  );
-  const reading =
-    location.mode === "plan"
-      ? planReading
-      : location.mode === "bible"
-        ? chapterReading
-        : chronoReading;
-  const previous = adjacentLocation(location, -1, chronology.data);
-  const next = adjacentLocation(location, 1, chronology.data);
-  const title = readingTitle(location, chronology.data, reading.data);
-  // Once the text is shown, the next launch fetches it alongside the app.
-  const shownKey = reading.data ? readingKey(reading.data) : "";
-  const shown = useRef<[ReadingLocation, ScriptureReading?]>(null);
-  useEffect(() => {
-    if (!shownKey || shownKey !== readingKey(location)) return;
-    shown.current = [location, reading.data];
-    // Not needed until the next launch: its small module loads apart, after
-    // the first screen, and records whatever is shown by then.
-    afterStartup(
-      () =>
-        void import("../features/reader/preload").then(
-          ({ readingPaths, rememberPreload }) => {
-            if (shown.current) rememberPreload(readingPaths(...shown.current));
-          },
-          () => {},
-        ),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shownKey]);
-  useEffect(() => {
-    const page = view === "read" ? title : TRACK_NAMES.plan;
-    document.title = page ? `${page} · الكتاب المقدس` : "الكتاب المقدس";
-  }, [title, view]);
-  // Arrow keys page like the toolbar's chevrons (next is on the left).
-  const paging = useRef({ view, previous, next, go });
-  useLayoutEffect(() => {
-    paging.current = { view, previous, next, go };
-  });
-  useEffect(() => {
-    const key = (event: KeyboardEvent) => {
-      const { view, previous, next, go } = paging.current;
-      const target =
-        event.key === "ArrowLeft"
-          ? next
-          : event.key === "ArrowRight"
-            ? previous
-            : undefined;
-      if (
-        !target ||
-        view !== "read" ||
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        (event.target as Element | null)?.closest?.(
-          "input, select, textarea, [contenteditable]",
-        ) ||
-        document.querySelector("dialog[open]")
-      )
-        return;
-      event.preventDefault();
-      go(target);
-    };
-    addEventListener("keydown", key);
-    return () => removeEventListener("keydown", key);
-  }, []);
 
-  // A remembered or linked reading the current catalog no longer has: start
-  // that chronology from its first reading instead of a dead end.
-  const stale =
-    chronological &&
-    !!chronology.data &&
-    !chronologicalLocationExists(chronology.data, location);
-  useEffect(() => {
-    if (stale && chronology.data)
-      locationState.go(firstChronologicalLocation(chronology.data), true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stale, chronology.data]);
-
-  if (seenSwitches !== progress.switches) {
-    // Another reader: their own last places, or their scheduled day.
-    const day = locationState.selectReader(
-      member?.id ?? "",
-      member ? scheduledDay(member.startDate, today()) : 1,
-    );
-    setSeenSwitches(progress.switches);
-    setPage(pageFor(day));
-  }
-  function navigate(next: View) {
-    setView(next);
-    requestAnimationFrame(() => main.current?.focus({ preventScroll: true }));
-    window.scrollTo({ top: 0 });
-  }
-  function go(next: ReadingLocation) {
-    intent.current++;
-    setModeError("");
-    locationState.go(next);
-    navigate("read");
-  }
-  async function chooseTrack(track: ReadingTrack) {
-    const request = ++intent.current;
-    const before = latest.current;
-    setModeError("");
-    if (locationState.chooseMode(track)) {
-      navigate("read");
-      return;
-    }
-    // A chronology opens on its first reading the first time; its catalog
-    // may still be loading. Any later choice, navigation (including Back)
-    // or reader change wins over this one when it resolves.
-    const superseded = () =>
-      request !== intent.current ||
-      latest.current.navigation !== before.navigation ||
-      latest.current.switches !== before.switches;
-    const testament = track === "chrono:OT" ? "OT" : "NT";
-    try {
-      const catalog = await chronologyCatalogs.load(testament);
-      if (superseded()) return;
-      if (locationState.chooseMode(track, firstChronologicalLocation(catalog)))
-        navigate("read");
-    } catch (err) {
-      if (!superseded()) setModeError((err as Error).message);
-    }
-  }
-  function openModal(next: Modal) {
-    progress.clearError();
-    setModal(next);
-  }
-  function closeModal() {
-    setModal(null);
-  }
-  function chooseReader(id: string | null) {
-    intent.current++;
-    if (!progress.select(id)) return;
-    if (id === null) setModal({ kind: "join" });
-    else closeModal();
-    setView("read");
-  }
   function complete() {
-    // Explicit only, for a named reader or the guest; opening or listening
-    // never completes a reading.
-    if (progress.completeReading(member?.id ?? "", location, !done))
-      setNotice(
-        done
-          ? "تم التراجع عن إتمام القراءة"
-          : location.mode === "plan"
-            ? "تم حفظ قراءتك. خطوة جديدة في الرحلة!"
-            : "تم حفظ قراءتك.",
-      );
+    const done = session.complete();
+    if (done) setNotice(done);
   }
-  const { dialog, dialogProps } = useModalDialog({
-    open: modal !== null,
-    onClose: closeModal,
-    cancel: "native",
-    syncNativeClose: false,
-    fallbackFocus: menuToggle,
-  });
-  const alert = error || modeError;
+  const goDay = (day: number) => session.go({ mode: "plan", day });
   return (
     <div className="app">
       <Navigation
         location={location}
-        previous={previous}
-        next={next}
-        go={go}
-        chooseTrack={chooseTrack}
-        chronology={chronology.data}
-        chronologyError={chronology.error}
-        retryChronology={chronology.retry}
-        readingTitle={title}
-        completion={completion}
-        continuous={locationState.preferences.continuous}
-        setContinuous={locationState.setContinuous}
+        previous={session.previous}
+        next={session.next}
+        readingTitle={session.title}
         view={view}
-        navigate={navigate}
-        readers={() => openModal({ kind: member ? "settings" : "join" })}
-        invite={(text) => openModal({ kind: "invite", text })}
-        notify={setNotice}
         menuToggle={menuToggle}
-        selected={selected}
-        reading={planReading.data}
-        readingError={planReading.error}
-        retryReading={planReading.retry}
-        goDay={(day) => go({ mode: "plan", day })}
+        actions={{
+          go: session.go,
+          chooseTrack: session.chooseTrack,
+          navigate: session.navigate,
+          readers: () => dialogs.open({ kind: member ? "settings" : "join" }),
+          invite: (text) => dialogs.open({ kind: "invite", text }),
+          notify: setNotice,
+          goDay,
+          passages: passageJump,
+        }}
+        data={{
+          chronology: session.chronology.data,
+          chronologyError: session.chronology.error,
+          retryChronology: session.chronology.retry,
+          completion: session.completion,
+          continuous: session.continuous,
+          setContinuous: session.setContinuous,
+          selected: session.selected,
+          reading: session.planReading.data,
+          readingError: session.planReading.error,
+          retryReading: session.planReading.retry,
+        }}
       />
       <main
         id="main"
@@ -299,15 +72,12 @@ export default function App() {
         tabIndex={-1}
         className={view === "read" ? "reading-main" : undefined}
       >
-        {alert && !modal && (
+        {session.alert && !modal && (
           <div className="error" role="alert">
-            <span>{alert}</span>
+            <span>{session.alert}</span>
             <button
               className="icon-button"
-              onClick={() => {
-                progress.clearError();
-                setModeError("");
-              }}
+              onClick={session.dismissAlert}
               aria-label="إغلاق التنبيه"
             >
               <X size={18} />
@@ -318,71 +88,44 @@ export default function App() {
           <Reader
             key={member?.id || "guest"}
             location={location}
-            navigation={locationState.navigation}
-            restore={locationState.restore}
-            previous={previous}
-            next={next}
-            onPage={go}
-            continuous={locationState.preferences.continuous}
-            setContinuous={locationState.setContinuous}
-            // Continuous listening moves on without taking keyboard focus.
-            onContinue={locationState.go}
+            navigation={session.navigation}
+            restore={session.restore}
+            previous={session.previous}
+            next={session.next}
+            onPage={session.go}
+            continuous={session.continuous}
+            setContinuous={session.setContinuous}
+            onContinue={session.onContinue}
             reading={reading.data}
-            chronology={chronology.data}
+            chronology={session.chronology.data}
             error={reading.error}
             retry={reading.retry}
-            done={done}
+            done={session.done}
             complete={complete}
           />
         ) : (
           <PlanView
             member={member}
-            completed={completion.plan}
-            start={start}
-            currentDate={currentDate}
-            current={current}
-            page={page}
-            setPage={setPage}
-            go={(day) => go({ mode: "plan", day })}
-            join={() => openModal({ kind: "join" })}
+            completed={session.completion.plan}
+            start={session.start}
+            currentDate={session.currentDate}
+            current={session.current}
+            page={session.page}
+            setPage={session.setPage}
+            go={goDay}
+            join={() => dialogs.open({ kind: "join" })}
           />
         )}
       </main>
-      <dialog
-        className="app-dialog"
-        aria-label={DIALOG_NAMES[modal?.kind ?? "join"]}
-        ref={dialog}
-        {...dialogProps}
-      >
-        <div className="dialog-content">
-          <button
-            className="icon-button dialog-close"
-            aria-label="إغلاق"
-            onClick={closeModal}
-          >
-            <X size={22} />
-          </button>
-          {modal && (
-            <ChunkBoundary key={modal.kind}>
-              <Suspense fallback={<Loading label="جارٍ فتح النافذة…" />}>
-                <Dialogs
-                  modal={modal}
-                  close={closeModal}
-                  navigate={navigate}
-                  setNotice={setNotice}
-                  chooseReader={chooseReader}
-                />
-              </Suspense>
-            </ChunkBoundary>
-          )}
-        </div>
-        {notice && modal && (
-          <div className="dialog-notice" role="status">
-            <Check size={19} />
-            <span>{notice}</span>
-          </div>
-        )}
-      </dialog>
+      <DialogHost
+        modal={modal}
+        close={dialogs.close}
+        notice={notice}
+        setNotice={setNotice}
+        navigate={session.navigate}
+        chooseReader={dialogs.chooseReader}
+        fallbackFocus={menuToggle}
+      />
       {notice && !modal && (
         <div className="toast" role="status">
           <Check size={19} />

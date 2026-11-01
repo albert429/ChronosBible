@@ -6,7 +6,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { Day } from "../../domain/reading/types";
-import type { View } from "./Navigation";
+import type { View } from "./model";
 import { dateLabel } from "../../shared/lib/format";
 import {
   PLAN_DAYS,
@@ -19,7 +19,6 @@ import { useProgress } from "../profiles/useProgress";
 import { useToday } from "../../shared/hooks/useToday";
 import { ChunkBoundary, Loading, LoadError } from "../../shared/ui/Feedback";
 import PassageReference from "../../shared/ui/PassageReference";
-import { passageId } from "../../shared/browser/scriptureDom";
 import "./DayPanel.css";
 
 /** Also called from the day button, so the grid is ready when the menu opens. */
@@ -41,6 +40,9 @@ type Props = {
   go: (day: number) => void;
   navigate: (view: View) => void;
   close: (action?: () => void) => void;
+  /** The passage's link address in the open reading. */
+  passageHref: (index: number) => string;
+  /** Closes the sheet, then moves to the passage. */
   jump: (index: number) => void;
 };
 export default function DayPanel({
@@ -51,6 +53,7 @@ export default function DayPanel({
   go,
   navigate,
   close,
+  passageHref,
   jump,
 }: Props) {
   const { member, completion } = useProgress();
@@ -76,7 +79,7 @@ export default function DayPanel({
           {reading.passages.map((passage, index) => (
             <li key={index}>
               <a
-                href={`#${passageId(index)}`}
+                href={passageHref(index)}
                 onClick={(event) => {
                   event.preventDefault();
                   jump(index);
