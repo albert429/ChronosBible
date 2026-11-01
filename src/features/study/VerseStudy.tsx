@@ -7,6 +7,7 @@ import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useDiacritics } from "../appearance/appearance";
 import type { VerseActionsProps } from "./VerseActions";
 import type { StudyContext } from "./load";
+import "./VerseStudy.css";
 
 const StudyPanel = lazy(() => import("./StudyPanel"));
 // Copy and share are a convenience: if their chunk fails, nothing shows.

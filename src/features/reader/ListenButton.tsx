@@ -1,5 +1,6 @@
 import type { Ref } from "react";
 import { Headphones } from "lucide-react";
+import "./ListenButton.css";
 
 export default function ListenButton({
   label = "استمع إلى قراءة اليوم",

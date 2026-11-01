@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import { scheduledDay } from "../../domain/reading/schedule";
 import type { Reader } from "../../domain/profiles/state";
+import "./PlanView.css";
 const Calendar = lazy(() => import("./Calendar"));
 
 type Props = {

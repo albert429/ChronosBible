@@ -50,3 +50,12 @@
   resize: vertical;
   line-height: 1.9;
 }
+.form-error {
+  background: var(--error-bg);
+  color: var(--error-ink);
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  margin-top: 20px;
+}

@@ -118,3 +118,10 @@
 .scripture-inline-note > span {
   display: inline-block;
 }
+/* A linked or studied verse (shared/browser/scriptureDom.ts). */
+.verse[data-selected] {
+  background: var(--soft);
+  border-radius: 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

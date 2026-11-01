@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
+import "./Feedback.css";
 
 export function Loading({ label = "جارٍ تحميل القراءة…" }: { label?: string }) {
   return (

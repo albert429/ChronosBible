@@ -3,6 +3,7 @@ import { Check, X } from "lucide-react";
 import { ChunkBoundary, Loading } from "../shared/ui/Feedback";
 import { useModalDialog } from "../shared/ui/useModalDialog";
 import type { Modal } from "../features/profiles/dialogs";
+import "./DialogHost.css";
 const Dialogs = lazy(() => import("../features/profiles/dialogs"));
 
 const DIALOG_NAMES: Record<Modal["kind"], string> = {

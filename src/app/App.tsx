@@ -11,6 +11,7 @@ import { useKeyboardPaging } from "./useKeyboardPaging";
 import { useDocumentTitle } from "./useDocumentTitle";
 import { useShownPreload } from "./useShownPreload";
 import DialogHost from "./DialogHost";
+import "./App.css";
 
 export default function App() {
   const main = useRef<HTMLElement>(null);
