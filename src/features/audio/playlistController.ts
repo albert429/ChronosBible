@@ -20,13 +20,12 @@ export type MediaLike = {
  * One persistent media element plays a reading's timeline. Each entry is a
  * separate immutable file; the element's own `ended` event switches to the
  * next file and plays it in the same task, so locked phones keep going and no
- * timer ever clips a recording. Every new file bumps `generation`.
+ * timer ever clips a recording.
  */
 export class PlaylistController {
   element: MediaLike | null = null;
   timeline: Timeline | undefined;
   entry = 0;
-  generation = 0;
   rate = 1;
   /** Local seconds to apply once the current file's metadata is known. */
   private pending: number | undefined;
@@ -51,7 +50,6 @@ export class PlaylistController {
     this.finished = false;
     this.element?.pause();
     if (!timeline) {
-      this.generation += 1;
       this.loaded = undefined;
       this.pending = undefined;
       this.known = 0;
@@ -98,7 +96,6 @@ export class PlaylistController {
       } else this.pending = local;
       return;
     }
-    this.generation += 1;
     this.loaded = entry.src;
     this.pending = local > 0 ? local : undefined;
     element.src = this.resolve(entry.src);
@@ -191,7 +188,6 @@ export class PlaylistController {
 
   detach() {
     const element = this.element;
-    this.generation += 1;
     this.timeline = undefined;
     this.loaded = undefined;
     if (element) {
