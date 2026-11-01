@@ -1,17 +1,13 @@
-"""Hash contract between the Python audio tools and src/audio/manifest.ts.
+"""Hash contract between the Python audio tools and src/domain/audio/manifest.ts.
 
 Standard library only: run `python3 -I -m unittest discover -s scripts/tests`
 from the repository root.
 """
 import json
-import sys
 import unittest
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
-
-from audio_text import chapter_text_hash, chapter_verses, reading_hash, reading_transcript  # noqa: E402
+from _support import ROOT
+from chronos_tools.audio_text import chapter_text_hash, chapter_verses, reading_hash, reading_transcript
 
 
 def load(path):

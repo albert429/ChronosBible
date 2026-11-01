@@ -309,6 +309,35 @@ test("an older chronology choice still loading never overrides a later choice", 
   );
 });
 
+test("a chronology choice still loading is dropped after Back", async ({
+  page,
+}) => {
+  await stubChronology(page);
+  const gate = createGate();
+  await page.route("**/chronology/OT.json*", async (route) => {
+    await gate.opened;
+    await route.fallback();
+  });
+  await page.goto("/?day=1");
+  await ready(page);
+  await page.getByRole("button", { name: "اليوم التالي", exact: true }).click();
+  await expect(article(page)).toHaveAttribute("data-reading", "plan:2");
+  const requested = page.waitForRequest("**/chronology/OT.json*");
+  await chooseFromMenu(page, MODES.ot);
+  await requested;
+  await page.goBack();
+  await expect(article(page)).toHaveAttribute("data-reading", "plan:1");
+  const response = page.waitForResponse("**/chronology/OT.json*");
+  gate.open();
+  await response;
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 100)));
+  // Never the old choice's text beneath the controls Back restored.
+  await expect(article(page)).toHaveAttribute("data-reading", "plan:1");
+  await expect(
+    page.getByRole("button", { name: /^تفاصيل اليوم ١ ·/ }),
+  ).toBeVisible();
+});
+
 test("a catalog failure is reported without leaving the current reading", async ({
   page,
 }) => {

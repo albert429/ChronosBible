@@ -11,7 +11,8 @@ import {
   isPlanDay,
   pageFor,
   scheduledDay,
-} from "../src/plan/schedule.ts";
+} from "../src/domain/reading/schedule.ts";
+import { today } from "../src/shared/lib/format.ts";
 
 test("Day numbers count from the start date, inclusive", () => {
   assert.equal(dayIndex("2026-10-01", "2026-10-01"), 1);
@@ -24,7 +25,7 @@ test("Day numbers count from the start date, inclusive", () => {
   assert.equal(dayIndex("2028-02-28", "2028-03-01"), 3);
 });
 
-test("The scheduled day is clamped to the plan, and defaults to today", (t) => {
+test("The scheduled day is clamped to the plan and follows the Cairo date", (t) => {
   assert.equal(scheduledDay("2026-10-01", "2026-09-15"), 1);
   assert.equal(scheduledDay("2026-10-01", "2026-10-01"), 1);
   assert.equal(scheduledDay("2026-10-01", "2026-10-10"), 10);
@@ -34,7 +35,7 @@ test("The scheduled day is clamped to the plan, and defaults to today", (t) => {
     apis: ["Date"],
     now: Date.parse("2026-10-05T10:00:00Z"),
   });
-  assert.equal(scheduledDay("2026-10-01"), 5);
+  assert.equal(scheduledDay("2026-10-01", today()), 5);
 });
 
 test("dateFor is the inverse of dayIndex", () => {

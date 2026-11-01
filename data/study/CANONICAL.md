@@ -19,7 +19,7 @@ STEPBible is pinned to `be4191f0082aeedddb0eff0c02c966292b2bd641`, with the
 TTAraSVD OT 4.0.1 dataset. NT source hashes are pinned independently.
 
 ```sh
-python3 scripts/import-study-full.py \
+python3 scripts/data/import-study-full.py \
   --ot /path/to/ot.zip --tbesh /path/to/tbesh.txt \
   --nav /path/to/nav.zip --kjv /path/to/kjv.zip \
   --report artifacts/study-import-report.json
@@ -102,7 +102,7 @@ word bytes, 11,499 translation gzip bytes, and 8,087 lexicon gzip bytes.
 
 A build inventory records generated file hashes. Regeneration removes only
 obsolete, unmodified inventory-owned files, preserving unknown files. The
-offline study pack (`src/pwa/offline.ts`) saves the files it lists, except
+offline study pack (`src/features/offline/packs.ts`) saves the files it lists, except
 the lexicon shards, which only AI explanations use. Every address carries the
 study folder's content version (`?v=`), so hosting may cache it for good.
 The Cloudflare scanner allows only this exact compressed word path, validates

@@ -1,0 +1,127 @@
+.passage {
+  scroll-margin-top: calc(80px + env(safe-area-inset-top, 0px));
+}
+.passage:focus {
+  outline: none;
+}
+.passage + .passage {
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+  padding-top: 28px;
+}
+/* Titles, headings and verse numbers grow with large reading text. */
+.passage h2 {
+  font-family: Amiri, serif;
+  font-size: max(24px, calc(var(--verse-size, 28px) * 0.86));
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.passage-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.passage-title-row h2 {
+  flex: 1;
+}
+.verse-text {
+  font-family: Amiri, "Times New Roman", serif;
+  font-size: var(--verse-size, 28px);
+  line-height: 2;
+  text-align: right;
+  overflow-wrap: break-word;
+}
+.verse-text h3 {
+  font-family: Noto, sans-serif;
+  font-size: max(14px, 0.5em);
+  font-weight: 600;
+  color: var(--olive);
+  line-height: 1.9;
+  margin-block: 24px 8px;
+}
+.verse-text h3:first-child {
+  margin-top: 8px;
+}
+.verse sup {
+  font-family: Noto, sans-serif;
+  color: var(--olive);
+  font-size: max(12px, 0.43em);
+  line-height: 0;
+  padding-inline-end: 7px;
+}
+.verse-number {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  /* Keep the visible number clickable without expanding Scripture line boxes. */
+  line-height: 1;
+  cursor: pointer;
+  position: relative;
+}
+/* A target of at least 24×24px around the small number, outside layout. */
+.verse-number::after {
+  content: "";
+  position: absolute;
+  inset: -8px -9px;
+}
+.verse-number:focus-visible {
+  outline: 2px solid var(--olive);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Compact: the first verse still begins within 200px of a 390x844 phone. */
+.audio-unavailable {
+  margin-block: 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+/* Paragraph and poetry starts: a new line with a little space, inside the
+   flowing verses rather than a block per verse. */
+.scripture-break {
+  display: block;
+  height: 0.4em;
+}
+.chapter-text .scripture-qc {
+  display: block;
+  text-align: center;
+}
+.scripture-superscription,
+.scripture-source-note {
+  font-size: 0.85em;
+  color: var(--muted);
+  margin-block: 8px 12px;
+}
+.scripture-acrostic {
+  color: var(--olive);
+  font-size: 0.85em;
+  margin-block: 12px 0;
+}
+.scripture-inline-note {
+  display: block;
+  font-family: Noto, sans-serif;
+  font-size: max(14px, 0.5em);
+  font-weight: 600;
+  line-height: 1.9;
+  color: var(--olive);
+  margin-block: 16px 4px;
+}
+/* The listening verse's underline reaches block children but not inline
+   blocks, so a heading inside that verse is not underlined as read text. */
+.scripture-inline-note > span {
+  display: inline-block;
+}
+/* A linked or studied verse (shared/browser/scriptureDom.ts). */
+.verse[data-selected] {
+  background: var(--soft);
+  border-radius: 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

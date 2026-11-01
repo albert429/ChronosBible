@@ -1,13 +1,10 @@
 """Chronology PDF text parsing and the committed normalized source. Standard library only."""
-import importlib.util
 import json
-from pathlib import Path
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
-SPEC = importlib.util.spec_from_file_location("import_chronology", ROOT / "scripts/import-chronology.py")
-IMPORTER = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(IMPORTER)
+from _support import ROOT, load_script
+
+IMPORTER = load_script("data/import-chronology.py", "import_chronology")
 CATALOG = json.loads((ROOT / "data/bible/catalog.json").read_text("utf-8"))
 GENESIS = next(book for book in CATALOG if book["usfm"] == "GEN")["verseCounts"]
 

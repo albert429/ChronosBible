@@ -5,26 +5,22 @@ plan text, reference wording and tracked chapter alignments are used, with
 synthetic WAV clips and synthetic "source recordings" whose hashes are
 substituted into copies of the alignments.
 """
-import importlib.util
 from array import array
 import io
 import json
 import math
-import sys
 import tempfile
 import unittest
 import wave
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
+from _support import ROOT, load_script
 
-from audio_references import ONE_CHAPTER, reference_id  # noqa: E402
-from audio_text import chapter_text_hash, chapter_verses, compact, digest  # noqa: E402
+from chronos_tools.audio_references import ONE_CHAPTER, reference_id  # noqa: E402
+from chronos_tools.audio_text import chapter_text_hash, chapter_verses
+from chronos_tools.fingerprints import compact, digest
 
-spec = importlib.util.spec_from_file_location("build_audio", ROOT / "scripts/build-audio.py")
-build = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(build)
+build = load_script("audio/build-audio.py", "build_audio")
 RATE = build.RATE
 
 
@@ -60,7 +56,7 @@ def alignments_for(day):
 
 
 def manifest_problems(manifest):
-    """The interval rules that src/audio/manifest.ts validManifest enforces."""
+    """The interval rules that src/domain/audio/manifest.ts validManifest enforces."""
     problems, cues = [], manifest["cues"]
     for i, cue in enumerate(cues):
         if not 0 <= cue["start"] < cue["end"] <= manifest["duration"] + .1:
@@ -244,6 +240,19 @@ class Catalog(unittest.TestCase):
             converted = build.load_clips(path, self.reviewed_references(),
                                          convert=lambda data: tone(1, 4000).tobytes())
             self.assertEqual(converted["MRK-1-1-1"]["samples"], RATE)
+
+
+class StrayManifests(unittest.TestCase):
+    def test_days_outside_the_plan_are_reported_never_deleted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            for name in ("1.json", "150.json", "151.json", "notes.json", "report.json"):
+                (folder / name).write_text("{}")
+            self.assertEqual(build.stray_manifest_days(folder, PLAN), [151])
+            self.assertTrue((folder / "151.json").exists())
+
+    def test_committed_manifests_are_all_in_the_plan(self):
+        self.assertEqual(build.stray_manifest_days(ROOT / "data/audio/manifests", PLAN), [])
 
 
 class Assembly(unittest.TestCase):

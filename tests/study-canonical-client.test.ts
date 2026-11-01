@@ -1,8 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { gzipSync } from "node:zlib";
-import { decodeStudyWords } from "../src/study/decodeWords.ts";
-import type { WordToken } from "../src/study/types.ts";
+import { decodeStudyWords } from "../src/data/study/decodeWords.ts";
+import type { WordToken } from "../src/domain/study/types.ts";
+import { studyReference } from "../src/domain/study/reference.ts";
 
 const requests: string[] = [];
 const files: Record<string, unknown> = {};
@@ -24,8 +25,7 @@ const {
   verseWords,
   verseTranslations,
   wordDefinitions,
-  studyReference,
-} = await import("../src/study/canonicalClient.ts");
+} = await import("../src/data/study/client.ts");
 const word: WordToken = [
   "בָּרָא",
   "bara",

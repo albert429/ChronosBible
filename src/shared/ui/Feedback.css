@@ -1,0 +1,39 @@
+.loading-state {
+  min-height: 340px;
+  padding: 48px 32px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.loading-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--olive);
+  margin-inline-end: 10px;
+}
+.skeleton {
+  display: grid;
+  gap: 24px;
+  margin-top: 44px;
+}
+.skeleton i {
+  height: 14px;
+  background: var(--soft);
+  border-radius: 4px;
+}
+.skeleton i:nth-child(2) {
+  width: 88%;
+}
+.skeleton i:nth-child(3) {
+  width: 72%;
+}
+.load-error {
+  min-height: 240px;
+  padding: 40px 24px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 20px;
+  text-align: center;
+}

@@ -8,6 +8,7 @@ import {
   noOverflow,
   ready,
 } from "./helpers";
+import { fulfillWav } from "./audioFixtures";
 
 // CI verifies the same native media behavior without redistributing recordings
 // or reaching an external host. Local runs use the actual prepared narration.
@@ -40,40 +41,7 @@ test.beforeEach(async ({ page }) => {
     const manifest = manifests.find((m) =>
       route.request().url().endsWith(m.src),
     )!;
-    const size = 8000 * manifest.duration;
-    const wav = Buffer.alloc(44 + size, 128);
-    wav.write("RIFF", 0);
-    wav.writeUInt32LE(36 + size, 4);
-    wav.write("WAVEfmt ", 8);
-    wav.writeUInt32LE(16, 16);
-    wav.writeUInt16LE(1, 20);
-    wav.writeUInt16LE(1, 22);
-    wav.writeUInt32LE(8000, 24);
-    wav.writeUInt32LE(8000, 28);
-    wav.writeUInt16LE(1, 32);
-    wav.writeUInt16LE(8, 34);
-    wav.write("data", 36);
-    wav.writeUInt32LE(size, 40);
-    const range = /^bytes=(\d+)-(\d*)$/.exec(
-      route.request().headers().range || "",
-    );
-    const start = range ? Number(range[1]) : 0;
-    const end =
-      range && range[2]
-        ? Math.min(Number(range[2]), wav.length - 1)
-        : wav.length - 1;
-    await route.fulfill({
-      status: range ? 206 : 200,
-      contentType: "audio/wav",
-      headers: {
-        "Accept-Ranges": "bytes",
-        "Content-Length": String(end - start + 1),
-        ...(range
-          ? { "Content-Range": `bytes ${start}-${end}/${wav.length}` }
-          : {}),
-      },
-      body: wav.subarray(start, end + 1),
-    });
+    await fulfillWav(route, manifest.duration);
   });
 });
 

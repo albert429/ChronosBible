@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createJsonClient } from "../src/lib/jsonClient.ts";
+import { createJsonClient } from "../src/data/jsonClient.ts";
 
 type Item = { key: string };
 const options = {

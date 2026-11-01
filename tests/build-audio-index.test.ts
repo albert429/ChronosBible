@@ -12,9 +12,9 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildAudioIndex } from "../scripts/build-audio-index.js";
-import { readingHash } from "../src/audio/manifest.ts";
-import type { Day } from "../src/plan/readings.ts";
+import { buildAudioIndex } from "../scripts/data/build-audio-index.js";
+import { readingHash } from "../src/domain/audio/compatibility.ts";
+import type { Day } from "../src/domain/reading/types.ts";
 
 const reading: Day = {
   day: 1,
@@ -101,6 +101,37 @@ test("A catalog day that is not in the plan fails the build", async () => {
   const root = repository([2], await readingHash(reading));
   try {
     assert.throws(() => build(root), /Invalid audio day 2/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("A manifest dropped from the catalog leaves public/audio on the next build; media stays", async () => {
+  const hash = await readingHash(reading);
+  const root = repository([1], hash);
+  const out = join(root, "public/audio");
+  const inventory = join(root, "artifacts/generated-output/audio.json");
+  try {
+    buildAudioIndex({ root, out, inventory });
+    assert.ok(existsSync(join(out, "1.json")));
+    // Local recordings and unrelated files share the folder.
+    mkdirSync(join(out, "days"), { recursive: true });
+    writeFileSync(join(out, "days/001-abc123.m4a"), "media");
+    writeFileSync(join(out, "notes.txt"), "mine");
+    writeFileSync(
+      join(root, "data/audio/catalog.json"),
+      JSON.stringify({ days: [] }),
+    );
+    assert.match(
+      buildAudioIndex({ root, out, inventory }),
+      /Prepared 0 audio manifests/,
+    );
+    assert.equal(existsSync(join(out, "1.json")), false);
+    assert.equal(
+      readFileSync(join(out, "days/001-abc123.m4a"), "utf8"),
+      "media",
+    );
+    assert.equal(readFileSync(join(out, "notes.txt"), "utf8"), "mine");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

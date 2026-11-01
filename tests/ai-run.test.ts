@@ -1,12 +1,12 @@
-// The request path in src/ai/run.ts, with fetch stubbed. Each test file runs
+// The request path in src/features/ai/run.ts, with fetch stubbed. Each test file runs
 // in its own process, so the globals set here stay local.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { getEventListeners } from "node:events";
-import type { AiBuildConfig } from "../src/ai/config.ts";
-import type { AskInput } from "../src/ai/run.ts";
-import type { AiError, ChipId } from "../src/ai/types.ts";
-import type { Verse } from "../src/plan/readings.ts";
+import type { AiBuildConfig } from "../src/features/ai/config.ts";
+import type { AskInput } from "../src/features/ai/run.ts";
+import type { AiError, ChipId } from "../src/features/ai/types.ts";
+import type { Verse } from "../src/domain/scripture/types.ts";
 
 const requests: string[] = [];
 const pending: (() => void)[] = [];
@@ -91,8 +91,8 @@ Object.assign(globalThis, {
   __AI_CONFIG__: aiConfig,
 });
 
-const { ask } = await import("../src/ai/run.ts");
-const { abortable } = await import("../src/ai/types.ts");
+const { ask } = await import("../src/features/ai/run.ts");
+const { abortable } = await import("../src/features/ai/types.ts");
 
 const verse: Verse = { number: 15, text: "فلمس يدها" };
 const input = (chip: ChipId, chapter = 8): AskInput => ({

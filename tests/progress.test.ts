@@ -1,17 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { validDate } from "../src/domain/profiles/state.ts";
+import { exportBackup } from "../src/domain/profiles/backup.ts";
 import {
   createReader,
   currentReader,
-  setCompletion,
+  setReadingCompletion,
   selectReader,
-  exportBackup,
   importBackup,
   loadProgress,
-  validDate,
   PROGRESS_KEY,
   STATE_KEY,
-} from "../src/plan/progress.ts";
+} from "../src/features/profiles/storage.ts";
 function storage() {
   const values = new Map<string, string>();
   return {
@@ -27,19 +27,21 @@ function current(s: ReturnType<typeof storage>) {
 test("Local progress survives reopening, is idempotent, supports reading ahead and undo", () => {
   const s = storage();
   const r = createReader(s, "ألبرت", "2026-10-01");
-  setCompletion(s, r.id, 1, true);
-  setCompletion(s, r.id, 1, true);
-  setCompletion(s, r.id, 150, true);
+  setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
+  setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
+  setReadingCompletion(s, r.id, { mode: "plan", day: 150 }, true);
   assert.deepEqual(current(s).completed, [1, 150]);
   assert.equal(current(s).startDate, "2026-10-01");
-  setCompletion(s, r.id, 1, false);
+  setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, false);
   assert.deepEqual(current(s).completed, [150]);
-  assert.throws(() => setCompletion(s, r.id, 151, true));
+  assert.throws(() =>
+    setReadingCompletion(s, r.id, { mode: "plan", day: 151 }, true),
+  );
 });
 test("Switching between duplicate names preserves separate progress", () => {
   const s = storage();
   const a = createReader(s, "قارئ", "2026-09-01");
-  setCompletion(s, a.id, 9, true);
+  setReadingCompletion(s, a.id, { mode: "plan", day: 9 }, true);
   const b = createReader(s, "قارئ", "2026-10-01");
   assert.notEqual(a.id, b.id);
   assert.deepEqual(b.completed, []);
@@ -52,11 +54,16 @@ test("Switching between duplicate names preserves separate progress", () => {
 test("Backup can move to another browser and never overwrites an existing profile", () => {
   const first = storage();
   let r = createReader(first, "ميخائيل", "2026-10-01");
-  r = setCompletion(first, r.id, 3, true);
+  r = setReadingCompletion(
+    first,
+    r.id,
+    { mode: "plan", day: 3 },
+    true,
+  ) as typeof r;
   const text = exportBackup(r);
   const second = storage();
   const existing = createReader(second, "قارئ آخر", "2026-09-01");
-  setCompletion(second, existing.id, 2, true);
+  setReadingCompletion(second, existing.id, { mode: "plan", day: 2 }, true);
   const restored = importBackup(second, text);
   assert.equal(restored.name, "ميخائيل");
   assert.deepEqual(restored.completed, [3]);
@@ -104,6 +111,9 @@ test("Blocked storage reports failed saving instead of pretending success", () =
       throw Error("QuotaExceededError");
     },
   };
-  assert.throws(() => setCompletion(blocked, r.id, 1, true), /لم يتم الحفظ/);
+  assert.throws(
+    () => setReadingCompletion(blocked, r.id, { mode: "plan", day: 1 }, true),
+    /لم يتم الحفظ/,
+  );
   assert.deepEqual(current(s).completed, []);
 });

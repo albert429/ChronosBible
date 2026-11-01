@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { chapterVerse } from "../../src/bible/reference.ts";
+import { chapterVerse } from "../../src/domain/scripture/reference.ts";
 import {
   chooseFromMenu,
   closeSheet,
@@ -18,7 +18,10 @@ import {
   committedChapter,
   fulfillWav,
   routeChapterAudio,
-} from "./chapterAudio";
+  mediaProbe,
+  probeMedia,
+  sameMediaElement,
+} from "./audioFixtures";
 
 // Canonical chapter audio runs against the fixture build only: accelerated
 // copies of the committed manifests and synthetic WAV media, never a CDN.
@@ -49,36 +52,7 @@ async function setContinuous(page: Page, enabled: boolean) {
     .setChecked(enabled);
   await closeSheet(page);
 }
-/** From page load, record the element, source and position of every start. */
-async function recordStarts(page: Page) {
-  await page.addInitScript(() => {
-    const starts: [string, number][] = [];
-    const record = { __starts: starts, __audio: null as Element | null };
-    Object.assign(window, record);
-    // Media events do not bubble, but a capturing document listener sees them.
-    document.addEventListener(
-      "playing",
-      (event) => {
-        const element = event.target as HTMLAudioElement;
-        const own = window as unknown as typeof record;
-        own.__audio ??= element;
-        starts.push([element.currentSrc, element.currentTime]);
-      },
-      true,
-    );
-  });
-}
-const starts = (page: Page) =>
-  page.evaluate(
-    () => (window as unknown as { __starts: [string, number][] }).__starts,
-  );
-/** Whether the audio element now on the page is the first one that played. */
-const sameElement = (page: Page) =>
-  page.evaluate(
-    () =>
-      document.querySelector("audio") ===
-      (window as unknown as { __audio: Element }).__audio,
-  );
+const starts = async (page: Page) => (await mediaProbe(page)).starts;
 
 test("chapter audio loads only on request; Old Testament recordings disclose chapter-only timing", async ({
   page,
@@ -160,7 +134,7 @@ test("continuous listening keeps one audio element through a cold chapter load a
     await gate.opened;
     await route.continue();
   });
-  await recordStarts(page);
+  await probeMedia(page);
   await open(page, "REV", 21);
   await setContinuous(page, true);
   // A saved position for the next chapter must not apply to a handoff.
@@ -178,14 +152,14 @@ test("continuous listening keeps one audio element through a cold chapter load a
   await expect(article(page)).toHaveAttribute("aria-busy", "true");
   await expect(page).toHaveURL(/[?&]book=REV&chapter=22$/);
   await expect(audio(page)).toHaveCount(1);
-  expect(await sameElement(page)).toBe(true);
+  expect(await sameMediaElement(page)).toBe(true);
   gate.open();
   await ready(page);
   await expect(audio(page)).toHaveAttribute("src", /REV-22-[a-f0-9]+\.m4a$/);
   await expect(player(page)).toContainText("انتهى التسجيل", {
     timeout: 15000,
   });
-  expect(await sameElement(page)).toBe(true);
+  expect(await sameMediaElement(page)).toBe(true);
   const played = await starts(page);
   const handoff = played.find(([src]) => src.endsWith(next));
   expect(handoff?.[1]).toBeLessThan(1);
@@ -350,7 +324,7 @@ test("resume positions belong to one recording and are saved sparingly", async (
     "GEN:1": { duration: 30 },
   });
   const src = committedChapter("GEN", 1).src;
-  await recordStarts(page);
+  await probeMedia(page);
   await open(page, "GEN", 1);
   await listen(page).click();
   await expect.poll(() => currentTime(page)).toBeGreaterThan(2.5);

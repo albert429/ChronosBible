@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { allowsPrefetch } from "../src/lib/network.ts";
+import { allowsPrefetch } from "../src/shared/browser/network.ts";
 
 test("Neighbouring readings are prefetched unless the connection is slow or saving data", () => {
   assert.equal(allowsPrefetch(undefined), true);

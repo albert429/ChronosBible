@@ -6,8 +6,8 @@ import {
   isolate,
   rangeAriaLabel,
   rangeText,
-} from "../src/bible/reference.ts";
-import { verseId } from "../src/bible/verse.ts";
+} from "../src/domain/scripture/reference.ts";
+import { verseId } from "../src/domain/study/reference.ts";
 
 test("A single verse shows one number; a range shows both with an en dash", () => {
   assert.equal(rangeText({ start: 5, end: 5 }), "٥");

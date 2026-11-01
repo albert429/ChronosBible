@@ -1,4 +1,4 @@
-// The audio delivery contract (src/audio/contract.ts) against everything that
+// The audio delivery contract (src/domain/audio/contract.ts) against everything that
 // restates it: committed manifests, the R2 staging folder and the upload
 // command.
 import { test } from "node:test";
@@ -26,9 +26,9 @@ import {
   AUDIO_MEDIA_PREFIXES,
   AUDIO_HOST_ORIGIN,
   AUDIO_R2_BUCKET,
-} from "../src/audio/contract.ts";
-import { copyMedia } from "../scripts/prepare-audio-r2.mjs";
-import { bulkPutArguments } from "../scripts/upload-audio-r2.mjs";
+} from "../src/domain/audio/contract.ts";
+import { copyMedia } from "../scripts/hosting/prepare-audio-r2.mjs";
+import { bulkPutArguments } from "../scripts/hosting/upload-audio-r2.mjs";
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
@@ -131,7 +131,10 @@ test("The upload command targets the contract's bucket with its headers", () => 
   assert.equal(AUDIO_CACHE_CONTROL, "public, max-age=31536000, immutable");
   const { scripts } = json("package.json");
   assert.equal(scripts["audio:host:deploy"], undefined);
-  assert.match(scripts["audio:host:upload"], /scripts\/upload-audio-r2\.mjs$/);
+  assert.match(
+    scripts["audio:host:upload"],
+    /scripts\/hosting\/upload-audio-r2\.mjs$/,
+  );
 });
 
 test("copyMedia stages both namespaces from any media root and refuses unsafe files", () => {

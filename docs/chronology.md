@@ -9,7 +9,7 @@ about ten minutes. The PDF and page renders are not committed.
 
 ## Pipeline
 
-1. `scripts/import-chronology.py <pdf>` (needs `pypdf`; run with `-I`) checks
+1. `scripts/data/import-chronology.py <pdf>` (needs `pypdf`; run with `-I`) checks
    the hash and parses the extracted table text into
    `data/chronology/source.json`. Every occurrence keeps a stable id
    (`g060-2` = group 60, second entry), its page and group, the reference in
@@ -23,11 +23,11 @@ about ten minutes. The PDF and page renders are not committed.
 3. `data/chronology/review.json` records the reviewed audit: every
    repetition, every omission and every applied correction. If the source
    audit differs from this file in any way, the build stops.
-4. `scripts/build-chronology.js` (run by `scripts/build-data.js`) writes the
+4. `scripts/data/build-chronology.js` (run by `scripts/data/build-data.js`) writes the
    ignored output `public/chronology/OT.json` and `NT.json` (catalogs:
    summaries only) and one definition per reading,
    `public/chronology/<T>/<id>.json` (references only). Scripture text is
-   never copied: at run time `src/chronology/client.ts` slices the existing
+   never copied: at run time `src/data/chronology/client.ts` slices the existing
    canonical chapters, `/bible/<USFM>/<n>.json`, which load through the shared
    chapter cache. Headings, superscriptions, acrostics, paragraphs and poetry
    blocks inside each range are kept with their canonical verse numbers and

@@ -3,28 +3,32 @@
 // drives one persistent media element through native `ended` events.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { catalog } from "../src/bible/catalog.ts";
-import type { ChronologicalReading } from "../src/chronology/types.ts";
+import { catalog } from "../src/domain/scripture/catalog.ts";
+import type { ChronologicalReading } from "../src/domain/reading/chronology.ts";
+import { audioManifestUrl } from "../src/domain/audio/identity.ts";
+import { validManifest } from "../src/domain/audio/manifest.ts";
+import {
+  matchesReading,
+  readingHash,
+} from "../src/domain/audio/compatibility.ts";
 import {
   activeCueIndex,
   announcementAt,
-  audioManifestUrl,
   entryAt,
-  matchesReading,
-  readingHash,
   stepCueIndex,
   toTimeline,
-  validManifest,
-  type AudioManifestV2,
-  type AudioManifestV3,
-  type LegacyAudioManifest,
-} from "../src/audio/manifest.ts";
+} from "../src/domain/audio/timeline.ts";
+import type {
+  AudioManifestV2,
+  AudioManifestV3,
+  LegacyAudioManifest,
+} from "../src/domain/audio/types.ts";
 import {
   PlaylistController,
   type MediaLike,
-} from "../src/audio/playlistController.ts";
-import { audioAvailable } from "../src/audio/availability.ts";
-import { constrainedConnection } from "../src/audio/useNextManifest.ts";
+} from "../src/features/audio/playlistController.ts";
+import { audioAvailable } from "../src/domain/audio/availability.ts";
+import { constrainedConnection } from "../src/features/audio/useNextManifest.ts";
 
 const GEN = catalog.find((book) => book.usfm === "GEN")!;
 const verses = (from: number, to: number) =>

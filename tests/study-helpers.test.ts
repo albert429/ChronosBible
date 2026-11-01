@@ -6,8 +6,8 @@ import {
   keyGroups,
   span,
   tokens,
-} from "../src/study/verse.ts";
-import type { GreekToken } from "../src/study/types.ts";
+} from "../src/domain/study/words.ts";
+import type { GreekToken } from "../src/domain/study/types.ts";
 
 test("Greek words lose punctuation and editorial marks but keep elision", () => {
   const cases = [

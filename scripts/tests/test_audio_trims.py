@@ -1,20 +1,15 @@
 """Reviewed source trims and the alignment review that honours them (no audio)."""
 import hashlib
-import importlib.util
 import json
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
-from audio_sources import bible_chapters, check_source_trim, load_source_trims  # noqa: E402
-from audio_text import chapter_text_hash  # noqa: E402
+from _support import ROOT, load_script
+from chronos_tools.audio_sources import bible_chapters, check_source_trim, load_source_trims
+from chronos_tools.audio_text import chapter_text_hash
 
-spec = importlib.util.spec_from_file_location("review_audio_alignments", ROOT / "scripts/review-audio-alignments.py")
-review = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(review)
+review = load_script("audio/review-audio-alignments.py", "review_audio_alignments")
 
 
 def chapter(code, number, count):

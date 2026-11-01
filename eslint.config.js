@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import boundaries from "./scripts/quality/import-boundaries.mjs";
 
 export default tseslint.config(
   {
@@ -12,8 +13,16 @@ export default tseslint.config(
       "public/study",
       "public/audio",
       "artifacts",
+      // Local or Git-ignored work: concurrent checkouts, video projects,
+      // Wrangler/Vercel output, Playwright MCP captures.
+      "worktrees",
       ".claude/worktrees",
       ".agents",
+      ".wrangler",
+      ".vercel",
+      ".playwright-mcp",
+      "assets/video",
+      "assets/reel*",
       "node_modules",
       "test-results",
       "playwright-report",
@@ -40,11 +49,39 @@ export default tseslint.config(
     },
   },
   {
+    // The layering of src/ (see scripts/quality/import-boundaries.mjs). Build
+    // and tool code is held to the same table from the other side.
+    files: ["src/**/*.{ts,tsx}", "scripts/**/*.{js,mjs,ts}", "vite.config.ts"],
+    plugins: { chronos: boundaries },
+    rules: { "chronos/import-boundaries": "error" },
+  },
+  {
+    // Domain and shared/lib stay free of the UI framework and Node.
+    files: ["src/domain/**", "src/shared/lib/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["react", "react/*", "react-dom", "react-dom/*"],
+              message: "Domain and shared/lib are pure: no React.",
+            },
+            {
+              group: ["lucide-react", "node:*", "vite", "vite/*"],
+              message: "Domain and shared/lib are pure: no UI or Node modules.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["scripts/**", "hosting/**", "tests/**", "*.config.{js,ts}"],
     languageOptions: { globals: globals.node },
   },
   {
-    files: ["scripts/capture-preview.mjs"],
+    files: ["scripts/quality/capture-preview.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 );

@@ -1,5 +1,5 @@
 // The optional AI card, against the dist-ai build and the local SSE stub
-// (scripts/sse-stub.mjs). Nothing here reaches OpenRouter.
+// (scripts/quality/sse-stub.mjs). Nothing here reaches OpenRouter.
 import {
   test,
   expect,
@@ -18,7 +18,7 @@ import {
   study,
   tap,
 } from "./helpers";
-import { STATE_KEY } from "../../src/plan/progress.ts";
+import { STATE_KEY } from "../../src/features/profiles/storage.ts";
 import { AI_KEY, AI_URL, STUB_URL } from "./ai-stub";
 
 const GEMMA = "google/gemma-4-31b-it:free";

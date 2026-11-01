@@ -1,0 +1,69 @@
+{
+  "count": 66,
+  "oldTestament": 39,
+  "books": [
+    {
+      "index": 0,
+      "usfm": "GEN",
+      "osis": "Gen",
+      "step": "Gen",
+      "name": "التكوين"
+    },
+    {
+      "index": 8,
+      "usfm": "1SA",
+      "osis": "1Sam",
+      "step": "1Sa",
+      "name": "صموئيل الأول"
+    },
+    {
+      "index": 18,
+      "usfm": "PSA",
+      "osis": "Ps",
+      "step": "Psa",
+      "name": "المزامير"
+    },
+    {
+      "index": 21,
+      "usfm": "SNG",
+      "osis": "Song",
+      "step": "Sng",
+      "name": "نشيد الأنشاد"
+    },
+    {
+      "index": 38,
+      "usfm": "MAL",
+      "osis": "Mal",
+      "step": "Mal",
+      "name": "ملاخي"
+    },
+    {
+      "index": 39,
+      "usfm": "MAT",
+      "osis": "Matt",
+      "step": "Mat",
+      "name": "متى"
+    },
+    {
+      "index": 45,
+      "usfm": "1CO",
+      "osis": "1Cor",
+      "step": "1Co",
+      "name": "كورنثوس الأولى"
+    },
+    {
+      "index": 63,
+      "usfm": "3JN",
+      "osis": "3John",
+      "step": "3Jn",
+      "name": "يوحنا الثالثة"
+    },
+    {
+      "index": 65,
+      "usfm": "REV",
+      "osis": "Rev",
+      "step": "Rev",
+      "name": "رؤيا يوحنا"
+    }
+  ]
+}

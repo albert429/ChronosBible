@@ -4,7 +4,7 @@ import {
   aiBuildConfig,
   DEFAULT_MODELS,
   ROUTER_MODEL,
-} from "../src/ai/config.ts";
+} from "../src/features/ai/config.ts";
 
 const base = {
   VITE_AI_PROVIDERS: "openrouter",
