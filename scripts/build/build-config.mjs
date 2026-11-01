@@ -1,7 +1,8 @@
 // The three reference build configurations, each fully explicit and clean:
 // no .env files, no inherited VITE_* or test variables, freshly generated
 // data. Refactors are verified by building the same configurations before and
-// after (artifacts/refactor/VERIFY.md).
+// after with scripts/quality/snapshot.mjs and measure-startup.mjs (see the
+// verification section of docs/plans/architecture-refactor.md).
 //
 //   node scripts/build/build-config.mjs list
 //   node scripts/build/build-config.mjs env <name>      print the build environment
