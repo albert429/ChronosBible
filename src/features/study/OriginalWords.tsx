@@ -9,9 +9,11 @@ import {
   gloss,
   originalWord,
   span,
+  tokens,
   verseWordsTitle,
   wordGroups,
 } from "../../domain/study/words";
+import { studyReference } from "../../domain/study/reference";
 import type { WordToken } from "../../domain/study/types";
 import Section from "./Section";
 
@@ -26,7 +28,7 @@ function Words({
 }) {
   const loaded = useResource(verseWords, id);
   const diacritics = useDiacritics();
-  const words = loaded.data?.verses[id.split(".")[2]]?.w;
+  const words = loaded.data?.verses[studyReference(id).verse]?.w;
   useEffect(() => {
     if (words) onWords(words);
   }, [words, onWords]);
@@ -48,7 +50,7 @@ function Words({
             <div className="greek-main">
               {group.a0 !== null &&
                 group.a1 !== null &&
-                group.a1 < text.split(" ").length && (
+                group.a1 < tokens(text).length && (
                   <>
                     <span className="greek-ar">
                       {displayArabic(

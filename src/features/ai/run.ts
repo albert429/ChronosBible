@@ -43,7 +43,7 @@ export async function ask(
 ): Promise<AiMeta> {
   if (signal.aborted) throw new AiError("aborted");
   const needsWords = input.chip === "words" || input.chip === "ask";
-  const verse = String(studyReference(input.id).verse);
+  const { verse } = studyReference(input.id);
   const wordContext = async () => {
     if (!needsWords) return undefined;
     const data = await verseWords.load(input.id);

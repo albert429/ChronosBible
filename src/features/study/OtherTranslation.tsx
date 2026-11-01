@@ -3,6 +3,7 @@ import { Loading, LoadError } from "../../shared/ui/Feedback";
 import { verseTranslations } from "../../data/study/client";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useAppearance } from "../appearance/appearance";
+import { studyReference } from "../../domain/study/reference";
 import type { VerseText } from "../../domain/study/types";
 import { useResource } from "../../shared/hooks/useResource";
 import Section from "./Section";
@@ -15,7 +16,7 @@ function Translations({ id }: { id: string }) {
   const { diacritics } = useAppearance();
   if (tr.error) return <LoadError message={tr.error} retry={tr.retry} />;
   if (!tr.data) return <Loading label="جارٍ تحميل الترجمات…" />;
-  const { n, e } = tr.data.verses[id.split(".")[2]] ?? {};
+  const { n, e } = tr.data.verses[studyReference(id).verse] ?? {};
   if (!n && !e)
     return <p className="study-empty">لا تتوفر ترجمات أخرى لهذه الآية.</p>;
   return (

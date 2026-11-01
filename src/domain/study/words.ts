@@ -1,3 +1,4 @@
+import { studyReference } from "./reference.ts";
 import type { GreekToken, WordToken } from "./types.ts";
 
 export const tokens = (text: string) => text.split(" ");
@@ -66,11 +67,16 @@ export function keyGroups<T extends GreekToken | WordToken>(
   return result;
 }
 
-/** Hebrew/Aramaic affixes carry meaning; do not apply Greek part-of-speech filters. */
+/** Greek (NT) words: only these take the Greek part-of-speech filter. */
+const allGreek = (words: WordToken[]) =>
+  words.every((word) => word[7] === "grc");
+
+/**
+ * The study sheet's rows: Greek key words, or every Hebrew/Aramaic row, since
+ * their affixes carry meaning. Explanations choose differently (meaningGroups).
+ */
 export function wordGroups(words: WordToken[]) {
-  return words.every((word) => word[7] === "grc")
-    ? keyGroups(words)
-    : groupRows(words);
+  return allGreek(words) ? keyGroups(words) : groupRows(words);
 }
 
 // The OT's Hebrew/Aramaic content words: nouns, verbs and adjectives after the
@@ -83,7 +89,7 @@ const OT_CONTENT = /^[HA][NVA]/;
  * whole, with their affixes, so each Arabic span is explained in full).
  */
 export function meaningGroups(words: WordToken[], limit: number) {
-  const groups = words.every((word) => word[7] === "grc")
+  const groups = allGreek(words)
     ? keyGroups(words)
     : groupRows(words).filter((group) =>
         group.tokens.some(([, , , morph]) => OT_CONTENT.test(morph)),
@@ -109,8 +115,8 @@ const atOrAfter = (a: [number, number], b: [number, number]) =>
 export function verseWordsTitle(id: string, oldTestament: boolean) {
   if (!oldTestament) return "الكلمات اليونانية";
   if (id === "DAN.2.4") return "الكلمات العبرية والآرامية";
-  const [book, chapter, verse] = id.split(".");
-  const at: [number, number] = [Number(chapter), Number(verse)];
+  const { book, chapter, verse } = studyReference(id);
+  const at: [number, number] = [chapter, verse];
   return ARAMAIC.some(
     ([name, from, to]) =>
       name === book && atOrAfter(at, from) && atOrAfter(to, at),
