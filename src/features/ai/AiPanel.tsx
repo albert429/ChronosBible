@@ -9,34 +9,18 @@ import {
 } from "react";
 import { Info, RefreshCw } from "lucide-react";
 import {
-  answerKey,
   browserStorage,
-  readAnswer,
-  recordAnswer,
-  recordAttempt,
-  saveAnswer,
   usage,
   turnOff,
   turnOn,
   isTurnedOff,
-  type StorageLike,
 } from "./cache.ts";
-import {
-  cleanAnswer,
-  clip,
-  MAX_TEXT,
-  modelLabel,
-  parseAnswer,
-  wellFormed,
-} from "./format.ts";
-import {
-  CHIPS,
-  cleanQuestion,
-  PROMPT_VERSION,
-  QUESTION_MAX,
-  QUESTION_MIN,
-} from "./chips.ts";
-import { abortable, AiError, type AiErrorKind, type ChipId } from "./types.ts";
+import { modelLabel, parseAnswer } from "./format.ts";
+import { CHIPS, cleanQuestion, QUESTION_MAX, QUESTION_MIN } from "./chips.ts";
+import { createGuards, RETRYABLE, type Problem } from "./guards.ts";
+import { reportMailto } from "./report.ts";
+import { startAnswer, type View } from "./request.ts";
+import type { ChipId } from "./types.ts";
 import { APP_INFO } from "../../shared/lib/appInfo";
 import { ar, today } from "../../shared/lib/format";
 import type { Passage, Verse } from "../../domain/scripture/types";
@@ -45,32 +29,12 @@ import AiSpark from "./AiSpark";
 import { reveal } from "../../shared/ui/reveal";
 import "../../shared/ui/form.css";
 
-type Problem = AiErrorKind | "cap" | "attempts" | "stopped";
-type View =
-  | { s: "idle" }
-  | { s: "loading"; chip: ChipId; thinking: boolean }
-  | { s: "streaming"; chip: ChipId; text: string; model?: string }
-  | {
-      s: "done";
-      chip: ChipId;
-      text: string;
-      model?: string;
-      truncated: boolean;
-    }
-  | {
-      s: "error";
-      chip: ChipId;
-      problem: Problem;
-      partial?: string;
-      model?: string;
-      /** The run that failed: a repeated, identical alert is announced again. */
-      n: number;
-    };
-
-// Session-wide guards that protect the shared OpenRouter allowance.
-let quotaReached = false;
-let coolUntil = 0;
-let failures = 0;
+// Session-wide guards that protect the shared OpenRouter allowance; module
+// scope, so they hold across remounts of the panel.
+const guards = createGuards({
+  dailyCap: __AI_DAILY_CAP__,
+  attemptCap: __AI_ATTEMPT_CAP__,
+});
 
 const MESSAGES: Record<Problem, string> = {
   quota: "انتهت حصة الخدمة المشتركة اليوم. حاول غدًا.",
@@ -88,42 +52,6 @@ const MESSAGES: Record<Problem, string> = {
   cap: `وصلت للحد اليومي للإجابات على هذا الجهاز (${ar(__AI_DAILY_CAP__)}). حاول غدًا.`,
   attempts: "تعذّرت محاولات كثيرة اليوم على هذا الجهاز. حاول غدًا.",
 };
-const RETRYABLE = new Set<Problem>([
-  "rate",
-  "server",
-  "timeout",
-  "empty",
-  "network",
-  "stopped",
-  "aborted",
-]);
-
-/** Why a new request would be refused right now, if it would be. */
-function refusal(storage: StorageLike | null, date: string) {
-  if (quotaReached) return "quota";
-  const { n, a } = usage(storage, date);
-  if (n >= __AI_DAILY_CAP__) return "cap";
-  if (a >= __AI_ATTEMPT_CAP__) return "attempts";
-  if (Date.now() < coolUntil) return "rate";
-}
-
-/** Session guards after a failure that left no answer text. */
-function backOff(kind: Problem, retryAt?: number) {
-  const now = Date.now();
-  if (kind === "quota") quotaReached = true;
-  else if (kind === "rate")
-    // The service's reset time, bounded: the device clock may be wrong.
-    coolUntil = now + Math.min(65000, Math.max(30000, (retryAt ?? 0) - now));
-  else if (RETRYABLE.has(kind)) {
-    failures += 1;
-    coolUntil = now + (failures === 1 ? 5000 : 15000);
-  }
-}
-
-const finished = (chip: ChipId) =>
-  chip === "ask"
-    ? "اكتملت الإجابة عن سؤالك"
-    : `اكتملت الإجابة: ${CHIPS.find((c) => c.id === chip)?.label}`;
 
 export default function AiPanel({
   id,
@@ -165,12 +93,12 @@ export default function AiPanel({
   useEffect(() => () => controller.current?.abort("unmount"), []);
 
   // Re-enable «إعادة المحاولة» and «إجابة أخرى» when a cooldown ends.
-  const cooling = !busy && view.s !== "idle" && Date.now() < coolUntil;
+  const cooling = !busy && view.s !== "idle" && guards.remaining() > 0;
   useEffect(() => {
     if (!cooling) return;
     const timer = setTimeout(
       () => setTick((n) => n + 1),
-      Math.max(0, coolUntil - Date.now()) + 50,
+      guards.remaining() + 50,
     );
     return () => clearTimeout(timer);
   }, [cooling, view]);
@@ -213,128 +141,31 @@ export default function AiPanel({
     }
     const n = ++runs.current;
     lastChip.current = chip;
-    const key = chip === "ask" ? null : answerKey(id, chip, PROMPT_VERSION);
-    if (key && !options.fresh) {
-      const cached = readAnswer(storage, key);
-      if (cached) {
-        setView({ s: "done", chip, ...cached, truncated: !!cached.truncated });
-        setStatus(finished(chip));
-        return;
-      }
-    }
-    const date = today();
-    const refused = refusal(storage, date);
-    if (refused) {
-      setView({ s: "error", chip, problem: refused, n });
-      return;
-    }
-
-    const current = new AbortController();
-    controller.current = current;
-    setView({ s: "loading", chip, thinking: false });
-    setStatus("جارٍ إعداد الإجابة…");
-    let raw = "";
-    let model: string | undefined;
-    let counted = false;
-    let truncated = false;
-    let frame = 0;
-    const flush = () => {
-      frame = 0;
-      const shown = cleanAnswer(raw);
-      if (shown) setView({ s: "streaming", chip, text: shown, model });
-    };
-    const finish = () => {
-      const answer = clip(cleanAnswer(raw), MAX_TEXT);
-      if (!answer) {
-        backOff("empty");
-        setView({ s: "error", chip, problem: "empty", n });
-        setStatus("");
-        return;
-      }
-      failures = 0;
-      if (key)
-        saveAnswer(
-          storage,
-          key,
-          truncated
-            ? { text: answer, model: model ?? "", truncated: true }
-            : { text: answer, model: model ?? "" },
-          PROMPT_VERSION,
-        );
-      setView({ s: "done", chip, text: answer, model, truncated });
-      setStatus(finished(chip));
-    };
-
-    try {
-      // Neither the chunk nor the study files may delay «إيقاف».
-      const { ask } = await abortable(import("./run.ts"), current.signal);
-      const meta = await ask(
-        {
-          chip,
-          id,
-          material: { book: passage.book, passage, verse },
-          question: text,
+    const started = startAnswer(
+      {
+        chip,
+        id,
+        material: { book: passage.book, passage, verse },
+        question: text,
+        fresh: options.fresh,
+        n,
+      },
+      { storage, guards, date: today() },
+      {
+        view: setView,
+        status: setStatus,
+        answered(count) {
+          setUsed(count);
+          requestAnimationFrame(() => {
+            if (answerRef.current) reveal(answerRef.current);
+          });
         },
-        current.signal,
-        {
-          onText(delta) {
-            raw += delta;
-            const shown = cleanAnswer(raw);
-            if (!shown) return;
-            if (!counted) {
-              // The shared allowance is spent and the reader got something.
-              counted = true;
-              setUsed(recordAnswer(storage, date).n);
-              requestAnimationFrame(() => {
-                if (answerRef.current) reveal(answerRef.current);
-              });
-            }
-            if (shown.length > MAX_TEXT) {
-              truncated = true;
-              current.abort("truncated");
-              return;
-            }
-            frame ||= requestAnimationFrame(flush);
-          },
-          onMeta(name) {
-            model = name;
-          },
-          onActivity() {
-            setView((v) => (v.s === "loading" ? { ...v, thinking: true } : v));
-          },
-        },
-        () => recordAttempt(storage, date),
-      );
-      model = meta.model || model;
-      truncated ||= meta.finish === "length";
-      finish();
-    } catch (error) {
-      const reason = current.signal.reason;
-      if (reason === "truncated") return finish();
-      if (reason === "unmount") return;
-      const failure = error instanceof AiError ? error : new AiError("network");
-      model = failure.model ?? model;
-      const partial = clip(cleanAnswer(raw), MAX_TEXT) || undefined;
-      setStatus("");
-      if (reason === "stop") {
-        if (partial)
-          setView({ s: "error", chip, problem: "stopped", partial, model, n });
-        else {
-          setView({ s: "idle" });
-          setStatus("أُوقفت الإجابة.");
-        }
-        return;
-      }
-      if (partial) {
-        setView({ s: "error", chip, problem: failure.kind, partial, model, n });
-        return;
-      }
-      backOff(failure.kind, failure.retryAt);
-      setView({ s: "error", chip, problem: failure.kind, n });
-    } finally {
-      cancelAnimationFrame(frame);
-      if (controller.current === current) controller.current = null;
-    }
+      },
+    );
+    if (!started) return;
+    controller.current = started.controller;
+    await started.done;
+    if (controller.current === started.controller) controller.current = null;
   }
 
   function submitQuestion(event: FormEvent) {
@@ -361,25 +192,12 @@ export default function AiPanel({
     chip === "ask" ? `سؤال: ${asked}` : CHIPS.find((c) => c.id === chip)?.label;
   const report =
     text && !busy
-      ? `mailto:${APP_INFO.email}?subject=${encodeURIComponent(
-          "خطأ في إجابة الذكاء الاصطناعي",
-        )}&body=${encodeURIComponent(
-          wellFormed(
-            [
-              `المرجع: ${reference}`,
-              `الطلب: ${asking ?? ""}`,
-              `النموذج: ${modelLabel(model)}`,
-              `إصدار الطلب: ${PROMPT_VERSION}`,
-              "",
-              clip(text, 1500),
-            ].join("\n"),
-          ),
-        )}`
+      ? reportMailto({ email: APP_INFO.email, reference, asking, model, text })
       : undefined;
   // A request the guards would refuse: offer no button for it (it would only
   // replace the answer with an error), or a disabled one during a cooldown.
   const blocked =
-    busy || view.s === "idle" ? undefined : refusal(storage, today());
+    busy || view.s === "idle" ? undefined : guards.refusal(storage, today());
   const final = blocked !== undefined && blocked !== "rate";
   const waiting = blocked === "rate";
 
