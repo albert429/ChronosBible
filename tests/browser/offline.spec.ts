@@ -135,7 +135,10 @@ test("an install offer made before offline support loads is kept for the menu", 
   await menuButton(page).click();
   const menu = menuDialog(page);
   await menu.getByText("القراءة دون اتصال وتثبيت التطبيق").click();
-  const install = menu.getByRole("button", { name: "تثبيت التطبيق" });
+  const install = menu.getByRole("button", {
+    name: "تثبيت التطبيق",
+    exact: true,
+  });
   await expect(install).toBeVisible({ timeout: 15000 });
   await install.click();
   await expect
@@ -190,4 +193,36 @@ test("the menu's download button saves everything in the background and stops on
       name: "حفظ ملاحظات الدراسة للقراءة دون اتصال",
     }),
   ).toBeVisible();
+});
+
+test("where the browser offers it, the menu's button installs the app first, then downloads", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await ready(page);
+  await page.evaluate(() => {
+    const offer = new Event("beforeinstallprompt", { cancelable: true });
+    Object.assign(offer, {
+      prompt: async () => {
+        (window as { prompted?: boolean }).prompted = true;
+      },
+    });
+    dispatchEvent(offer);
+  });
+  await menuButton(page).click();
+  const menu = menuDialog(page);
+  const install = menu.getByRole("button", {
+    name: "تثبيت التطبيق ثم تنزيل الكتاب المقدس وملاحظات الدراسة",
+  });
+  await expect(install).toBeVisible({ timeout: 15000 });
+  await expect(install).toHaveText("تثبيت");
+  await install.click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as { prompted?: boolean }).prompted),
+    )
+    .toBe(true);
+  const stop = menu.getByRole("button", { name: /^إيقاف تنزيل/ });
+  await expect(stop).toBeVisible();
+  await stop.click();
 });

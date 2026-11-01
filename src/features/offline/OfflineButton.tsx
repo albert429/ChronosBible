@@ -1,4 +1,10 @@
-import { CircleCheck, Download, Square, TriangleAlert } from "lucide-react";
+import {
+  CircleCheck,
+  Download,
+  MonitorDown,
+  Square,
+  TriangleAlert,
+} from "lucide-react";
 import { ar } from "../../shared/lib/format";
 import { allSaved, busy, PACK_ORDER, type Downloads } from "./downloadQueue";
 import type { Pack } from "./packs";
@@ -7,6 +13,7 @@ import {
   stopSaving,
   useOfflineDownloads,
 } from "./offlineDownloads";
+import { installApp, useAppUpdate } from "./register";
 import "./OfflineButton.css";
 
 const RADIUS = 15;
@@ -33,9 +40,12 @@ function step(downloads: Downloads) {
  * Scripture text first and then study notes. Its label says what it does
  * and, while saving, which part and how far, with the same progress as a
  * ring. Saving goes on after the menu closes; tapping again stops it.
+ * Where the browser offers to install the app, the same tap installs it
+ * first, then saves into the storage the installed app shares.
  */
 export default function OfflineButton() {
   const downloads = useOfflineDownloads();
+  const { install } = useAppUpdate();
   const saving = busy(downloads);
   const done = allSaved(downloads);
   const failed =
@@ -45,41 +55,60 @@ export default function OfflineButton() {
   const { pack, share } = step(downloads);
   // Every accessible name begins with, or contains, the visible label.
   const percent = `${ar(Math.floor(share * 100))}٪`;
-  const [text, label] = done
-    ? ["محفوظ", `محفوظ: ${EVERYTHING} على هذا الجهاز`]
-    : saving
-      ? [
-          // «المقدس» gives way on the narrowest phones.
-          pack === "text" ? (
-            <>
-              الكتاب<span className="offline-wide"> المقدس</span> {percent}
-            </>
-          ) : (
-            `${STEP[pack]} ${percent}`
-          ),
-          `إيقاف تنزيل ${STEP[pack]} ${percent}`,
-        ]
-      : failed
-        ? ["أعد المحاولة", `أعد المحاولة: تنزيل ${EVERYTHING}`]
-        : ["تنزيل", `تنزيل ${EVERYTHING} للقراءة دون اتصال`];
+  const installing = install && !saving;
+  const [text, label] = installing
+    ? ["تثبيت", `تثبيت التطبيق ثم تنزيل ${EVERYTHING}`]
+    : done
+      ? ["محفوظ", `محفوظ: ${EVERYTHING} على هذا الجهاز`]
+      : saving
+        ? [
+            // «المقدس» gives way on the narrowest phones.
+            pack === "text" ? (
+              <>
+                الكتاب<span className="offline-wide"> المقدس</span> {percent}
+              </>
+            ) : (
+              `${STEP[pack]} ${percent}`
+            ),
+            `إيقاف تنزيل ${STEP[pack]} ${percent}`,
+          ]
+        : failed
+          ? ["أعد المحاولة", `أعد المحاولة: تنزيل ${EVERYTHING}`]
+          : ["تنزيل", `تنزيل ${EVERYTHING} للقراءة دون اتصال`];
   return (
     <button
       type="button"
       className="offline-button"
       aria-label={label}
       title={label}
-      aria-disabled={done || undefined}
+      aria-disabled={(done && !installing) || undefined}
       data-state={
-        done ? "done" : saving ? "saving" : failed ? "failed" : undefined
+        installing
+          ? undefined
+          : done
+            ? "done"
+            : saving
+              ? "saving"
+              : failed
+                ? "failed"
+                : undefined
       }
-      onClick={() => {
+      onClick={async () => {
+        if (installing) {
+          // Accepted or not, the files are saved next.
+          await installApp().catch(() => {});
+          if (!done) void saveOffline();
+          return;
+        }
         if (done) return;
         if (saving) stopSaving();
         else void saveOffline();
       }}
     >
       <span className="offline-pill">
-        {done ? (
+        {installing ? (
+          <MonitorDown size={17} aria-hidden="true" />
+        ) : done ? (
           <CircleCheck size={17} aria-hidden="true" />
         ) : saving ? (
           <span className="offline-ring" aria-hidden="true">
