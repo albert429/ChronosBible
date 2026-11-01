@@ -2,25 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Download, MonitorDown, X } from "lucide-react";
 import { ar } from "../../shared/lib/format";
 import { installApp, useAppUpdate } from "./register";
+import { savePack, savedCount, storageUsed } from "./downloads";
+import { packUrls, type Pack } from "./packs";
 import {
-  packUrls,
-  savePack,
-  savedCount,
-  storageUsed,
-  type Pack,
-} from "./offline";
+  isComplete,
+  packController,
+  type PackDevice,
+  type PackStatus,
+} from "./packStatus";
 import "./OfflinePanel.css";
 
 const PACKS: { pack: Pack; title: string; size: string }[] = [
   { pack: "text", title: "نص الكتاب المقدس", size: "نحو ٣ ميغابايت للتنزيل" },
   { pack: "study", title: "ملاحظات الدراسة", size: "نحو ١٣ ميغابايت للتنزيل" },
 ];
+const device: PackDevice = { list: packUrls, savedCount, save: savePack };
 
-type Status =
-  | { kind: "checking" }
-  | { kind: "ready"; saved: number; total: number }
-  | { kind: "saving"; saved: number; total: number }
-  | { kind: "error"; message: string };
+/** A pack row's status and actions, for as long as the row is shown. */
+function usePack(pack: Pack, changed: () => void) {
+  const [status, setStatus] = useState<PackStatus>({ kind: "checking" });
+  const controller = useRef<ReturnType<typeof packController>>(null);
+  useEffect(() => {
+    const current = packController(pack, device, setStatus);
+    controller.current = current;
+    return () => current.close();
+  }, [pack]);
+  return {
+    status,
+    save: () => void controller.current?.save().then(changed),
+    cancel: () => controller.current?.cancel(),
+  };
+}
 
 function PackRow({
   pack,
@@ -33,58 +45,8 @@ function PackRow({
   size: string;
   changed: () => void;
 }) {
-  const [status, setStatus] = useState<Status>({ kind: "checking" });
-  const urls = useRef<string[]>([]);
-  const abort = useRef<AbortController>(null);
-  useEffect(() => {
-    let active = true;
-    packUrls(pack)
-      .then(async (list) => {
-        urls.current = list;
-        const saved = await savedCount(list);
-        if (active) setStatus({ kind: "ready", saved, total: list.length });
-      })
-      .catch(() => {
-        if (active)
-          setStatus({
-            kind: "error",
-            message: "تعذر التحقق من الملفات. تحقق من الاتصال.",
-          });
-      });
-    return () => {
-      active = false;
-      abort.current?.abort();
-    };
-  }, [pack]);
-  async function save() {
-    const controller = new AbortController();
-    abort.current = controller;
-    const total = urls.current.length;
-    try {
-      await savePack(
-        urls.current,
-        (saved) => setStatus({ kind: "saving", saved, total }),
-        controller.signal,
-      );
-      setStatus({ kind: "ready", saved: total, total });
-    } catch {
-      const saved = await savedCount(urls.current).catch(() => 0);
-      setStatus(
-        controller.signal.aborted
-          ? { kind: "ready", saved, total }
-          : {
-              kind: "error",
-              message: "توقف الحفظ. تحقق من الاتصال وحاول مرة أخرى.",
-            },
-      );
-    } finally {
-      changed();
-    }
-  }
-  const complete =
-    status.kind === "ready" &&
-    status.total > 0 &&
-    status.saved === status.total;
+  const { status, save, cancel } = usePack(pack, changed);
+  const complete = isComplete(status);
   return (
     <div className="offline-pack">
       <div className="offline-pack-text">
@@ -114,7 +76,7 @@ function PackRow({
         <button
           className="icon-button"
           aria-label={`إيقاف حفظ ${title}`}
-          onClick={() => abort.current?.abort()}
+          onClick={cancel}
         >
           <X size={18} aria-hidden="true" />
         </button>
