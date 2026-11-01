@@ -10,12 +10,15 @@ import {
 import { extname, isAbsolute, join, relative } from "node:path";
 import { execFileSync } from "node:child_process";
 import { gunzipSync } from "node:zlib";
-import {
-  STUDY_WORDS_GZIP_LIMIT,
-  STUDY_WORDS_RAW_LIMIT,
-} from "../../src/domain/study/limits.ts";
 import { usfmCodes } from "../lib/books.js";
 import { ROOT, isMain } from "../lib/paths.js";
+
+// The word-range limits of src/domain/study/limits.ts, kept here as plain
+// numbers: Workers Builds runs this file with plain `node`, which may lack
+// TypeScript support, so nothing on the deploy path imports a .ts module.
+// tests/cloudflare-app.test.ts fails if the two copies differ.
+export const STUDY_WORDS_GZIP_LIMIT = 30000;
+export const STUDY_WORDS_RAW_LIMIT = 256 * 1024;
 
 // Run as `node scripts/cloudflare-app.mjs` (wrangler.json's build command and
 // the npm app:host:* scripts); that path forwards to main() below.

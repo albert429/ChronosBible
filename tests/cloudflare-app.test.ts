@@ -16,9 +16,12 @@ import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { audioUrl } from "../src/domain/audio/url.ts";
+import * as studyLimits from "../src/domain/study/limits.ts";
 import {
   AUDIO_BASE_URL,
   CHAPTER_AUDIO,
+  STUDY_WORDS_GZIP_LIMIT,
+  STUDY_WORDS_RAW_LIMIT,
   buildEnvironment,
   deployArguments,
   gitEnvironment,
@@ -427,7 +430,6 @@ const HOSTING_FILES = [
   "scripts/hosting/cloudflare-app.mjs",
   "scripts/lib/books.js",
   "scripts/lib/paths.js",
-  "src/domain/study/limits.ts",
 ];
 
 // Each case runs the real wrapper against a fixture checkout whose build script
@@ -729,4 +731,43 @@ test("Study gzip assets retain identity, byte limits, and credential scanning", 
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("The hosting audit's word limits equal the study domain's", () => {
+  assert.equal(STUDY_WORDS_GZIP_LIMIT, studyLimits.STUDY_WORDS_GZIP_LIMIT);
+  assert.equal(STUDY_WORDS_RAW_LIMIT, studyLimits.STUDY_WORDS_RAW_LIMIT);
+  assert.equal(STUDY_WORDS_GZIP_LIMIT, 30_000);
+  assert.equal(STUDY_WORDS_RAW_LIMIT, 256 * 1024);
+});
+
+test("The deploy entry point loads without TypeScript support", () => {
+  // Workers Builds runs plain `node scripts/cloudflare-app.mjs`; an older
+  // Node 22 cannot strip types, so no module on that path may be .ts.
+  const entry = fileURLToPath(
+    new URL("../scripts/cloudflare-app.mjs", import.meta.url),
+  );
+  const result = spawnSync(
+    process.execPath,
+    ["--no-experimental-strip-types", entry],
+    { encoding: "utf8", env: gitEnvironment() },
+  );
+  // Without arguments the wrapper prints its usage and exits 1, after every
+  // import has loaded.
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(
+    result.stderr,
+    /^Cloudflare app: use preflight, build, or deploy followed by production or dev\n$/,
+  );
+  const imports = spawnSync(
+    process.execPath,
+    [
+      "--no-experimental-strip-types",
+      "--input-type=module",
+      "-e",
+      `import(${JSON.stringify(new URL("../scripts/hosting/cloudflare-app.mjs", import.meta.url).href)}).then((m) => console.log(typeof m.scanAssets))`,
+    ],
+    { encoding: "utf8", env: gitEnvironment() },
+  );
+  assert.equal(imports.status, 0, imports.stderr);
+  assert.equal(imports.stdout.trim(), "function");
 });
