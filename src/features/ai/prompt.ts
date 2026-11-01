@@ -16,15 +16,6 @@ import type { AiRequest, ChipId } from "./types.ts";
 
 import { QUESTION_MAX, cleanQuestion } from "./chips.ts";
 
-// The chip list and question limits live in chips.ts so the card's chunk does
-// not carry this prompt text; they are re-exported for convenience.
-export {
-  CHIPS,
-  cleanQuestion,
-  PROMPT_VERSION,
-  QUESTION_MAX,
-  QUESTION_MIN,
-} from "./chips.ts";
 export const MAX_OUTPUT_TOKENS = 2000;
 export const OFF_TOPIC = "هذا السؤال خارج موضوع الآية، جرّب سؤالًا عنها.";
 

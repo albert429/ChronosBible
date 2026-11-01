@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import {
   buildPrompt,
   cleanDefinition,
-  cleanQuestion,
   MAX_OUTPUT_TOKENS,
   OFF_TOPIC,
   plainArabic,
   SYSTEM_PROMPT,
   type Material,
 } from "../src/features/ai/prompt.ts";
+import { cleanQuestion } from "../src/features/ai/chips.ts";
 import type { Passage, Verse } from "../src/domain/scripture/types.ts";
 import type { GreekToken } from "../src/domain/study/types.ts";
 

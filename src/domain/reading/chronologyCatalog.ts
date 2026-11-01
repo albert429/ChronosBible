@@ -3,8 +3,6 @@ import type { ChronologicalLocation } from "./types.ts";
 import type {
   ChronologicalReadingSummary,
   ChronologyCatalog,
-  ChronologyStage,
-  ChronologySubstage,
 } from "./chronology.ts";
 
 const indexOf = (
@@ -50,33 +48,6 @@ export function adjacentChronologicalLocation(
 ): ChronologicalLocation | undefined {
   const index = indexOf(catalog, location);
   return index < 0 ? undefined : at(catalog, index + direction);
-}
-
-/** A saved place if it is still in this catalog, otherwise the first reading. */
-export const resumeChronologicalLocation = (
-  catalog: ChronologyCatalog,
-  saved?: ChronologicalLocation,
-): ChronologicalLocation =>
-  saved && chronologicalLocationExists(catalog, saved)
-    ? saved
-    : firstChronologicalLocation(catalog);
-
-export const chronologicalSummary = (
-  catalog: ChronologyCatalog,
-  id: string,
-): ChronologicalReadingSummary | undefined =>
-  catalog.readings.find((reading) => reading.id === id);
-
-/** The stage (and substage, if any) a reading belongs to. */
-export function chronologicalStage(
-  catalog: ChronologyCatalog,
-  id: string,
-): { stage: ChronologyStage; substage?: ChronologySubstage } | undefined {
-  const reading = chronologicalSummary(catalog, id);
-  const stage = catalog.stages.find((s) => s.id === reading?.stageId);
-  if (!reading || !stage) return;
-  const substage = stage.substages?.find((s) => s.id === reading.substageId);
-  return substage ? { stage, substage } : { stage };
 }
 
 /**

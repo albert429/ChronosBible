@@ -1,9 +1,4 @@
-import type {
-  BibleBlock,
-  Testament,
-  Passage,
-  PassageRef,
-} from "../scripture/types.ts";
+import type { BibleBlock, Testament, Passage } from "../scripture/types.ts";
 
 /**
  * Where an item comes from in the source PDF. `page`/`pageEnd` are 1-based
@@ -120,10 +115,3 @@ export const isChronologyId = (value: unknown): value is string =>
   typeof value === "string" &&
   value.length <= MAX_CHRONOLOGY_ID &&
   CHRONOLOGY_ID.test(value);
-
-export const occurrenceRef = (occurrence: PassageOccurrence): PassageRef => ({
-  book: occurrence.usfm,
-  chapter: occurrence.chapter,
-  start: occurrence.from,
-  end: occurrence.to,
-});

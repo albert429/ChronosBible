@@ -13,10 +13,7 @@ import type {
 import { createChronologyClients } from "../src/data/chronology/client.ts";
 import {
   adjacentChronologicalLocation,
-  chronologicalStage,
-  chronologicalSummary,
   firstChronologicalLocation,
-  resumeChronologicalLocation,
 } from "../src/domain/reading/chronologyCatalog.ts";
 import { chronologicalKeyLocation } from "../src/domain/reading/identity.ts";
 import type {
@@ -243,19 +240,4 @@ test("Pure navigation over a catalog: first, adjacent, resume and stage", async 
     adjacentChronologicalLocation(catalog, location("gone", "NT"), 1),
     undefined,
   );
-  assert.deepEqual(resumeChronologicalLocation(catalog), first);
-  assert.deepEqual(
-    resumeChronologicalLocation(catalog, location("gone", "NT")),
-    first,
-  );
-  const saved = { ...location("act-13-1", "NT"), verse: 4 };
-  assert.deepEqual(resumeChronologicalLocation(catalog, saved), saved);
-  assert.equal(
-    chronologicalSummary(catalog, "act-13-1")?.stageId,
-    "missionary-journeys",
-  );
-  const stage = chronologicalStage(catalog, "act-13-1")!;
-  assert.equal(stage.stage.title, "رحلات بولس التبشيرية");
-  assert.equal(stage.substage?.title, "الرحلة التبشيرية الأولى");
-  assert.equal(chronologicalStage(catalog, "jas-1-1")?.substage, undefined);
 });

@@ -4,7 +4,6 @@ import {
   PROVENANCE_EXCEPTION_KINDS,
   isChronologyId,
   type ChronologicalReading,
-  type ChronologicalReadingDefinition,
   type ChronologyCatalog,
   type PassageOccurrence,
   type SourceProvenance,
@@ -229,13 +228,6 @@ export function chronologyDefinitionErrors(
     errors.push(`${where}: verseCount ${value.verseCount} is not ${verses}`);
   return errors;
 }
-export const isChronologyDefinition = (
-  value: unknown,
-  testament: Testament,
-  id: string,
-  books: readonly BibleBook[],
-): value is ChronologicalReadingDefinition =>
-  chronologyDefinitionErrors(value, testament, id, books).length === 0;
 
 /** A fetched reading that is the requested one, with consistent verses. */
 export function isChronologicalReadingData(

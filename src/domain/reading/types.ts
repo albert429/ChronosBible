@@ -50,7 +50,6 @@ export type ChronologicalLocation = {
 export type PlanOrBibleLocation = PlanLocation | BibleLocation;
 /** A place in any of the four tracks: the one location union. */
 export type ReadingLocation = PlanOrBibleLocation | ChronologicalLocation;
-export type ReadingMode = ReadingLocation["mode"];
 
 export function isBibleChapter(
   reading: ScriptureReading,
