@@ -4,6 +4,26 @@ The layered `src/` structure below is the result of the architecture refactor
 recorded in [the (historical) plan](plans/architecture-refactor.md), which also
 holds its decisions, verification results and deferred ideas.
 
+## Repository agents
+
+Codex discovers the repository skills in `.agents/skills/`. Invoke
+[`$code-review`](../.agents/skills/code-review/SKILL.md) with a PR, commit range,
+or local changes, or invoke
+[`$promo-video`](../.agents/skills/promo-video/SKILL.md) with a video brief.
+For example: “Use $code-review to review PR #18” or “Use $promo-video to make
+a 30-second Arabic Reel about offline reading.”
+
+Claude Code has native agents at
+[`.claude/agents/code-review.md`](../.claude/agents/code-review.md) and
+[`.claude/agents/promo-video.md`](../.claude/agents/promo-video.md). Ask Claude to
+use the named agent with the same task. Both reviewer entry points use one
+[review workflow](../.agents/skills/code-review/references/review-guide.md) and
+[repository map](../.agents/skills/code-review/references/repository-map.md).
+The Codex promo skill reads the existing Claude promo playbook. Update these
+shared references when contracts change rather than maintaining duplicate prompts.
+Only `.agents/skills/` is versioned; local worktrees elsewhere in `.agents/`
+remain ignored.
+
 ## Structure
 
 | Path                                                                  | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                          |

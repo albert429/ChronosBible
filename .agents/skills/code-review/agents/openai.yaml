@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChronosBible Code Review"
+  short_description: "Review changes against ChronosBible contracts"
+  default_prompt: "Use $code-review to review my current ChronosBible changes and report actionable regressions with evidence."

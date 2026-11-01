@@ -46,6 +46,11 @@ const MAINTAINED = [
   "docs/development.md",
   "README.md",
   ".github/workflows/checks.yml",
+  ".agents/skills/code-review/SKILL.md",
+  ".agents/skills/code-review/references/repository-map.md",
+  ".agents/skills/code-review/agents/openai.yaml",
+  ".agents/skills/promo-video/SKILL.md",
+  ".claude/agents/code-review.md",
 ];
 
 test("ESLint skips local and generated work but lints maintained code", async () => {

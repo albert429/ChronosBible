@@ -21,7 +21,10 @@ public/study/
 public/audio/
 dist-ai/
 .claude/worktrees/
-.agents/
+# Keep local agent worktrees ignored while sharing repository skills.
+!.agents/
+.agents/*
+!.agents/skills/
 
 public/bible/
 public/chronology/
