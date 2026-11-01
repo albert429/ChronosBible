@@ -34,6 +34,7 @@
     "audio:host:prepare": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/hosting/prepare-audio-r2.mjs",
     "app:host:deploy": "node scripts/cloudflare-app.mjs deploy production",
     "audio:host:upload": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/hosting/upload-audio-r2.mjs",
+    "verify:all": "node scripts/quality/verify-all.mjs",
     "validate": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
     "predev": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/data/build-data.js",
     "prebuild": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/data/build-data.js",

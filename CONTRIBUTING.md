@@ -10,8 +10,10 @@ Before opening a pull request:
 npm run format
 npm run validate
 npx playwright install chromium webkit
-npm run test:e2e
+npm run verify:all
 ```
+
+`npm run verify:all` runs what CI runs: `validate` (in CI's environment), the Python tests, a recursive `py_compile` of `scripts/` and the browser tests (`npm run test:e2e` alone repeats only the last). `src/` is layered (domain, data, features, shared, app), and `npm run lint` rejects imports that break the layering; see "Layering" in the development guide.
 
 `npm run test:e2e` first makes the explicit audio-fixture build (`scripts/build/browser-build.mjs app`: every `VITE_*` value set, none inherited from your shell or `.env` files), then runs the Playwright suite with the fixture variables (`AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test`). A plain `playwright test` against an ordinary build fails every audio spec. Playwright serves the builds with a production-like static server and never reuses a server: if ports 4173–4175 (or your `PW_PORT` and the next two) are taken, it stops with an error, so stop any `npm start` or preview first.
 

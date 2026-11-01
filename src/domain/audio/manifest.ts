@@ -8,7 +8,7 @@ import type {
 } from "./types.ts";
 
 /**
- * The manifest file contract shared with the build (scripts/build-audio-index.js)
+ * The manifest file contract shared with the build (scripts/data/build-audio-index.js)
  * and the offline Python builders: the transcript a manifest's `readingHash`
  * fingerprints, and the structure a published file must have. Whether a valid
  * manifest fits the text on screen is compatibility.ts.

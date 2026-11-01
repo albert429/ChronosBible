@@ -1,5 +1,5 @@
 // The optional AI card, against the dist-ai build and the local SSE stub
-// (scripts/sse-stub.mjs). Nothing here reaches OpenRouter.
+// (scripts/quality/sse-stub.mjs). Nothing here reaches OpenRouter.
 import {
   test,
   expect,

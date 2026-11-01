@@ -102,7 +102,7 @@ word bytes, 11,499 translation gzip bytes, and 8,087 lexicon gzip bytes.
 
 A build inventory records generated file hashes. Regeneration removes only
 obsolete, unmodified inventory-owned files, preserving unknown files. The
-offline study pack (`src/pwa/offline.ts`) saves the files it lists, except
+offline study pack (`src/features/offline/packs.ts`) saves the files it lists, except
 the lexicon shards, which only AI explanations use. Every address carries the
 study folder's content version (`?v=`), so hosting may cache it for good.
 The Cloudflare scanner allows only this exact compressed word path, validates

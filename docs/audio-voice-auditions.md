@@ -14,7 +14,7 @@ not use macOS system voices, browser speech, paid APIs, or voice cloning of the 
 
 ## Wording
 
-`scripts/voice-audition-texts.json` contains draft corrections. Nothing has been adopted into
+`scripts/audio/voice-audition-texts.json` contains draft corrections. Nothing has been adopted into
 `data/audio/reference-texts.json` yet:
 
 - Compound ordinals from 11 to 19 take a joining fatha: `السَّادِسَ عَشَرَ` and `الرَّابِعَةَ عَشْرَةَ`.
