@@ -6,7 +6,7 @@ import { verseNumberButton } from "../../shared/browser/scriptureDom";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useDiacritics } from "../appearance/appearance";
 import type { VerseActionsProps } from "./VerseActions";
-import type { StudyContext } from "./load";
+import type { StudyContext } from "./context";
 import "./VerseStudy.css";
 
 const StudyPanel = lazy(() => import("./StudyPanel"));

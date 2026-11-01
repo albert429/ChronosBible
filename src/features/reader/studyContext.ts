@@ -3,7 +3,7 @@ import {
   isBibleChapter,
   type ScriptureReading,
 } from "../../domain/reading/types.ts";
-import type { StudyContext } from "../study/load.ts";
+import type { StudyContext } from "../study/context.ts";
 
 /**
  * The canonical verse a tapped verse studies, in every track: the passage it

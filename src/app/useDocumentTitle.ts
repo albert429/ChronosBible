@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { TRACK_NAMES } from "../domain/reading/labels";
+import { TRACK_NAMES } from "../domain/reading/labels.ts";
 import type { View } from "../features/navigation/model";
 
 /** The tab title: the reading's title, or the plan's name on its calendar. */
