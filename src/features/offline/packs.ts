@@ -7,7 +7,6 @@
 import { catalog } from "../../domain/scripture/catalog.ts";
 import type { ChronologyCatalog } from "../../domain/reading/chronology.ts";
 import { PLAN_DAYS } from "../../domain/reading/schedule.ts";
-import { studyChapterParts } from "../../domain/study/reference.ts";
 import { chronologyCatalogs } from "../../data/chronology/client.ts";
 import { dataUrl } from "../../data/dataVersion.ts";
 
@@ -46,17 +45,16 @@ const safePath = (path: string) =>
     .split("/")
     .every((part) => /^[\w.-]+$/.test(part) && part !== "." && part !== "..");
 const RESOURCE =
-  /^([^/]+\/[^/]+)\/(?:index\.json|([1-9]\d*)-([1-9]\d*)\.(?:words\.json\.gz|tr\.json))$/;
-/** A chapter's index, or one verse range's words or translations. */
+  /^([^/]+)\/([1-9]\d*)\/(?:index\.json|([1-9]\d*)-([1-9]\d*)\.(?:words\.json\.gz|tr\.json))$/;
+/** A Bible chapter's study index, or one verse range's words or translations. */
 function chapterResource(path: string) {
-  const match = RESOURCE.exec(path);
-  if (!match) return false;
-  try {
-    studyChapterParts(match[1]);
-  } catch {
-    return false;
-  }
-  return match[2] === undefined || +match[2] <= +match[3];
+  const [, usfm, chapter, start, end] = RESOURCE.exec(path) ?? [];
+  const book = catalog.find((item) => item.usfm === usfm);
+  return (
+    !!book &&
+    +chapter <= book.chapters &&
+    (start === undefined || +start <= +end)
+  );
 }
 
 /**

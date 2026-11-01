@@ -85,6 +85,7 @@ test("only the sheet's chapter resources are saved; lexicon and unknown files ar
         "lex/H00.json": "g",
         "LEX/H01.json": "h",
         "GEN/0/index.json": "i",
+        "GEN/51/index.json": "m",
         "GEN/1/5-2.tr.json": "j",
         "GEN/1/1-31.words.json": "k",
         "genesis/1/index.json": "l",
