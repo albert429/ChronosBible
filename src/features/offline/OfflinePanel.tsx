@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Download, MonitorDown, X } from "lucide-react";
+import { Check, Download, Smartphone, X } from "lucide-react";
 import { ar } from "../../shared/lib/format";
 import { installApp, standalone, useAppUpdate } from "./register";
 import { storageUsed } from "./downloads";
@@ -90,7 +90,7 @@ export default function OfflinePanel() {
     <div className="offline-panel">
       {install ? (
         <button className="menu-row" onClick={() => void installApp()}>
-          <MonitorDown size={18} aria-hidden="true" />
+          <Smartphone size={18} aria-hidden="true" />
           تثبيت التطبيق
         </button>
       ) : (
