@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import boundaries from "./scripts/quality/import-boundaries.mjs";
 
 export default tseslint.config(
   {
@@ -45,6 +46,34 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  {
+    // The layering of src/ (see scripts/quality/import-boundaries.mjs). Build
+    // and tool code is held to the same table from the other side.
+    files: ["src/**/*.{ts,tsx}", "scripts/**/*.{js,mjs,ts}", "vite.config.ts"],
+    plugins: { chronos: boundaries },
+    rules: { "chronos/import-boundaries": "error" },
+  },
+  {
+    // Domain and shared/lib stay free of the UI framework and Node.
+    files: ["src/domain/**", "src/shared/lib/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["react", "react/*", "react-dom", "react-dom/*"],
+              message: "Domain and shared/lib are pure: no React.",
+            },
+            {
+              group: ["lucide-react", "node:*", "vite", "vite/*"],
+              message: "Domain and shared/lib are pure: no UI or Node modules.",
+            },
+          ],
+        },
+      ],
     },
   },
   {

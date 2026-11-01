@@ -30,6 +30,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "snapshot": "node scripts/quality/snapshot.mjs",
+    "layers": "node scripts/quality/layers.mjs",
     "audio:host:prepare": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/hosting/prepare-audio-r2.mjs",
     "app:host:deploy": "node scripts/cloudflare-app.mjs deploy production",
     "audio:host:upload": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/hosting/upload-audio-r2.mjs",
