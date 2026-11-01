@@ -3,27 +3,24 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
-import { readBibleChapters } from "../scripts/build-bible.js";
-import { buildChronology } from "../scripts/build-chronology.js";
-import { createBibleClient } from "../src/bible/client.ts";
+import { readBibleChapters } from "../scripts/data/build-bible.js";
+import { buildChronology } from "../scripts/data/build-chronology.js";
+import { createBibleClient } from "../src/data/bible/client.ts";
 import type {
   BibleChapter,
   ChronologicalLocation,
-} from "../src/bible/types.ts";
+} from "../src/domain/reading/types.ts";
+import { createChronologyClients } from "../src/data/chronology/client.ts";
 import {
   adjacentChronologicalLocation,
-  chronologicalKeyLocation,
-  chronologicalStage,
-  chronologicalSummary,
-  createChronologyClients,
   firstChronologicalLocation,
-  resumeChronologicalLocation,
-} from "../src/chronology/client.ts";
+} from "../src/domain/reading/chronologyCatalog.ts";
+import { chronologicalKeyLocation } from "../src/domain/reading/identity.ts";
 import type {
   ChronologicalReading,
   ChronologyCatalog,
-} from "../src/chronology/types.ts";
-import { isChronologicalReadingData } from "../src/chronology/validate.ts";
+} from "../src/domain/reading/chronology.ts";
+import { isChronologicalReadingData } from "../src/data/chronology/validate.ts";
 
 const root = new URL("../", import.meta.url).pathname;
 const out = mkdtempSync(join(tmpdir(), "chronology-"));
@@ -243,19 +240,4 @@ test("Pure navigation over a catalog: first, adjacent, resume and stage", async 
     adjacentChronologicalLocation(catalog, location("gone", "NT"), 1),
     undefined,
   );
-  assert.deepEqual(resumeChronologicalLocation(catalog), first);
-  assert.deepEqual(
-    resumeChronologicalLocation(catalog, location("gone", "NT")),
-    first,
-  );
-  const saved = { ...location("act-13-1", "NT"), verse: 4 };
-  assert.deepEqual(resumeChronologicalLocation(catalog, saved), saved);
-  assert.equal(
-    chronologicalSummary(catalog, "act-13-1")?.stageId,
-    "missionary-journeys",
-  );
-  const stage = chronologicalStage(catalog, "act-13-1")!;
-  assert.equal(stage.stage.title, "رحلات بولس التبشيرية");
-  assert.equal(stage.substage?.title, "الرحلة التبشيرية الأولى");
-  assert.equal(chronologicalStage(catalog, "jas-1-1")?.substage, undefined);
 });

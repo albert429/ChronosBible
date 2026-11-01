@@ -6,7 +6,7 @@ import {
   modelLabel,
   parseAnswer,
   wellFormed,
-} from "../src/ai/format.ts";
+} from "../src/features/ai/format.ts";
 
 const texts = (blocks: unknown) => JSON.stringify(blocks);
 

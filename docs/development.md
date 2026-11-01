@@ -1,37 +1,107 @@
 # Development guide
 
+The layered `src/` structure below is the result of the architecture refactor
+recorded in [the (historical) plan](plans/architecture-refactor.md), which also
+holds its decisions, verification results and deferred ideas.
+
 ## Structure
 
-| Path                                                            | Responsibility                                                                                                             |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`, `src/App.tsx`                                   | React bootstrap; app shell wiring reader, plan, navigation, and dialogs                                                    |
-| `src/appInfo.ts`                                                | App credits, contact links, and Scripture source                                                                           |
-| `src/lib/`                                                      | Shared helpers: `jsonClient` (cache, deduplication, timeout), `useResource`, `network`, `format`, `useNotice`, `useToday`  |
-| `src/bible/`                                                    | Verse and reference parsing; canonical catalog, chapter client, reading identity (`plan:N`, `bible:USFM:N`), navigation    |
-| `src/plan/`                                                     | Plan state: `readings` loading, `progress` profiles, `useProgress`, `schedule`, `backup`, `labels`, `PlanView`, `Calendar` |
-| `src/plan/dialogs/`                                             | Join, Invite, Settings, and restore dialogs, loaded on demand                                                              |
-| `src/reader/`                                                   | Reader, Scripture and chapter rendering, remembered places and links, verse taps, completion bar, listen button, prefetch  |
-| `src/navigation/`                                               | Toolbar, menu, day details, appearance panel and preferences, share, About                                                 |
-| `src/components/`                                               | Shared UI: native-dialog `Sheet` (`useModalDialog`), `Feedback`, `PassageReference`, `ReactIcon`, form styles              |
-| `src/audio/`                                                    | Player and controls, manifests (v1 days, v2 days/chapters), media element, Media Session, highlighting, contract, flags    |
-| `src/study/`                                                    | Lazy verse study sheet: translations, Greek key words, and AI explanations panel                                           |
-| `src/ai/`                                                       | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), SSE parsing, cache, answer formatting |
-| `src/styles/`                                                   | Design `tokens.css`, `base.css`, and `global.css`; component CSS sits beside its component                                 |
-| `data/`                                                         | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)   |
-| `data/bible/`                                                   | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                           |
-| `data/study/`                                                   | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                        |
-| `data/audio/`                                                   | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                    |
-| `scripts/build-data.js`                                         | Runs the static-data builders below into `public/` (`predev`/`prebuild`)                                                   |
-| `scripts/build-{readings,bible,study,audio-index}.js`           | Split plan, 1,189 chapters, study data, and audio manifests into static JSON, with budgets; `scripts/lib/books.js` shared  |
-| `scripts/import*.py`, `extract-plan.py`, `usfm.py`              | Source extraction and importers, with coverage gates                                                                       |
-| `scripts/{align,build}-audio.py`, `audio_*.py`                  | Alignment (NT/OT), daily build with optional spoken references; `scripts/tests/` holds the Python tests                    |
-| `scripts/{build,verify}-canonical-audio.py`                     | Encode and verify the 1,189 chapter recordings; `import-bible.py` imports the full text                                    |
-| `scripts/{prepare,upload}-audio-r2.mjs`, `verify-audio-host.py` | Stage, upload and verify the R2 audio host                                                                                 |
-| `scripts/{build,review}-*audio*.py`                             | Chronological playlists and clips; alignment review. Evidence limits and publication gate: `docs/audio.md`                 |
-| `scripts/snapshot.mjs`                                          | Build-output snapshot and compare tool (`npm run snapshot`)                                                                |
-| `scripts/`                                                      | Also: asset regeneration, AI model check, SSE stub, visual and performance checks                                          |
-| `tests/`                                                        | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                          |
-| `docs/assets/`                                                  | README artwork and actual app screenshot; never shipped in the app                                                         |
+| Path                                                                  | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`                                                        | React bootstrap; registers the service worker after startup                                                                                                                                                                                                                                                                                                                                                                                             |
+| `src/app/`                                                            | Composition: `App`, the reading session controller (`useReadingSession`, `trackChoice`), keyboard paging, document title, shown-reading preload, profile dialog host                                                                                                                                                                                                                                                                                    |
+| `src/domain/`                                                         | Pure TypeScript contracts, with no React, DOM, storage, network, clock or build globals: `scripture/` (verse, passage, book catalog, references), `reading/` (all-track locations, identity, adjacency, labels, schedule, chronology shapes), `profiles/` (state transitions, backups, v1 migration, streak rules), `audio/` (manifest types, validation, addressing, timeline, publication rules), `study/` (canonical references, word rules, limits) |
+| `src/data/`                                                           | Network clients built on `jsonClient.ts` (cache, deduplication, timeout) and `dataVersion.ts`: `bible/`, `plan/`, `chronology/`, `study/` (canonical client, gzip word decoding), and the early-response handoff `earlyResponses.ts`                                                                                                                                                                                                                    |
+| `src/features/reader/`                                                | Reader, Scripture and chapter rendering, position restoration, listening session, study context, passage jumps, verse taps, completion bar, listen button, neighbour prefetch, shown-reading preload and the early-reading script                                                                                                                                                                                                                       |
+| `src/features/navigation/`                                            | Toolbar, sheet host and controller, navigation model, menu, day, Bible and chronology panels, share, About                                                                                                                                                                                                                                                                                                                                              |
+| `src/features/plan/`, `src/features/streak/`                          | Plan view and calendar; the lazy reading-streak UI                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `src/features/profiles/`                                              | Profile storage adapter (`bible-reader-state-v2`), `useProgress`, backup files, and the Join, Invite, Settings and restore dialogs (loaded on demand)                                                                                                                                                                                                                                                                                                   |
+| `src/features/audio/`                                                 | Player and controls, media element, Media Session, highlighting, playlist controller, playback position, availability flags                                                                                                                                                                                                                                                                                                                             |
+| `src/features/study/`                                                 | Lazy full-Bible study sheet: translations, Greek/Hebrew/Aramaic words, optional AI card                                                                                                                                                                                                                                                                                                                                                                 |
+| `src/features/ai/`                                                    | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), request and guard control, SSE parsing, cache, answer formatting                                                                                                                                                                                                                                                                                                   |
+| `src/features/appearance/`, `src/features/offline/`                   | Text size, theme and diacritics; offline packs, update notice, service-worker registration, rules and the classic worker source (`sw.ts`)                                                                                                                                                                                                                                                                                                               |
+| `src/shared/`                                                         | `ui/` (native-dialog `Sheet`, `Feedback`, `PassageReference`, `ReactIcon`, form styles), `hooks/`, `lib/` (pure helpers, app credits), `browser/` (`afterStartup`, `network`, the Scripture markup contract) and `styles/` (design tokens, base, global); component CSS sits beside its component                                                                                                                                                       |
+| `data/`                                                               | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)                                                                                                                                                                                                                                                                                                                                |
+| `data/bible/`                                                         | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                                                                                                                                                                                                                                                                                                                                                        |
+| `data/study/`                                                         | Imported study data (CC BY / CC BY-SA; see `data/study/LICENSE.md`)                                                                                                                                                                                                                                                                                                                                                                                     |
+| `data/audio/`                                                         | Verse timing alignments and audio sources (see `data/audio/SOURCES.md`)                                                                                                                                                                                                                                                                                                                                                                                 |
+| `scripts/data/build-data.js`                                          | Runs the static-data builders below into `public/` (`predev`/`prebuild`)                                                                                                                                                                                                                                                                                                                                                                                |
+| `scripts/data/build-{readings,bible,chronology,study,audio-index}.js` | Split plan, 1,189 chapters, chronology, study data, and audio manifests into static JSON, with budgets and owned-output publication                                                                                                                                                                                                                                                                                                                     |
+| `scripts/build/`                                                      | Vite build modules (data versions, audio publication inputs, manifest filter, classic service worker), the reference build configurations (`build-config.mjs`) and the browser tests' explicit builds (`browser-build.mjs`)                                                                                                                                                                                                                             |
+| `scripts/lib/*.js`                                                    | Shared JavaScript helpers: repository root (`paths.js`), book table, audio manifest names, inventory-owned output (`ownership.js`)                                                                                                                                                                                                                                                                                                                      |
+| `scripts/data/*.py`, `scripts/lib/chronos_tools/`                     | Python source extraction and importers (`import*.py`, `extract-plan.py`) with coverage gates; shared importable helpers (books, USFM, study text, fingerprints, ffmpeg, output ownership)                                                                                                                                                                                                                                                               |
+| `scripts/audio/{align,build}-audio.py`                                | Alignment (NT/OT), daily build with optional spoken references; `scripts/tests/` holds the Python tests                                                                                                                                                                                                                                                                                                                                                 |
+| `scripts/audio/{build,verify}-canonical-audio.py`                     | Encode and verify the 1,189 chapter recordings; `scripts/data/import-bible.py` imports the full text                                                                                                                                                                                                                                                                                                                                                    |
+| `scripts/hosting/*.mjs`, `scripts/hosting/verify-audio-host.py`       | Cloudflare app build and deploy (run as `scripts/cloudflare-app.mjs`); stage, upload and verify the R2 audio host                                                                                                                                                                                                                                                                                                                                       |
+| `scripts/audio/{build,review}-*audio*.py`                             | Chronological playlists and clips; alignment review. Evidence limits and publication gate: `docs/audio.md`                                                                                                                                                                                                                                                                                                                                              |
+| `scripts/quality/`                                                    | Build snapshot and startup comparisons, the layering check (`import-boundaries.mjs`, `layers.mjs`), the browser tests' static server and SSE stub, visual, performance and AI model checks                                                                                                                                                                                                                                                              |
+| `scripts/assets/`                                                     | Favicon and app icon export, font and logo optimization                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `tests/`                                                              | Unit/data checks; `tests/browser/` holds mobile browser workflows                                                                                                                                                                                                                                                                                                                                                                                       |
+| `docs/assets/`                                                        | README artwork and actual app screenshot; never shipped in the app                                                                                                                                                                                                                                                                                                                                                                                      |
+
+### Layering
+
+Dependencies point one way, and `npm run lint` enforces it
+(`scripts/quality/import-boundaries.mjs`, a small ESLint rule that resolves
+relative imports, including lazy `import()`):
+
+- `domain/` imports only `domain/` (scripture, then reading, then profiles,
+  audio and study) and `shared/lib`. Dates and other changing inputs are
+  injected. `react`, `lucide-react`, `vite` and `node:` modules are also
+  rejected there and in `shared/lib`.
+- `data/` imports only `domain/` and `data/`.
+- `shared/` never imports features, app or data; `shared/lib` is pure and
+  imports only itself.
+- `features/` import domain, data, shared and themselves. Cross-feature edges
+  are limited to: reader to appearance, audio, profiles, streak and study;
+  navigation to appearance, offline, profiles and streak; study to ai and
+  appearance; plan to streak; streak to profiles; appearance to audio.
+- Nothing imports `app/` except `src/main.tsx`.
+- Build and tool code (`scripts/`, `vite.config.ts`) imports only `src/domain`,
+  `src/data`, `src/shared/lib`, `src/features/ai/config.ts` and
+  `src/features/offline/rules.ts`. Modules that Node runs directly use relative
+  imports with explicit `.ts` extensions and no alias loader.
+
+`npm run layers` prints the directory-level import graph and fails on a cycle or
+a violation. `tests/import-boundaries.test.ts` proves each rule fires. There are
+no barrel files: import a feature's specific module. Optional code stays behind
+explicit lazy entry points (`features/study/load.ts`, `features/streak/lazy.ts`,
+`features/ai/run.ts`, the navigation panels, `features/offline/OfflinePanel`,
+the profile dialogs, `AudioPlayer`, `features/reader/preload.ts`,
+`features/offline/register.ts` and the `fflate` fallback in
+`data/study/decodeWords.ts`); `__AI_ENABLED__` removes the AI card from builds
+that disable it.
+
+### Python tools
+
+Python scripts are grouped by workflow: `scripts/data/` (importers),
+`scripts/audio/` (alignment, encoding, review, verification),
+`scripts/hosting/` and `scripts/assets/`. Each is a standalone command (run it
+with `python3 -I`); shared code is the importable package
+`scripts/lib/chronos_tools/` (repository paths, the book table, USFM cleanup,
+study-text helpers, fingerprints, ffmpeg/ffprobe calls and inventory-owned
+output). The previous top-level paths (`scripts/import-study.py`,
+`scripts/verify-audio-host.py`, and so on) remain as thin aliases that run the
+grouped script with the same arguments. Python is never needed to build or
+deploy the app. Generators that publish many files into a tracked folder record
+them in an `inventory.json` and remove only unmodified files they wrote earlier
+(`chronos_tools.ownership`); they never delete media or unrelated files.
+
+### Generated output ownership
+
+The static-data builders validate everything before writing, then publish
+through `scripts/lib/ownership.js`: each folder (`public/readings`,
+`public/bible`, `public/chronology`, `public/study`, and the audio manifest
+names under `public/audio`) has an inventory of the files the builder wrote. A
+rebuild removes only inventory-listed files that are no longer generated and
+are unmodified, and refuses unsafe paths, symlinks and modified owned files;
+unknown files and recordings are never touched. `public/study/v2/inventory.json`
+ships with the app; the other inventories are local state in
+`artifacts/generated-output/` (ignored by Git, safe to delete, after which the
+builders overwrite their current files and remove nothing). The 450 retired
+per-day study files are removed as regular files only. The Python generator of
+`data/audio/readings/` keeps a tracked `inventory.json` the same way
+(`chronos_tools.ownership`).
 
 ## Commands
 
@@ -41,19 +111,21 @@
 | `npm run build`                                    | Generate static data, type-check the app, and build `dist/`                              |
 | `npm start`                                        | Preview `dist/`, port 4173                                                               |
 | `npm test`                                         | Progress, dates, loading, and exact static-data fidelity                                 |
-| `npm run test:e2e`                                 | Fixture build, then Chromium and WebKit workflows, layout and axe                        |
+| `npm run test:e2e`                                 | Explicit fixture build, then Chromium and WebKit workflows, layout and axe               |
 | `npm run test:browser`                             | Playwright against the current `dist/` without rebuilding (set the same env as test:e2e) |
 | `npm run ai:models`                                | Check that the configured AI models still exist and are free                             |
 | `npm run format` / `format:check`                  | Apply / verify repository formatting                                                     |
 | `npm run lint`                                     | ESLint (TypeScript, React hooks) over the whole repository                               |
 | `npm run typecheck`                                | Type-check the app, configs, browser specs and scripts                                   |
-| `npm run snapshot -- save <dir>`                   | Record hashes of generated data and sizes of `dist/assets/`                              |
+| `npm run snapshot -- capture <dir>`                | Record hashes of generated and shipped data and sizes of `dist/assets/`                  |
 | `npm run snapshot -- compare <dir>`                | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
+| `npm run layers`                                   | Print the import graph of `src/`; fail on a cycle or a layering violation                |
+| `npm run verify:all`                               | `validate` (CI environment), Python tests, `py_compile` and the browser tests            |
 | `npm run audio:host:prepare`                       | Stage recordings in `artifacts/r2-audio` and write the R2 upload batches                 |
 | `npm run audio:host:upload`                        | Put each batch into the R2 bucket `chronosbible-audio` with wrangler                     |
 | `npm run app:host:deploy`                          | Build, then deploy the app to Cloudflare Workers with wrangler                           |
 | `npm run validate`                                 | Formatting, lint, type-check, unit/data checks, and build                                |
-| `python3 -I -m unittest discover -s scripts/tests` | Python audio hash tests (standard library only; CI also runs `py_compile`)               |
+| `python3 -I -m unittest discover -s scripts/tests` | Python tests (standard library only; CI also runs `py_compile` over `scripts/`)          |
 | `npm run test:visual`                              | Save preview screenshots under `artifacts/`                                              |
 | `npm run audit:performance`                        | Save repeatable mobile Lighthouse reports under `artifacts/`                             |
 
@@ -61,7 +133,7 @@
 
 `npm install` sets `core.hooksPath` to `.githooks/`. `pre-commit` runs Prettier and ESLint on the staged files, then `npm run typecheck`; `pre-push` runs `npm test`. Skip them in an emergency with `--no-verify`.
 
-`npm run test:e2e` builds with `AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test` and `VITE_AUDIO_CHAPTERS_ENABLED=true`, then runs Playwright with the same variables; without them the audio specs fail on a fresh clone. Playwright starts the production preview itself, and the build generates `public/readings/` and `public/study/`, which the separate AI test build (`dist-ai/`, see below) reuses. Outside CI it reuses servers already listening on ports 4173, 4174 and the stub's, so stop a stale `npm start` (or any server serving an old `dist/`) first or the specs run against the old build. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser. The Bible audio specs (`tests/browser/bible-audio.spec.ts`) run only in the fixture build: they serve accelerated copies of the committed chapter manifests with synthetic WAV media and abort, then fail on, any request that leaves 127.0.0.1.
+`npm run test:e2e` builds the `fixture-audio` configuration explicitly (`node scripts/build/browser-build.mjs app`: `AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test`, `VITE_AUDIO_CHAPTERS_ENABLED=true` and every other `VITE_*` value set, so neither the shell nor `.env` files leak in), then runs Playwright with the fixture variables; without them the audio specs fail on a fresh clone. Playwright serves `dist/` with `scripts/quality/static-server.mjs`, which answers as production does (stored `.json.gz` study words as `application/gzip` bytes without `Content-Encoding`, unlike `vite preview`). The separate AI test build (`dist-ai/`, see below) is self-contained: `browser-build.mjs ai` regenerates the data it bundles before building. Playwright never reuses a server: if port 4173, 4174 or 4175 (or `PW_PORT` and the next two) is already taken, the run fails, so stop a stale `npm start` or preview first. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser. The Bible audio specs (`tests/browser/bible-audio.spec.ts`) run only in the fixture build: they serve accelerated copies of the committed chapter manifests with synthetic WAV media and abort, then fail on, any request that leaves 127.0.0.1.
 
 Visual and performance scripts expect a running `npm start`. `BASELINE_URL` optionally adds a baseline site. Compare builds using the same server, throttling, and environment. Reports and traces are ignored by Git.
 
@@ -71,33 +143,37 @@ Visual and performance scripts expect a running `npm start`. `BASELINE_URL` opti
 
 Beside `completion`, each reader (and the guest) has an optional `readOn` map: `track|entry` (`plan|12`, `bible|GEN:1`, `chrono:OT|<id>`) to the Cairo date the reading was marked done. Undoing a reading removes its date. Only still-completed readings with valid dates are kept, invalid entries are dropped rather than rejected, and the field is written only when non-empty. Backups carry it and import accepts it; older backups and v1 data import without it. Readings completed before dates were recorded have none, so streaks start with the next reading.
 
-Streaks (`src/plan/streak.ts`) count consecutive dates with at least one completed reading in any track. Today counts once read and is otherwise still pending. One missed date is forgiven as a rest day when no other rest day falls within a week of it; two missed dates in a row end the streak. The best streak, whether today is still due and a seven-day strip are derived the same way. The streak UI (`src/streak/`) is one lazy chunk shown in the menu's reader section, the plan's day menu, the plan calendar and under a completed reading. Milestone cards appear only when the day's first reading is marked done there (3, 7, 14, 30, 50, 100 and 150 days, and each quarter of the plan). Animations use transform and opacity, run once and stop under reduced motion.
+Streaks (`src/domain/profiles/streak.ts`) count consecutive dates with at least one completed reading in any track. Today counts once read and is otherwise still pending. One missed date is forgiven as a rest day when no other rest day falls within a week of it; two missed dates in a row end the streak. The best streak, whether today is still due and a seven-day strip are derived the same way. The streak UI (`src/features/streak/`) is one lazy chunk shown in the menu's reader section, the plan's day menu, the plan calendar and under a completed reading. Milestone cards appear only when the day's first reading is marked done there (3, 7, 14, 30, 50, 100 and 150 days, and each quarter of the plan). Animations use transform and opacity, run once and stop under reduced motion.
 
-The plan's day menu («تفاصيل اليوم») lists every plan day in five ranges of thirty (`src/navigation/DayJumper.tsx`, lazy, warmed when the day button is pressed). Completed, today's, overdue and open days differ by shape as well as colour.
+The plan's day menu («تفاصيل اليوم») lists every plan day in five ranges of thirty (`src/features/navigation/DayJumper.tsx`, lazy, warmed when the day button is pressed). Completed, today's, overdue and open days differ by shape as well as colour.
 
 A fresh reader opens Genesis 1; explicit URLs override saved places. Legacy `?day=N` and `?mode=bible&book=GEN&chapter=1&verse=1` links remain supported alongside chronology links. Navigation supports Back/Forward without marking a reading complete. A linked verse is marked until the reader next touches the page.
 
-Each mode pages through its own places (`src/navigation/adjacent.ts`): the toolbar chevrons, the arrow keys (left is next, as in the toolbar; not inside sheets or fields), a quick horizontal swipe over the text (rightward is next, as an Arabic book's pages turn; edge swipes, vertical scrolls, zoomed panning and text selection are ignored), and «التالي» under the reading. That button is quiet until the reading is marked done, and moving on never completes a reading. Choosing the reading already open restarts it without adding a history entry. The page title names the open reading.
+Each mode pages through its own places (`src/domain/reading/adjacent.ts`): the toolbar chevrons, the arrow keys (left is next, as in the toolbar; not inside sheets or fields), a quick horizontal swipe over the text (rightward is next, as an Arabic book's pages turn; edge swipes, vertical scrolls, zoomed panning and text selection are ignored), and «التالي» under the reading. That button is quiet until the reading is marked done, and moving on never completes a reading. Choosing the reading already open restarts it without adding a history entry. The page title names the open reading.
 
 Opening the app, Back/Forward, changing reader and returning to a mode resume at the top visible verse that place was left at; moving on to another place starts at its top. The position is measured only when leaving a place or hiding the page (a binary search over the verses), never while scrolling, and `history.scrollRestoration` is manual.
 
-`src/chronology/` loads reference-only reading definitions and slices canonical chapter text through the shared chapter cache. The reviewed output contains 412 Old Testament and 141 New Testament readings; source order, repetitions, the documented 1 Timothy 6:22 exception, and nearest natural chapter/section breaks are described in [chronology.md](chronology.md). `scripts/build-chronology.js` runs through the data build; keep that guide authoritative for regeneration and audit details.
+`src/data/chronology/` loads reference-only reading definitions and slices canonical chapter text through the shared chapter cache (the reading shapes and catalog helpers are in `src/domain/reading/`). The reviewed output contains 412 Old Testament and 141 New Testament readings; source order, repetitions, the documented 1 Timothy 6:22 exception, and nearest natural chapter/section breaks are described in [chronology.md](chronology.md). `scripts/data/build-chronology.js` runs through the data build; keep that guide authoritative for regeneration and audit details.
 
 Schedules use Cairo dates. Catch-up and advance reading do not move a reader's start date. Daily JSON is cached in memory during the browser session, with concurrent requests deduplicated; failed requests can be retried.
 
-The app requests Scripture data (`/bible`, `/readings`, `/chronology`, `/study`) with its folder's content version, `?v=<hash>` (`src/lib/dataVersion.ts`). `vite.config.ts` hashes each generated folder's file names and bytes into `__DATA_VERSIONS__`, and both hosts serve these folders `immutable` for a year, so a returning reader makes no data requests at all while any regenerated folder gets new addresses. Audio manifests, `/`, `/index.html` and `/sw.js` keep revalidating. Without generated data (unit tests, a bare checkout) addresses carry no version.
+The app requests Scripture data (`/bible`, `/readings`, `/chronology`, `/study`) with its folder's content version, `?v=<hash>` (`src/data/dataVersion.ts`). `vite.config.ts` hashes each generated folder's file names and bytes into `__DATA_VERSIONS__`, and both hosts serve these folders `immutable` for a year, so a returning reader makes no data requests at all while any regenerated folder gets new addresses. Audio manifests, `/`, `/index.html` and `/sw.js` keep revalidating. Without generated data (unit tests, a bare checkout) addresses carry no version.
 
-The app is installable and works offline (`src/pwa/`). `public/manifest.json` and the icons in `public/icons/` (exported from `src/assets/favicon.svg` by `npm run icons:build`) describe the installed app. `vite.config.ts` builds `src/pwa/sw.ts` on its own, after the app, as the classic script `/sw.js`, inlining the build's file list and data versions, so it never imports a chunk the page shares. The worker, registered from production builds once the page has settled (`src/pwa/register.ts`, loaded through `afterStartup` so neither it nor the preload list joins the first screen's requests), precaches `/`, every hashed file, the manifest and icons per build; answers every navigation with that build's page; keeps every versioned data file it serves in `chronos-data-v1`; and leaves audio, AI, other sites and unversioned requests to the network (`src/pwa/rules.ts`, unit-tested). Activating a build deletes older builds' caches and data files whose folder version changed. A new build installs in the background and waits: «تحديث جديد متاح — تحديث» switches to it and reloads. The menu's «القراءة دون اتصال وتثبيت التطبيق» (a lazy chunk) offers the browser's install prompt (with Add to Home Screen instructions on iOS), saves the whole text (plan days, every chapter, both chronologies: 1,895 files) or the study notes (450 files) six at a time into the same cache, resuming after an interruption and asking for persistent storage, and shows what the site stores. Playwright blocks service workers except in `tests/browser/offline.spec.ts`, since a worker hides requests from `page.route`.
+The app is installable and works offline (`src/features/offline/`). `public/manifest.json` and the icons in `public/icons/` (exported from `src/assets/favicon.svg` by `npm run icons:build`) describe the installed app. `vite.config.ts` builds `src/features/offline/sw.ts` on its own (`scripts/build/service-worker.ts`), after the app, as the classic script `/sw.js`, inlining the build's file list and data versions, so it never imports a chunk the page shares. The worker, registered from production builds once the page has settled (`src/features/offline/register.ts`, loaded through `afterStartup` so neither it nor the preload list joins the first screen's requests), precaches `/`, every hashed file, the manifest and icons per build; answers every navigation with that build's page; keeps every versioned data file it serves in `chronos-data-v1`; and leaves audio, AI, other sites and unversioned requests to the network (`src/features/offline/rules.ts`, unit-tested). Activating a build deletes older builds' caches and data files whose folder version changed. A new build installs in the background and waits: «تحديث جديد متاح — تحديث» switches to it and reloads. The menu's «القراءة دون اتصال وتثبيت التطبيق» (a lazy chunk) offers the browser's install prompt (with Add to Home Screen instructions on iOS), saves the whole text (plan days, every chapter, both chronologies: 1,895 files) or the study notes (every chapter's index, words and translations from `/study/v2/inventory.json`: 3,567 files, about 13 MB) six at a time into the same cache, resuming after an interruption and asking for persistent storage, and shows what the site stores. Playwright blocks service workers except in `tests/browser/offline.spec.ts`, since a worker hides requests from `page.route`.
 
-Once a reading is shown and the page has settled (`src/lib/afterStartup.ts`: load, two seconds, then idle), its data paths are remembered (`bible-reader-preload-v1`, `src/reader/preload.ts`). On the next launch an inline script in `index.html` starts fetching them with the page, adding the build's versions, so the text downloads alongside the app's code instead of after it; a `?mode=`/`?day=` link fetches what it names, a fresh reader Genesis 1, and an older reader without the key nothing. The responses wait in `window.__earlyData`, and the JSON client (`src/lib/jsonClient.ts`) uses each for the first load of its address: WebKit does not hand a `<link rel=preload as=fetch>` response to a later `fetch()`, which would request the text twice. A wrong guess costs one small request. Because the text can now arrive before its fonts, a linked or resumed verse is placed again once they settle, unless the reader has tapped, scrolled with a wheel or pressed a key since. Scroll position alone cannot tell: WebKit has no scroll anchoring, so the swap's shorter page clamps the scroll on its own.
+Once a reading is shown and the page has settled (`src/shared/browser/afterStartup.ts`: load, two seconds, then idle), its data paths are remembered (`bible-reader-preload-v1`, `src/features/reader/preload.ts`). On the next launch an inline script in `index.html` starts fetching them with the page, adding the build's versions; its source is `src/features/reader/earlyReading.ts`, which `scripts/build/inline-startup.ts` bundles into that `<script>` (an external module would run only after the page is parsed), so the text downloads alongside the app's code instead of after it; a `?mode=`/`?day=` link fetches what it names, a fresh reader Genesis 1, and an older reader without the key nothing. The responses wait in `window.__earlyData` (`src/data/earlyResponses.ts`), and the JSON client (`src/data/jsonClient.ts`) uses each for the first load of its address: WebKit does not hand a `<link rel=preload as=fetch>` response to a later `fetch()`, which would request the text twice. A wrong guess costs one small request. Because the text can now arrive before its fonts, a linked or resumed verse is placed again once they settle, unless the reader has tapped, scrolled with a wheel or pressed a key since. Scroll position alone cannot tell: WebKit has no scroll anchoring, so the swap's shorter page clamps the scroll on its own.
 
 The day, Bible picker and reading-settings sheets are separate chunks, fetched when the page is idle (two seconds after start, skipped under Save-Data or slow connections) and when their button is pressed or focused; the menu stays in the main bundle so it opens complete from the keyboard. Scripture subscribes only to the diacritics setting, so text-size and theme changes, which are CSS, cause no React work; each passage's text is memoized apart from its title row, and chapter structure is grouped by verse once. Saving an unchanged place writes nothing, and unchanged progress is not parsed and validated again.
 
 While reading, adjacent days are prepared 500ms after the selected day and its fonts settle. Save-Data and reported slow-2g, 2g, or 3g connections suppress this background work; browsers without connection information allow it. Navigation cancels queued work, while already-started requests remain shared with foreground loading. Speculative failures are silent and do not prevent a later retry.
 
-Tapping a verse opens its study sheet; a text selection, a press longer than 500ms, or a movement over 10px does not. The verse number is a button for keyboard and screen-reader users. The first press on the reading warms the study code chunk (skipped under Save-Data or slow connections); opening a verse fetches that day's `{day}.json`. The sheet shows the verse, «نسخ الآية» (the verse and its reference) and «مشاركة» (the system share sheet, or the clipboard, with a link to the canonical verse; a small chunk warmed with the study code), above two collapsed cards, in this order: «ترجمات أخرى» and «الكلمات اليونانية» (and a third, «اسأل الذكاء الاصطناعي», when the optional AI explanations are enabled). Each card is a heading button with a short hint and, where useful, a count; its content mounts the first time it opens, loading `{day}.tr.json` (New Arabic Version and KJV) for translations, and the sheet scrolls just enough to show it. The study sheet stays mounted after first use.
+Tapping a verse opens its study sheet in all four reading modes; a text selection, a press longer than 500ms, or a movement over 10px does not. The verse number is a button for keyboard and screen-reader users. The first press on the reading warms the study code chunk (skipped under Save-Data or slow connections). The sheet shows the verse, «نسخ الآية» (the verse and its reference) and «مشاركة» (the system share sheet, or the clipboard, with a link to the canonical verse; a small chunk warmed with the study code), above collapsed sections: «ترجمات أخرى», the optional «اسأل الذكاء الاصطناعي», and the original-language words, whose title reflects Greek, Hebrew, Aramaic, or mixed Hebrew/Aramaic. Each section is a heading button with a short hint and, where useful, a count. Its content mounts the first time it opens, and the sheet scrolls just enough to show it. Opening the sheet fetches no study data until a section needs it. The study sheet stays mounted after first use.
 
-The Greek list shows key words only: nouns, verbs, adjectives and interjections, each Greek word once per verse, as Arabic ← Greek with transliteration and gloss. Articles, pronouns, prepositions, conjunctions, particles and adverbs stay in the data but are not listed.
+Study uses canonical `BOOK.CHAPTER.VERSE` identities in every mode. `src/data/study/client.ts` first loads `/study/v2/BOOK/CHAPTER/index.json`, then the bounded verse range containing the requested verse. Every address carries the study folder's content version (`?v=`, `src/data/dataVersion.ts`), so hosting caches it for good and the service worker keeps it. Translations (`RANGE.tr.json`) and words (`RANGE.words.json.gz`) load independently; shared lexicon shards (`/study/v2/lex/Gxx.json` or `Hxx.json`) load only when AI word context needs them. Requests are deduplicated and cached by chapter, range, and shard, with limits of 24 chapter indexes, 12 word and 12 translation ranges, and 64 lexicon shards (a verse needs about 12, up to 30). Failed requests remain retryable. The 150-day plan's former per-day study files are no longer built; `scripts/data/build-study.js` removes copies an older build left in `public/study/`.
+
+Word resources are limited to 30,000 compressed bytes and 256 KiB decoded; translation ranges have a 30,000-byte gzip budget and lexicon shards a 35,000-byte gzip budget. The decoder checks the gzip signature because hosting may already have decoded the response. Compressed responses use the browser's native `DecompressionStream("gzip")`, with bounded reads before and after decompression. Cloudflare serves the stored bytes as `application/gzip` without `Content-Encoding`, so production takes this path; `vite preview` sends `Content-Encoding: gzip` instead, so the browser specs route the raw bytes. Browsers without `DecompressionStream` (Safari before 16.4) load a small decoder chunk (`fflate`) only then, with the same limits. [Canonical study data](../data/study/CANONICAL.md) documents source pins, regeneration, exact coverage, reviewed exceptions, and publication budgets.
+
+The Greek list shows key words only: nouns, verbs, adjectives and interjections, each Greek word once per verse, as Arabic ← Greek ← English gloss, with the transliteration and Strong's numbers below. Articles, pronouns, prepositions, conjunctions, particles and adverbs stay in the data but are not listed. Hebrew/Aramaic lists retain all meaningful source elements, including prefixes and suffixes. Consecutive elements sharing a verified Arabic span are grouped, and each group's original words form one isolate in reading order (`<bdi>`), so a Greek phrase reads left to right and a Hebrew prefix stays with its word; words without a verified span still display their original form and gloss without an invented Arabic mapping. Original words have their own language and text direction. The section's title names Greek, Hebrew, Aramaic, or Hebrew and Aramaic (Daniel 2:4) from the reference itself (`verseWordsTitle` in `src/domain/study/words.ts`), so it does not change when the words load; a unit test checks it against every OT verse's data.
 
 Verse numbers, section headings and passage titles grow with the reading text size; each verse number has a 24×24px target outside layout, so line boxes are unchanged. The study sheet's verse and translations follow the text size, and its verse and Greek words follow the diacritics setting.
 
@@ -117,13 +193,13 @@ Off by default. With `VITE_AI_PROVIDERS` unset, the build contains no AI code or
 | `VITE_AI_DAILY_CAP`        | Answers per device per Cairo day, 1–100 (default 10). Requests, including failed ones, are capped at twice this                                            |
 | `VITE_OPENROUTER_BASE_URL` | Optional `https://` endpoint with OpenRouter's API, for a future proxy                                                                                     |
 
-`vite.config.ts` validates these through `src/ai/config.ts` and inlines the result as build constants. An invalid value fails the build, and the app never reads `import.meta.env`. Only zero-priced `:free` models are accepted. `VITE_AI_ALLOW_LOCAL=1` exists only so the browser tests can reach the local stub over `http://127.0.0.1`; never set it in Vercel.
+`vite.config.ts` validates these through `src/features/ai/config.ts` and inlines the result as build constants. An invalid value fails the build, and the app never reads `import.meta.env`. Only zero-priced `:free` models are accepted. `VITE_AI_ALLOW_LOCAL=1` exists only so the browser tests can reach the local stub over `http://127.0.0.1`; never set it in Vercel.
 
 For local testing, put the values in `.env.development.local`. `npm run dev` reads that file, Git ignores it, and `npm run build` does not read it. Never commit a `.env*` file other than `.env.example`.
 
 ### Loading
 
-`StudyPanel.tsx` imports the card only when `__AI_ENABLED__` is true; otherwise Rollup drops it. The `AiPanel-*` chunk (interface, chip labels, cache, formatting) loads when the card first opens. The `run-*` chunk (prompt, streaming, the provider and the key) loads on the first request that the on-device cache cannot answer. That request also loads the day's `{day}.tr.json`, plus `{day}.lex.json` for «معاني الكلمات» and typed questions, through the same cache as the study cards. «إيقاف» takes effect at once, even while these are still loading, and a daily attempt counts only once the request is actually sent. The main `index-*` chunk is the same either way.
+`features/study/StudyPanel.tsx` imports the card only when `__AI_ENABLED__` is true; otherwise Rollup drops it. The `AiPanel-*` chunk (interface, chip labels, cache, formatting) loads when the card first opens. The `run-*` chunk (prompt, streaming, the provider and the key) loads on the first request that the on-device cache cannot answer. That request also loads the canonical translation range and, for «معاني الكلمات» and typed questions, the word range and shared lexicon shards, through the same caches as the study sections. Study context is optional: a failed resource does not prevent a request using the remaining material. «إيقاف» takes effect at once, even while these are still loading, and a daily attempt counts only once the request is actually sent. The main `index-*` chunk is the same either way.
 
 ### What is sent
 
@@ -133,7 +209,7 @@ Each request is one POST to `/chat/completions`. It carries:
 - the reference and section heading;
 - the verse and up to three verses either side, in Van Dyck without diacritics;
 - the verse in كتاب الحياة and the KJV;
-- the key Greek words with their lexicon meanings, for «معاني الكلمات» and typed questions, plus lexicon definitions (references removed) for «معاني الكلمات» only;
+- up to ten original-word groups with their glosses (Greek key words, or Hebrew/Aramaic rows containing a noun, verb or adjective, with their affixes), for «معاني الكلمات» and typed questions, plus available Greek lexicon definitions (references removed) for «معاني الكلمات» only; TBESH definitions are excluded from the data;
 - the task, or the reader's question.
 
 It never carries the reader's name, plan day, dates or progress. The headers are the key, `HTTP-Referer` (the site origin), `X-OpenRouter-Title: Bible150` and `X-OpenRouter-App-Visibility: hidden`, and the request sends no cookies.
@@ -147,7 +223,7 @@ OpenRouter sees the reader's IP address. Free-model providers may keep prompts a
 - **Each device has its own daily caps:** 10 answers and 20 requests by default. Chip answers are cached on the device (`nt-ai-cache-v1`, at most 60 answers); typed questions are not cached. Usage is stored in `nt-ai-usage-v1`. The feature is on by default; its notes, data-sharing details and remaining count sit behind the card's «التفاصيل والإعدادات» link. «إيقاف الميزة ومسح بياناتها» there removes the cache and sets `nt-ai-off-v1` until the reader taps «تشغيل الميزة». None of these keys are part of progress backups. If the browser blocks storage, counts and the off switch last until the page reloads, so the caps still apply.
 - **Errors use fixed Arabic messages.** Server error text is never shown.
 
-When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/ai/chips.ts` so cached answers are dropped. When what is sent, or who receives it, changes, update the details text in `src/study/AiPanel.tsx` and the About page.
+When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/features/ai/chips.ts` so cached answers are dropped. When what is sent, or who receives it, changes, update the details text in `src/features/ai/AiPanel.tsx` and the About page.
 
 ### Owner checklist
 
@@ -199,10 +275,10 @@ When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/ai/chips.
 - the prompt;
 - answer formatting;
 - the cache, including the session fallback when storage is blocked;
-- the request path in `run.ts` (which study files load, stopping before anything is sent);
+- the request path in `run.ts` and the request control in `request.ts` and `guards.ts` (which study files load, accounting, cooldowns, Stop);
 - static rules: no `import.meta.env`, no HTML injection, and the key confined to `run.ts`.
 
-The `ai-chromium` Playwright project builds `dist-ai/` with a dummy key and serves it on port 4174. It runs `tests/browser/ai.spec.ts` against `scripts/sse-stub.mjs`, a scriptable local stand-in for the streaming API on port 4175. No test reaches OpenRouter, and CI needs no secrets.
+The `ai-chromium` Playwright project builds `dist-ai/` with a dummy key (`scripts/build/browser-build.mjs ai`, the `ai-stub` reference configuration against the stub's port) and serves it on port 4174. It runs `tests/browser/ai.spec.ts` against `scripts/quality/sse-stub.mjs`, a scriptable local stand-in for the streaming API on port 4175. No test reaches OpenRouter, and CI needs no secrets.
 
 ## Static hosting
 
@@ -218,9 +294,11 @@ Cloudflare serves two independent Workers from the same explicit `wrangler.json`
 | `dev`      | `chronosbible-dev` | `dev.chronosbible.com` | `npm run app:host:deploy:dev` |
 
 Both environments build the same way from their own branch, using that
-branch's full-Bible content and audio publication inventory. The chapter-audio
-flag is enabled whenever the branch's Vite configuration supports it. These
-hosting scripts do not copy content between branches. Vercel continues using
+branch's full-Bible content and audio publication inventory. Whether a Worker
+may advertise hosted chapter recordings is an explicit per-environment policy
+(`CHAPTER_AUDIO` in the hosting script; on for both), never inferred from the
+build's source; the verified publication inventory still decides which chapters
+are advertised. These hosting scripts do not copy content between branches. Vercel continues using
 `npm run build` and its existing configuration.
 
 Use Node 22 and install the locked app dependencies with `npm ci --ignore-scripts`.
@@ -256,8 +334,8 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 `.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
 `VITE_*` values take priority. Therefore the Cloudflare build also uses a small
 environment allowlist and supplies its public settings explicitly:
-`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the branch-specific audio
-flag. Do not add other private `VITE_*` values to Cloudflare build settings.
+`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the
+environment's chapter-audio policy. Do not add other private `VITE_*` values to Cloudflare build settings.
 AI is always disabled on the production Worker, whatever the shell sets. The
 **dev Worker only** may enable it; see [AI on the dev Worker](#ai-on-the-dev-worker).
 
@@ -356,16 +434,16 @@ sites have independent progress. Use backup and restore when moving between them
 
 Study data is generated the same way into `public/study/` and served with the same revalidating cache header. Nothing under `/study/` loads until a reader opens a verse.
 
-If the app shows **تعذر تحميل القراءة**, verify that `/readings/plan.json` and `/readings/1.json` return JSON. The build must run `npm run build`, which invokes `prebuild` (`scripts/build-data.js`); running `vite build` directly skips the data generation step.
+If the app shows **تعذر تحميل القراءة**, verify that `/readings/plan.json` and `/readings/1.json` return JSON. The build must run `npm run build`, which invokes `prebuild` (`scripts/data/build-data.js`); running `vite build` directly skips the data generation step.
 
 ## Source regeneration
 
 The supplied `New_Testament_150_Day_Arabic.docx` controls passage order. The original table is retained in `data/source-plan.json`; the importer normalizes the document's reversed RTL reference notation.
 
 ```sh
-python3 scripts/extract-plan.py /path/to/New_Testament_150_Day_Arabic.docx
+python3 scripts/data/extract-plan.py /path/to/New_Testament_150_Day_Arabic.docx
 curl -L --fail https://ebible.org/Scriptures/arb-vd_usfm.zip -o /tmp/arb-vd.zip
-python3 scripts/import.py /tmp/arb-vd.zip
+python3 scripts/data/import.py /tmp/arb-vd.zip
 npm run validate
 ```
 
@@ -373,7 +451,9 @@ Expected coverage: **150 days, 537 passages, 7,966 verse occurrences, 7,959 uniq
 
 ### Study data regeneration
 
-Download the sources into a new, empty directory outside the repository and run the importer with isolated Python (standard library only):
+For full-Bible study, follow [Canonical study data](../data/study/CANONICAL.md): the pinned importer adds OT word tags, Hebrew/Aramaic lemma/gloss metadata, and full-Bible translations to the existing NT inputs. Ordinary builds verify committed source and Bible checksums and publish bounded canonical ranges and shared lexicon shards without source downloads or Python. TBESH definitions are excluded.
+
+The following procedure regenerates the legacy NT inputs and daily resources, which remain compatibility outputs. Download the sources into a new, empty directory outside the repository and run the importer with isolated Python (standard library only):
 
 ```sh
 S=/path/to/empty/sources
@@ -383,7 +463,7 @@ curl -L --fail https://ebible.org/Scriptures/arbnav_usfm.zip -o "$S/arbnav.zip"
 curl -L --fail https://ebible.org/Scriptures/eng-kjv_usfm.zip -o "$S/eng-kjv.zip"
 curl -L --fail "$STEP/Tagged-Bibles/Arabic%20Bibles/TTAraSVD%20-%20Translation%20Tags%20for%20Arabic%20SVD%20-%20STEPBible.org%20CC%20BY-SA_NT_4_0_1.txt" -o "$S/ttarasvd-nt.txt"
 curl -L --fail "$STEP/Lexicons/TBESG%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Greek%20-%20STEPBible.org%20CC%20BY.txt" -o "$S/tbesg.txt"
-python3 -I scripts/import-study.py --vd "$S/arb-vd.zip" --nav "$S/arbnav.zip" --kjv "$S/eng-kjv.zip" --tbesg "$S/tbesg.txt" --ttarasvd "$S/ttarasvd-nt.txt"
+python3 -I scripts/data/import-study.py --vd "$S/arb-vd.zip" --nav "$S/arbnav.zip" --kjv "$S/eng-kjv.zip" --tbesg "$S/tbesg.txt" --ttarasvd "$S/ttarasvd-nt.txt"
 npm run validate
 ```
 
@@ -391,9 +471,9 @@ The importer fails unless at least 99.5% of NT verses have Textus Receptus Greek
 
 > 7959 NT verses; 7959 with Greek (100.00%); 140993 TR tokens; aligned 99.56%; lexicon 5675 entries (0 token misses); NAV 99.97%; KJV 99.97%
 
-`build-study.js` shortens per-day lexicon definitions to **160** characters so the busiest day stays within gzip budgets of 30KB (core), 30KB (translations) and 35KB (lexicon); full 400-character definitions did not fit.
+`scripts/data/build-study-canonical.js` shortens Greek lexicon definitions to **160** characters in the shared lexicon shards, within their 35KB gzip budget; full 400-character definitions did not fit the former per-day files.
 
-To regenerate committed font and logo assets, install Python packages `fonttools brotli pillow` and run `python3 scripts/optimize-assets.py`. Production deployment does not require Python. Original fonts and logo sources are preserved; license texts are bundled under `public/fonts/`.
+To regenerate committed font and logo assets, install Python packages `fonttools brotli pillow` and run `python3 scripts/assets/optimize-assets.py`. Production deployment does not require Python. Original fonts and logo sources are preserved; license texts are bundled under `public/fonts/`.
 
 The Bible favicon is drawn in `src/assets/favicon.svg`. Edit that vector source and run `npm run icons:build` to export its 32px PNG fallback and the installed app's icons in `public/icons/` (requires the installed Playwright Chromium browser). The church logo regeneration script handles only the church artwork.
 
@@ -409,7 +489,7 @@ The focused responsiveness pass was compared against `781e060`, with three runs 
 
 The verse study panel was compared against `81c73c4` with six runs per build (two rounds of three) under the same mobile Lighthouse throttling: median performance **91.5 → 91**, accessibility **100 → 100**, LCP **3,080 → 3,154ms**, CLS **0.08742 → 0.08742**, and total transfer **490.8 → 491.6KB**. Simulated LCP took only two values in both builds, about 3,005 or 3,155ms (one round trip apart); the baseline landed on the higher value in 3 of 6 runs and the new build in 5 of 6. Initial JavaScript grew by **0.72KB** and CSS by **0.09KB** gzipped; study code (3.4KB) and styles (0.7KB) load only after a reader first presses the text. The first verse still starts at about **162px** at 390×844.
 
-The optional AI explanations leave the default build's sizes unchanged: `index` 82.0KB and `StudyPanel` 3.7KB gzipped, with no AI chunks or text. In an AI build, `StudyPanel` grows by 0.5KB. The card's own chunk (`AiPanel`, 6.2KB plus 0.65KB CSS) loads when the card first opens, and the request chunk (`run`, 5.2KB) loads on the first request. Lighthouse was not re-run, because nothing that loads before a reader opens a verse changed.
+At the original NT study release, optional AI explanations left the default build's sizes unchanged: `index` 82.0KB and `StudyPanel` 3.7KB gzipped, with no AI chunks or text. In an AI build, `StudyPanel` grows by 0.5KB. The card's own chunk (`AiPanel`, 6.2KB plus 0.65KB CSS) loads when the card first opens, and the request chunk (`run`, 5.2KB) loads on the first request. Lighthouse was not re-run, because nothing that loads before a reader opens a verse changed.
 
 Reading streaks and the plan day grid were compared against `dev` (`3d0b296`) with nine runs per build (three rounds of three) under the same mobile Lighthouse throttling: median performance **92 → 92**, accessibility **100 → 100**, LCP **3,154 → 3,155ms**, CLS **0.00105 → 0.00105**, and total transfer **505.9 → 506.4KB**. Simulated LCP again took about 3,005, 3,155 or 3,680–3,760ms; the baseline landed on the slow values in 3 of 9 runs and the new build in 4 of 9. Initial JavaScript grew by **0.49KB** and CSS by **0.06KB** gzipped, within the snapshot budget with about 20 bytes to spare. The streak UI (2.5KB plus 1.1KB CSS) and day grid (0.9KB plus 0.6KB CSS) load on demand.
 

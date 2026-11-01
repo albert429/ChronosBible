@@ -32,6 +32,8 @@ test.describe("day details", () => {
     const target = await passageLink.getAttribute("href");
     await passageLink.click();
     await expect(page.locator("dialog[open]")).toHaveCount(0);
+    // The jump runs after the sheet has returned focus to its trigger.
+    await expect(page.locator(target!)).toBeFocused();
     const heading = page.locator(`${target} h2`);
     await expect(heading).toBeInViewport();
     expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(60);

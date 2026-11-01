@@ -1,48 +1,45 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  parseAnyReadingLocation,
   parseReadingLocation,
   readingSearch,
   validChronologicalLocation,
-} from "../src/bible/navigation.ts";
-import { catalog } from "../src/bible/catalog.ts";
-import {
-  readingKey,
-  trackOf,
-  type ChronologicalLocation,
-} from "../src/bible/types.ts";
+  locationSearch,
+} from "../src/domain/reading/location.ts";
+import { catalog } from "../src/domain/scripture/catalog.ts";
+import { type ChronologicalLocation } from "../src/domain/reading/types.ts";
+import { readingKey, trackOf } from "../src/domain/reading/identity.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
   isChronologicalReadingData,
-} from "../src/chronology/validate.ts";
+} from "../src/data/chronology/validate.ts";
+import {
+  isReadingComplete,
+  readerCompletion,
+  readerPlaces,
+  validChapterId,
+} from "../src/domain/profiles/state.ts";
+import { exportBackup } from "../src/domain/profiles/backup.ts";
 import {
   PROGRESS_KEY,
   STATE_KEY,
   createReader,
   currentReader,
-  exportBackup,
   importBackup,
-  isReadingComplete,
   loadProgress,
   migrateProgress,
-  readerCompletion,
-  readerPlaces,
   saveReaderPlaces,
   selectReader,
-  setCompletion,
-  validChapterId,
   setReadingCompletion,
-} from "../src/plan/progress.ts";
-import {
   LOCATION_KEY,
+} from "../src/features/profiles/storage.ts";
+import {
   currentPlace,
-  locationSearch,
   parseTrackPlaces,
   trackPlace,
   withPlace,
-} from "../src/reader/location.ts";
+} from "../src/domain/reading/places.ts";
 
 type Store = ReturnType<typeof storage>;
 function storage(entries: Record<string, string> = {}) {
@@ -166,10 +163,13 @@ test("a failed migration write keeps v1 intact and is retried", () => {
   assert.deepEqual(loadProgress(s), failed.state);
   // A failed change is not reported as saved and writes nothing.
   s.failWrites = 1;
-  assert.throws(() => setCompletion(s, "reader-a", 7, true), /لم يتم الحفظ/);
+  assert.throws(
+    () => setReadingCompletion(s, "reader-a", { mode: "plan", day: 7 }, true),
+    /لم يتم الحفظ/,
+  );
   assert.equal(s.getItem(STATE_KEY), null);
   // The next change (or load) commits the migration together with it.
-  setCompletion(s, "reader-a", 7, true);
+  setReadingCompletion(s, "reader-a", { mode: "plan", day: 7 }, true);
   assert.deepEqual(loadProgress(s).profiles[0].completed, [1, 3, 7]);
   assert.equal(s.getItem(PROGRESS_KEY), legacyProgress);
   assert.ok(migrateProgress(s).migrated);
@@ -276,19 +276,18 @@ test("each reader keeps separate places and completion in every track", () => {
   );
 });
 
-test("links: shared URLs win, legacy ?day= links work, chronology is opt-in", () => {
-  assert.deepEqual(parseAnyReadingLocation("?day=7", catalog), {
+test("links: shared URLs win, legacy ?day= links work, chronology links open", () => {
+  assert.deepEqual(parseReadingLocation("?day=7", catalog), {
     mode: "plan",
     day: 7,
   });
   const link = "?mode=chronological&testament=NT&reading=mark-1&verse=3";
-  assert.deepEqual(parseAnyReadingLocation(link, catalog), {
+  assert.deepEqual(parseReadingLocation(link, catalog), {
     ...nt("mark-1"),
     verse: 3,
   });
   assert.equal(readingSearch({ ...nt("mark-1"), verse: 3 }), link);
   assert.equal(locationSearch(ot("ot-001")), readingSearch(ot("ot-001")));
-  assert.equal(parseReadingLocation(link, catalog), undefined);
   for (const query of [
     "?mode=chronological&testament=XX&reading=a",
     "?mode=chronological&testament=OT&reading=__proto__",
@@ -297,21 +296,16 @@ test("links: shared URLs win, legacy ?day= links work, chronology is opt-in", ()
     "?mode=chronological&testament=OT",
     "?mode=chronological&testament=OT&reading=a&verse=0",
   ])
-    assert.equal(parseAnyReadingLocation(query, catalog), undefined, query);
+    assert.equal(parseReadingLocation(query, catalog), undefined, query);
   // Explicit links replace the saved place in their own track only.
   const saved = withPlace(
     { track: "plan", places: { plan: { mode: "plan", day: 80 } } },
     ot("ot-009"),
   );
-  const linked = withPlace(saved, parseAnyReadingLocation("?day=3", catalog)!);
+  const linked = withPlace(saved, parseReadingLocation("?day=3", catalog)!);
   assert.deepEqual(currentPlace(linked, 1), { mode: "plan", day: 3 });
   assert.deepEqual(linked.places["chrono:OT"], ot("ot-009"));
-  // Without chronology support the Bible place stands in.
-  assert.deepEqual(currentPlace(saved, 1, false), {
-    mode: "bible",
-    book: "GEN",
-    chapter: 1,
-  });
+  assert.deepEqual(currentPlace(saved, 1), ot("ot-009"));
 });
 
 test("identities keep plan, Bible and each testament's chronology apart", () => {
@@ -426,7 +420,7 @@ test("v2 backups round trip every track; v1 backups map to the youth plan", () =
     { mode: "bible", book: "REV", chapter: 22 },
     true,
   );
-  setCompletion(first, r.id, 3, true);
+  setReadingCompletion(first, r.id, { mode: "plan", day: 3 }, true);
   saveReaderPlaces(first, r.id, {
     track: "chrono:NT",
     places: { "chrono:NT": { ...nt("mark-1"), verse: 4 } },
@@ -450,7 +444,7 @@ test("v2 backups round trip every track; v1 backups map to the youth plan", () =
   ]);
   const second = storage();
   const existing = createReader(second, "قارئ آخر", "2026-09-01");
-  setCompletion(second, existing.id, 2, true);
+  setReadingCompletion(second, existing.id, { mode: "plan", day: 2 }, true);
   const restored = importBackup(second, text);
   assert.notEqual(restored.id, r.id);
   const { id: _a, ...want } = currentReader(first)!;
@@ -595,9 +589,8 @@ test("guests explicitly complete readings without joining", () => {
   assert.ok(!isReadingComplete(guest, nt("ot-001")));
   assert.ok(!isReadingComplete(guest, ot("mark-1")));
   assert.deepEqual(guest.completion.plan, []);
-  // Undo, and the legacy plan-day API still needs a profile.
+  // Undo.
   setReadingCompletion(s, "", ot("ot-001"), false);
-  assert.throws(() => setCompletion(s, "", 1, true), /اختر القارئ/);
   // Saving places keeps the guest's completion, which persists.
   saveReaderPlaces(s, "", withPlace(loadProgress(s).guest, ot("ot-004")));
   const saved = loadProgress(s);

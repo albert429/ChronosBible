@@ -7,7 +7,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ConfigEnv, UserConfigFn } from "vite";
-import config, { dataVersions } from "../vite.config.ts";
+import config from "../vite.config.ts";
+import { dataVersions } from "../scripts/build/data-versions.ts";
 
 assert.equal(typeof config, "function");
 const makeConfig = config as UserConfigFn;
@@ -53,7 +54,7 @@ for (const [book, chapter] of [
     }),
   );
 writeFileSync(join(root, "public/audio/chapters/assets/GEN-1-abc.m4a"), "");
-// Revelation 22 was uploaded and verified (src/audio/publication.ts).
+// Revelation 22 was uploaded and verified (src/domain/audio/publication.ts).
 writeFileSync(
   join(root, "data/audio/publication.json"),
   JSON.stringify({

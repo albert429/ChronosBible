@@ -2,7 +2,7 @@
 // file runs in its own process, so the global set here stays local.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { AudioManifest } from "../src/audio/manifest.ts";
+import type { AudioManifest } from "../src/domain/audio/types.ts";
 
 const requests: string[] = [];
 let body: unknown = {};
@@ -10,7 +10,7 @@ globalThis.fetch = async (url: RequestInfo | URL) => {
   requests.push(String(url));
   return Response.json(body);
 };
-const client = await import("../src/audio/client.ts");
+const client = await import("../src/features/audio/client.ts");
 
 const manifest: AudioManifest = {
   version: 1,

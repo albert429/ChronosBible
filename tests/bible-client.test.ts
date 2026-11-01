@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createBibleClient, validBibleChapter } from "../src/bible/client.ts";
-import type { BibleChapter } from "../src/bible/types.ts";
+import {
+  createBibleClient,
+  validBibleChapter,
+} from "../src/data/bible/client.ts";
+import type { BibleChapter } from "../src/domain/reading/types.ts";
 
 const location = { mode: "bible" as const, book: "GEN", chapter: 1 };
 const key = "bible:GEN:1";

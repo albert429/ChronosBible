@@ -8,7 +8,7 @@ import {
   ready,
   recordRequests,
 } from "./helpers";
-import { routeChapterAudio } from "./chapterAudio";
+import { routeChapterAudio } from "./audioFixtures";
 
 const LABEL = "إظهار التشكيل";
 const KEY = "word-diacritics";

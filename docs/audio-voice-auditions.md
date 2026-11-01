@@ -14,7 +14,7 @@ not use macOS system voices, browser speech, paid APIs, or voice cloning of the 
 
 ## Wording
 
-`scripts/voice-audition-texts.json` contains draft corrections. Nothing has been adopted into
+`scripts/audio/voice-audition-texts.json` contains draft corrections. Nothing has been adopted into
 `data/audio/reference-texts.json` yet:
 
 - Compound ordinals from 11 to 19 take a joining fatha: `السَّادِسَ عَشَرَ` and `الرَّابِعَةَ عَشْرَةَ`.
@@ -37,9 +37,9 @@ uv venv --python 3.11 venv-silma && uv pip install --python venv-silma/bin/pytho
 uv pip install --python venv-silma/bin/python cached_path click ema_pytorch hydra-core librosa 'numpy<=1.26.4' \
   pydub safetensors soundfile tomli torch torchaudio torchcodec torchdiffeq tqdm transformers unidecode vocos x_transformers matplotlib
 cd ../..
-artifacts/voice-auditions/venv-piper/bin/python -I scripts/build-voice-auditions.py piper-kareem-lex
-artifacts/voice-auditions/venv-piper/bin/python -I scripts/build-voice-auditions.py piper-kareem
-HF_HUB_OFFLINE=1 artifacts/voice-auditions/venv-silma/bin/python -I scripts/build-voice-auditions.py silma  # after the first pinned download
+artifacts/voice-auditions/venv-piper/bin/python -I scripts/audio/build-voice-auditions.py piper-kareem-lex
+artifacts/voice-auditions/venv-piper/bin/python -I scripts/audio/build-voice-auditions.py piper-kareem
+HF_HUB_OFFLINE=1 artifacts/voice-auditions/venv-silma/bin/python -I scripts/audio/build-voice-auditions.py silma  # after the first pinned download
 ```
 
 The script writes WAV and MP3 files plus `catalog.json` to `artifacts/voice-auditions/<candidate>/`. That

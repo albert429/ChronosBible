@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { exportBackup } from "../src/domain/profiles/backup.ts";
 import {
   createReader,
   currentReader,
-  exportBackup,
   importBackup,
   loadProgress,
   setReadingCompletion,
   STATE_KEY,
-} from "../src/plan/progress.ts";
-import { streakStats } from "../src/plan/streak.ts";
+} from "../src/features/profiles/storage.ts";
+import { streakStats } from "../src/domain/profiles/streak.ts";
 
 /** Read dates as a `readOn` record (the keys don't matter for streaks). */
 const on = (...dates: string[]) =>

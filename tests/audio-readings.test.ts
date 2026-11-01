@@ -3,8 +3,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { validManifest, type AudioManifestV3 } from "../src/audio/manifest.ts";
-import { AUDIO_MAX_BYTES } from "../src/audio/contract.ts";
+import { validManifest } from "../src/domain/audio/manifest.ts";
+import type { AudioManifestV3 } from "../src/domain/audio/types.ts";
+import { AUDIO_MAX_BYTES } from "../src/domain/audio/contract.ts";
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));

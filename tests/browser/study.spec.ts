@@ -22,7 +22,7 @@ const studyRequests = (page: Page) =>
     page,
     (pathname) => pathname.startsWith("/study/") || /StudyPanel/.test(pathname),
   );
-/** The core study file has loaded once the collapsed sections appear. */
+/** Collapsed sections are available without fetching study data. */
 async function sectionsReady(page: Page) {
   await expect(section(page, "الكلمات اليونانية")).toBeVisible();
 }
@@ -41,7 +41,7 @@ test("tapping a verse opens its study sheet and only then loads study data", asy
   await expect(study(page)).toBeVisible();
   await expect(page.getByRole("dialog", { name: "متى ⁦٨: ١٥⁩" })).toBeVisible();
   await expect(verse(page, 1)).toHaveAttribute("data-selected", "");
-  // Every section starts collapsed, Greek last, and only the core file loads.
+  // Every section starts collapsed, Greek last, without fetching study data.
   await expect(study(page).locator(".study-section-title")).toHaveText([
     "ترجمات أخرى",
     "الكلمات اليونانية",
@@ -52,15 +52,13 @@ test("tapping a verse opens its study sheet and only then loads study data", asy
       "false",
     );
   await expect(section(page, "الكلمات اليونانية")).toHaveAccessibleName(
-    /^الكلمات اليونانية [٠-٩]+$/,
+    /^الكلمات اليونانية$/,
   );
   await expect(section(page, "الكلمات اليونانية")).toHaveAccessibleDescription(
     "الكلمة العربية ومقابلها في الأصل",
   );
   await page.waitForLoadState("networkidle");
-  expect(requests.filter((r) => r.startsWith("/study/"))).toEqual([
-    "/study/10.json",
-  ]);
+  expect(requests.filter((r) => r.startsWith("/study/"))).toEqual([]);
 
   await openSection(page, "الكلمات اليونانية");
   await expect(section(page, "الكلمات اليونانية")).toHaveAttribute(
@@ -76,12 +74,10 @@ test("tapping a verse opens its study sheet and only then loads study data", asy
   // Arabic, Greek and English share one line; the transliteration sits below.
   const firstRow = study(page).locator(".greek-main").first();
   await expect(firstRow.locator('bdi[lang="en"]')).toHaveText(/[a-z]/i);
-  // Key words only: no Strong's numbers and no Greek word listed twice.
+  // Key words remain filtered; compact Strong’s identifiers accompany them.
   const words = await study(page).locator(".greek-word").allTextContents();
   expect(new Set(words).size).toBe(words.length);
-  await expect(study(page).locator(".greek-meta").first()).not.toContainText(
-    /G\d/,
-  );
+  await expect(study(page).locator(".greek-meta").first()).toContainText(/G\d/);
 
   await closeSheet(page);
   await expect(verse(page, 1)).not.toHaveAttribute("data-selected");
@@ -189,7 +185,7 @@ test("other translations load only when opened and include the KJV", async ({
   await tap(page, 1);
   await sectionsReady(page);
   await page.waitForLoadState("networkidle");
-  expect(requests).not.toContain("/study/10.tr.json");
+  expect(requests.filter((r) => r.startsWith("/study/"))).toEqual([]);
 
   await openSection(page, "ترجمات أخرى");
   const english = study(page).locator(".study-english");
@@ -200,7 +196,9 @@ test("other translations load only when opened and include the KJV", async ({
   await expect(
     study(page).getByText("كتاب الحياة", { exact: true }),
   ).toBeVisible();
-  expect(requests.filter((r) => r === "/study/10.tr.json")).toHaveLength(1);
+  expect(
+    requests.filter((r) => /\/study\/v2\/MAT\/8\/.*\.tr\.json$/.test(r)),
+  ).toHaveLength(1);
 });
 
 test("a failed study request offers a retry that recovers", async ({
@@ -208,17 +206,18 @@ test("a failed study request offers a retry that recovers", async ({
 }) => {
   await seed(page);
   let fail = true;
-  await page.route("**/study/10.json*", (route) =>
+  await page.route("**/study/v2/MAT/8/*.words.json.gz*", (route) =>
     fail ? route.fulfill({ status: 503, body: "down" }) : route.fallback(),
   );
   await page.goto("/");
   await ready(page);
   await tap(page, 0);
+  await openSection(page, "الكلمات اليونانية");
   const retry = study(page).getByRole("button", { name: "إعادة المحاولة" });
   await expect(retry).toBeVisible();
   fail = false;
   await retry.click();
-  await sectionsReady(page);
+  await expect(study(page).locator(".greek-row").first()).toBeVisible();
 });
 
 test("Save-Data skips warming the study chunk; the default build has no AI row", async ({

@@ -14,7 +14,7 @@ import {
   saveAnswer,
   usage,
   USAGE_KEY,
-} from "../src/ai/cache.ts";
+} from "../src/features/ai/cache.ts";
 
 function memory(initial: Record<string, string> = {}) {
   const map = new Map(Object.entries(initial));

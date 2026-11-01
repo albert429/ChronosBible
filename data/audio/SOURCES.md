@@ -56,7 +56,7 @@ catalogued and is kept only for rollback.
   real time with no verse under the 0.30 review score; aligning all 929 chapters
   would take roughly 2.4 hours here and has not been run or reviewed.
 
-`scripts/verify-canonical-audio.py` re-checks manifests, fingerprints, alignments
+`scripts/audio/verify-canonical-audio.py` re-checks manifests, fingerprints, alignments
 and encoded media, and with `--ot`/`--nt` every original hash; on 23 October 2026
 all 1,189 chapters (with the Job 36 trim) and source hashes passed.
 

@@ -31,8 +31,8 @@ For example, with `uv` installed:
 uv venv --python 3.12 artifacts/audio-work/venv
 uv pip install --python artifacts/audio-work/venv/bin/python \
   torch==2.8.0 torchaudio==2.8.0 uroman==1.3.1 numpy
-artifacts/audio-work/venv/bin/python scripts/align-audio.py /path/to/Arabic_arb_VDV_NT_Drama
-python3 scripts/build-audio.py /path/to/Arabic_arb_VDV_NT_Drama
+artifacts/audio-work/venv/bin/python scripts/audio/align-audio.py /path/to/Arabic_arb_VDV_NT_Drama
+python3 scripts/audio/build-audio.py /path/to/Arabic_arb_VDV_NT_Drama
 npm run build
 ```
 
@@ -54,11 +54,11 @@ Generated output:
 - `data/audio/manifests/`: compact timing manifests, suitable for Git.
 - `data/audio/catalog.json`: days for which audio has been prepared.
 - `public/audio/days/`: encoded audio, ignored by Git.
-- `public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/build-data.js`), not by `build-audio.py`.
+- `public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/data/build-data.js`), not by `build-audio.py`.
 
 ## Canonical chapters (Bible mode)
 
-`scripts/build-canonical-audio.py --ot <OT folder> --nt <NT folder>` encodes each of
+`scripts/audio/build-canonical-audio.py --ot <OT folder> --nt <NT folder>` encodes each of
 the 1,189 original chapter recordings once, whole, with the same settings. It
 checks the exact 929 + 260 source coverage, reuses the verified NT alignments,
 and never invents verse timing: chapters without an alignment get
@@ -86,7 +86,7 @@ Rebuild one chapter without touching the others with
 changes). The superseded asset is listed as `supersedes` for rollback.
 
 Check everything with
-`python3 scripts/verify-canonical-audio.py --media <folder with audio/chapters/assets>... --ot <OT> --nt <NT>`
+`python3 scripts/audio/verify-canonical-audio.py --media <folder with audio/chapters/assets>... --ot <OT> --nt <NT>`
 (several media roots allowed, first match wins).
 Current state and the OT alignment benchmark are in
 [audio provenance](../data/audio/SOURCES.md#canonical-chapter-audio). The
@@ -107,7 +107,7 @@ and reference; the player lays them on one timeline and the browser's native
 displayed passages, so a changed text or chronology makes the manifest stale
 and the player refuses it.
 
-`scripts/build-reading-audio.py --chronology <public/chronology> --ot <OT> --nt <NT>`
+`scripts/audio/build-reading-audio.py --chronology <public/chronology> --ot <OT> --nt <NT>`
 builds them offline, resume-safe and deterministic:
 
 - A passage that is a whole chapter reuses that chapter's published file and
@@ -120,7 +120,7 @@ builds them offline, resume-safe and deterministic:
 - Alignments are validated when the builder loads them (original name and
   SHA-256, transcript hash of the current text, complete ordered verses
   inside the recording or its trim), and the file's SHA-256 must be one the
-  review summaries (`scripts/review-audio-alignments.py`: hashes, bounds,
+  review summaries (`scripts/audio/review-audio-alignments.py`: hashes, bounds,
   score >= 0.30, speech rate within 6 MADs of the set) record as reviewed. A
   stale summary or alignment refuses the chapter's clips.
 - A verse is _questionable_ if its score is < 0.30 or the review flagged it.
@@ -154,7 +154,7 @@ Deut 25:4|5 cut (25:4 scores 0.298) is confirmed by silence at 44.457-45.72 s.
 ## Spoken passage references
 
 `data/audio/reference-texts.json` holds a draft spoken reference for each of the
-537 plan passages (`scripts/prepare-reference-texts.py`), for example
+537 plan passages (`scripts/audio/prepare-reference-texts.py`), for example
 «إنجيل لوقا، الإصحاح الأول، من الآية الأولى إلى الرابعة». All are
 `reviewed: false`. Generating the voice is separate work; nothing is spoken in the
 browser, and the current release publishes no spoken labels or announced days.
@@ -218,7 +218,7 @@ element handles buffering and HTTP range requests; audio is never fetched into a
 JavaScript Blob or processed with Web Audio. Scripture is not rerendered on each
 audio event; only the active verse marker and small player update.
 
-The delivery rules live in `src/audio/contract.ts`: the media path patterns
+The delivery rules live in `src/domain/audio/contract.ts`: the media path patterns
 `/audio/days/NNN-<hash>.m4a` and `/audio/chapters/assets/<USFM>-<n>-<hash>.m4a`,
 the 8 MiB size cap, the content type, the cache
 value, the R2 bucket and its origin. The app validates every manifest `src`
@@ -246,11 +246,11 @@ the same paths (`/audio/days/…`, `/audio/chapters/assets/…`, `/audio/clips/�
 Objects carry `Content-Type: audio/mp4` and
 `Cache-Control: public, max-age=31536000, immutable`; R2 answers byte ranges
 natively, so no range handler, proxy or Worker is involved. The origin and bucket
-name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/audio/contract.ts`.
+name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/domain/audio/contract.ts`.
 
 Both app hosts load audio from that origin. The Cloudflare builds set
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com` themselves
-(`AUDIO_BASE_URL` in `scripts/cloudflare-app.mjs`; a test pins it to the
+(`AUDIO_BASE_URL` in `scripts/hosting/cloudflare-app.mjs`; a test pins it to the
 contract); Vercel takes the same **public** value from its environment.
 `vite.config.ts` validates it and inlines it as `__AUDIO_BASE_URL__`, so the app
 never reads `import.meta.env`. Day, chapter and chronological playlist JSON stay
@@ -284,7 +284,7 @@ Two inventories are kept apart:
   `npm run audio:host:prepare`: every staged file with its size and SHA-256.
   Ignored by Git; it proves nothing about the host.
 - **Verified** — `data/audio/publication.json`, written only by
-  `scripts/verify-audio-host.py --publish` after **every** file of a prepared
+  `scripts/hosting/verify-audio-host.py --publish` after **every** file of a prepared
   release passed byte-exact range checks on the deployed host. It lists each
   media path with size, SHA-256 and the release that first verified it, plus
   each release's host, date and method. Committed, because builds read it.
@@ -326,7 +326,7 @@ files (150 days, 1,189 chapters and the chronological clips).
    batch. A failed batch is retried up to three times; a persistent failure stops
    the run (`--from <n>` resumes at batch n, `--dry-run` prints the commands).
    Objects are immutable: nothing is deleted or overwritten with other bytes.
-3. `python3 scripts/verify-audio-host.py https://audio.chronosbible.com` checks
+3. `python3 scripts/hosting/verify-audio-host.py https://audio.chronosbible.com` checks
    every file in the prepared inventory on the host: three ranges per file
    (start, middle, suffix) against the staged bytes, exact `Content-Range` and
    `Content-Length`, `audio/mp4`, immutable caching, and one `416` past the end.

@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  adjacentChapter,
   parseReadingLocation,
   readingSearch,
-} from "../src/bible/navigation.ts";
-import { readingKey, type BibleBook } from "../src/bible/types.ts";
+} from "../src/domain/reading/location.ts";
+import { adjacentChapter } from "../src/domain/reading/adjacent.ts";
+import { readingKey } from "../src/domain/reading/identity.ts";
+import type { BibleBook } from "../src/domain/scripture/types.ts";
 
 const catalog: BibleBook[] = [
   {

@@ -12,17 +12,22 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
+import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { audioUrl } from "../src/audio/url.ts";
+import { audioUrl } from "../src/domain/audio/url.ts";
+import * as studyLimits from "../src/domain/study/limits.ts";
 import {
   AUDIO_BASE_URL,
+  CHAPTER_AUDIO,
+  STUDY_WORDS_GZIP_LIMIT,
+  STUDY_WORDS_RAW_LIMIT,
   buildEnvironment,
   deployArguments,
   gitEnvironment,
   preflight,
   scanAssets,
-} from "../scripts/cloudflare-app.mjs";
+} from "../scripts/hosting/cloudflare-app.mjs";
 
 function checkout(branch = "main") {
   const root = mkdtempSync(join(tmpdir(), "cloudflare-app-test-"));
@@ -33,6 +38,11 @@ function checkout(branch = "main") {
       stdio: ["ignore", "pipe", "pipe"],
     }).trim();
   git("init", "-b", branch);
+  mkdirSync(join(root, "data"));
+  copyFileSync(
+    new URL("../data/books.json", import.meta.url),
+    join(root, "data/books.json"),
+  );
   writeFileSync(join(root, ".gitignore"), ".env*\npublic/\ndist/\n");
   copyFileSync(
     new URL("../wrangler.json", import.meta.url),
@@ -66,11 +76,7 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
     AUDIO_TEST_FIXTURES: "1",
     NODE_OPTIONS: "unsafe",
   };
-  const env = buildEnvironment(
-    "production",
-    source,
-    "VITE_AUDIO_CHAPTERS_ENABLED",
-  );
+  const env = buildEnvironment("production", source);
   assert.equal(env.VITE_AUDIO_BASE_URL, "https://audio.chronosbible.com");
   assert.equal(buildEnvironment("dev", {}).VITE_AUDIO_BASE_URL, AUDIO_BASE_URL);
   assert.equal(
@@ -79,23 +85,38 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
   );
   assert.equal(env.VITE_AI_PROVIDERS, "");
   assert.equal(env.VITE_OPENROUTER_API_KEY, "");
-  assert.equal(env.VITE_AUDIO_CHAPTERS_ENABLED, "true");
-  assert.equal(
-    buildEnvironment("production", source, "older config")
-      .VITE_AUDIO_CHAPTERS_ENABLED,
-    "false",
-  );
   for (const key of ["VITE_FUTURE_KEY", "AUDIO_TEST_FIXTURES", "NODE_OPTIONS"])
     assert.equal(env[key as keyof typeof env], undefined);
+});
+
+test("Chapter audio follows the explicit per-environment policy", () => {
+  // Both Workers may advertise hosted chapters; the verified upload inventory
+  // still decides which ones. Nothing is inferred from the build's source, so
+  // a source string, or a VITE_AUDIO_CHAPTERS_ENABLED in the shell, changes
+  // nothing.
+  assert.deepEqual({ ...CHAPTER_AUDIO }, { production: true, dev: true });
+  assert.ok(Object.isFrozen(CHAPTER_AUDIO));
+  for (const target of ["production", "dev"] as const)
+    for (const inherited of [undefined, "false", "true", "1"]) {
+      const source =
+        inherited === undefined
+          ? {}
+          : { VITE_AUDIO_CHAPTERS_ENABLED: inherited };
+      assert.equal(
+        buildEnvironment(target, source).VITE_AUDIO_CHAPTERS_ENABLED,
+        "true",
+        `${target} ${inherited}`,
+      );
+    }
+  // The retired third argument (the Vite configuration's source) is ignored.
+  const legacy = buildEnvironment as (...args: unknown[]) => {
+    VITE_AUDIO_CHAPTERS_ENABLED?: string;
+  };
   assert.equal(
-    buildEnvironment("dev", {}, "VITE_AUDIO_CHAPTERS_ENABLED")
-      .VITE_AUDIO_CHAPTERS_ENABLED,
+    legacy("production", {}, "older config").VITE_AUDIO_CHAPTERS_ENABLED,
     "true",
   );
-  assert.equal(
-    buildEnvironment("dev", {}, "older config").VITE_AUDIO_CHAPTERS_ENABLED,
-    "false",
-  );
+  assert.throws(() => buildEnvironment("preview", {}), /production or dev/);
 });
 
 const DUMMY_KEY = "sk-or-v1-0123456789abcdef0123456789abcdef";
@@ -211,7 +232,7 @@ test("Deploy CLI always selects an explicit config and environment", () => {
 
 test("The build helpers can be imported from a Node stdin module", () => {
   const result = spawnSync(process.execPath, ["--input-type=module", "-"], {
-    input: `import { deployment } from ${JSON.stringify(new URL("../scripts/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
+    input: `import { deployment } from ${JSON.stringify(new URL("../scripts/hosting/cloudflare-app.mjs", import.meta.url).href)}; console.log(deployment("production").branch);`,
     encoding: "utf8",
     env: gitEnvironment(),
   });
@@ -404,6 +425,13 @@ test("Asset audit rejects unexpected file types, audio artifacts and oversized f
   }
 });
 
+const HOSTING_FILES = [
+  "scripts/cloudflare-app.mjs",
+  "scripts/hosting/cloudflare-app.mjs",
+  "scripts/lib/books.js",
+  "scripts/lib/paths.js",
+];
+
 // Each case runs the real wrapper against a fixture checkout whose build script
 // asserts the exact environment it receives and writes the given extra assets.
 const buildCases = [
@@ -478,11 +506,14 @@ for (const testCase of buildCases) {
     const { target, ai, expectAi, assets, fails } = testCase;
     const f = checkout(target === "production" ? "main" : "dev");
     try {
-      mkdirSync(join(f.root, "scripts"));
-      copyFileSync(
-        new URL("../scripts/cloudflare-app.mjs", import.meta.url),
-        join(f.root, "scripts/cloudflare-app.mjs"),
-      );
+      // The entry point, its implementation and the helpers they import.
+      for (const path of HOSTING_FILES) {
+        mkdirSync(join(f.root, path, ".."), { recursive: true });
+        copyFileSync(
+          new URL(`../${path}`, import.meta.url),
+          join(f.root, path),
+        );
+      }
       mkdirSync(join(f.root, "hosting/cloudflare-app"), { recursive: true });
       writeFileSync(
         join(f.root, "hosting/cloudflare-app/_headers"),
@@ -492,10 +523,8 @@ for (const testCase of buildCases) {
         join(f.root, "hosting/cloudflare-app/_redirects"),
         "/audio/days/* https://audio.example.test/audio/days/:splat 301\n",
       );
-      writeFileSync(
-        join(f.root, "vite.config.ts"),
-        "// VITE_AUDIO_CHAPTERS_ENABLED supported",
-      );
+      // The chapter flag comes from the explicit policy, not from this file.
+      writeFileSync(join(f.root, "vite.config.ts"), "// no audio settings");
       writeFileSync(
         join(f.root, "package.json"),
         JSON.stringify({
@@ -638,7 +667,12 @@ test(
         },
       );
       assert.equal(result.status, 0, result.stderr + result.stdout);
-      assert.match(result.stdout, /# pass 18\b/);
+      // Every test but this one ran: a nested run can silently execute none.
+      const count = (name: string) =>
+        Number(new RegExp(`# ${name} (\\d+)`).exec(result.stdout)?.[1]);
+      assert.equal(count("skipped"), 1, result.stdout);
+      assert.ok(count("pass") > 0, result.stdout);
+      assert.equal(count("pass"), count("tests") - 1, result.stdout);
       assert.equal(outer.git("rev-parse", "HEAD"), head);
       assert.deepEqual(readFileSync(join(outer.root, ".git/index")), index);
       assert.deepEqual(readFileSync(join(outer.root, ".git/config")), config);
@@ -647,3 +681,93 @@ test(
     }
   },
 );
+
+test("Study gzip assets retain identity, byte limits, and credential scanning", () => {
+  const root = mkdtempSync(join(tmpdir(), "cloudflare-study-test-"));
+  const folder = join(root, "study/v2/GEN/1");
+  mkdirSync(folder, { recursive: true });
+  const path = join(folder, "1-1.words.json.gz");
+  const valid = {
+    v: 2,
+    book: "GEN",
+    chapter: 1,
+    start: 1,
+    end: 1,
+    verses: { "1": { w: [] } },
+  };
+  const write = (value: unknown) =>
+    writeFileSync(path, gzipSync(JSON.stringify(value)));
+  try {
+    write(valid);
+    scanAssets(root, {});
+    write(null);
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, book: "EXO" });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, start: 2 });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    write({ ...valid, verses: {} });
+    assert.throws(() => scanAssets(root, {}), /asset identity/);
+    writeFileSync(path, "not gzip");
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    writeFileSync(path, gzipSync("not JSON"));
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    write({ ...valid, extra: "x".repeat(256 * 1024) });
+    assert.throws(() => scanAssets(root, {}), /invalid or oversized/);
+    writeFileSync(path, Buffer.alloc(30_001));
+    assert.throws(() => scanAssets(root, {}), /request budget/);
+    write({ ...valid, extra: "known-private-study-value-123" });
+    assert.throws(
+      () => scanAssets(root, { API_TOKEN: "known-private-study-value-123" }),
+      /credential/,
+    );
+    write({ ...valid, extra: "sk-or-v1-12345678901234567890" });
+    assert.throws(() => scanAssets(root, {}), /credential/);
+    write({ ...valid, extra: "-----BEGIN PRIVATE KEY-----" });
+    assert.throws(() => scanAssets(root, {}), /credential/);
+    rmSync(path);
+    writeFileSync(join(root, "other.json.gz"), gzipSync("{}"));
+    assert.throws(() => scanAssets(root, {}), /unexpected file type/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("The hosting audit's word limits equal the study domain's", () => {
+  assert.equal(STUDY_WORDS_GZIP_LIMIT, studyLimits.STUDY_WORDS_GZIP_LIMIT);
+  assert.equal(STUDY_WORDS_RAW_LIMIT, studyLimits.STUDY_WORDS_RAW_LIMIT);
+  assert.equal(STUDY_WORDS_GZIP_LIMIT, 30_000);
+  assert.equal(STUDY_WORDS_RAW_LIMIT, 256 * 1024);
+});
+
+test("The deploy entry point loads without TypeScript support", () => {
+  // Workers Builds runs plain `node scripts/cloudflare-app.mjs`; an older
+  // Node 22 cannot strip types, so no module on that path may be .ts.
+  const entry = fileURLToPath(
+    new URL("../scripts/cloudflare-app.mjs", import.meta.url),
+  );
+  const result = spawnSync(
+    process.execPath,
+    ["--no-experimental-strip-types", entry],
+    { encoding: "utf8", env: gitEnvironment() },
+  );
+  // Without arguments the wrapper prints its usage and exits 1, after every
+  // import has loaded.
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(
+    result.stderr,
+    /^Cloudflare app: use preflight, build, or deploy followed by production or dev\n$/,
+  );
+  const imports = spawnSync(
+    process.execPath,
+    [
+      "--no-experimental-strip-types",
+      "--input-type=module",
+      "-e",
+      `import(${JSON.stringify(new URL("../scripts/hosting/cloudflare-app.mjs", import.meta.url).href)}).then((m) => console.log(typeof m.scanAssets))`,
+    ],
+    { encoding: "utf8", env: gitEnvironment() },
+  );
+  assert.equal(imports.status, 0, imports.stderr);
+  assert.equal(imports.stdout.trim(), "function");
+});

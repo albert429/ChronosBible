@@ -1,0 +1,35 @@
+.error {
+  background: var(--error-bg);
+  color: var(--error-ink);
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.toast {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 8px 32px #0002;
+  z-index: 100;
+  font-size: 13px;
+  pointer-events: none;
+}
+/* Above the audio player, never over its controls. */
+body:has(.audio-player) .toast {
+  bottom: calc(var(--player-height, 96px) + 12px);
+}
