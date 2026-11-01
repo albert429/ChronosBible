@@ -1,3 +1,5 @@
+import { takeEarlyResponse } from "./earlyResponses.ts";
+
 type Options<T> = {
   url: (key: string) => string;
   validate: (data: unknown, key: string) => data is T;
@@ -8,19 +10,6 @@ type Options<T> = {
   parse?: (response: Response) => Promise<unknown>;
 };
 
-/**
- * Responses the inline script in index.html started before the app ran, by
- * address (undefined where that request failed). Each serves the first load
- * of its address; the entries stay, so the page shows what was started.
- */
-type EarlyResponses = Record<string, Promise<Response | undefined>>;
-const usedEarly = new Set<string>();
-function takeEarly(href: string) {
-  const early = (globalThis as { __earlyData?: EarlyResponses }).__earlyData;
-  if (!early?.[href] || usedEarly.has(href)) return;
-  usedEarly.add(href);
-  return early[href];
-}
 const aborted = (signal: AbortSignal) =>
   new Promise<never>((_, reject) =>
     signal.addEventListener("abort", () => reject(signal.reason), {
@@ -57,7 +46,7 @@ export function createJsonClient<T>(
     const request = Promise.resolve()
       .then(async () => {
         const href = url(key);
-        const early = takeEarly(href);
+        const early = takeEarlyResponse(href);
         const response =
           (early &&
             (await Promise.race([early, aborted(controller.signal)]))) ||

@@ -1,9 +1,8 @@
 // Content versions of the generated data folders, inlined into the app, the
-// early-reading preload script and the service worker.
+// early-reading script (inline-startup.ts) and the service worker.
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
-import type { Plugin } from "vite";
 import { DATA_FOLDERS } from "../../src/features/offline/rules.ts";
 
 /**
@@ -33,13 +32,4 @@ export function dataVersions(root = "public"): Record<string, string> {
     versions[folder] = hash.digest("hex").slice(0, 10);
   }
   return versions;
-}
-
-/** The preload script in index.html names files as the app does. */
-export function dataVersionsHtml(versions: Record<string, string>): Plugin {
-  return {
-    name: "data-versions-html",
-    transformIndexHtml: (html) =>
-      html.replace("__DATA_VERSIONS_JSON__", JSON.stringify(versions)),
-  };
 }

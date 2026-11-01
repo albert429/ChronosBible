@@ -4,9 +4,8 @@ import {
   type ReadingLocation,
   type ScriptureReading,
 } from "../../domain/reading/types.ts";
-
-/** Read by the inline script in index.html, which adds the data versions. */
-export const PRELOAD_KEY = "bible-reader-preload-v1";
+// Read back by the page's inline early-reading script.
+import { PRELOAD_KEY } from "./earlyReading.ts";
 
 /**
  * The data files that render a place, by plain address: a chapter, a plan

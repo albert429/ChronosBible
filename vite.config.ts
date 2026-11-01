@@ -5,10 +5,8 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { aiBuildConfig } from "./src/features/ai/config.ts";
 import { audioPublication } from "./scripts/build/audio-publication.ts";
-import {
-  dataVersions,
-  dataVersionsHtml,
-} from "./scripts/build/data-versions.ts";
+import { dataVersions } from "./scripts/build/data-versions.ts";
+import { inlineStartup } from "./scripts/build/inline-startup.ts";
 import { removeUnpublishedManifests } from "./scripts/build/manifest-filter.ts";
 import { serviceWorker } from "./scripts/build/service-worker.ts";
 
@@ -24,7 +22,7 @@ export default defineConfig(({ command, mode }) => {
       react(),
       removeUnpublishedManifests(audio.published),
       serviceWorker(versions),
-      dataVersionsHtml(versions),
+      inlineStartup(versions),
     ],
     define: {
       __AUDIO_BASE_URL__: JSON.stringify(audio.base),
