@@ -1,7 +1,7 @@
 import {
   CircleCheck,
   Download,
-  MonitorDown,
+  Smartphone,
   Square,
   TriangleAlert,
 } from "lucide-react";
@@ -107,7 +107,7 @@ export default function OfflineButton() {
     >
       <span className="offline-pill">
         {installing ? (
-          <MonitorDown size={17} aria-hidden="true" />
+          <Smartphone size={17} aria-hidden="true" />
         ) : done ? (
           <CircleCheck size={17} aria-hidden="true" />
         ) : saving ? (
