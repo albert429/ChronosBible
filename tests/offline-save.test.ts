@@ -120,3 +120,59 @@ test("the study pack is every chapter's study files from the build inventory", a
     new Response("{}", { status: 404 })) as unknown as typeof fetch;
   await assert.rejects(packUrls("study"), /HTTP 404/);
 });
+
+/** A device whose cache opens when `open` is called, and a quick network. */
+function quickDevice() {
+  const requested: string[] = [];
+  let opened!: () => void;
+  const opening = new Promise<void>((done) => (opened = done));
+  let openCalled!: () => void;
+  const openStarted = new Promise<void>((done) => (openCalled = done));
+  globals.location = { href: "https://chronos.test/" };
+  globals.caches = {
+    open: async () => {
+      openCalled();
+      await opening;
+      return { keys: async () => [], put: async () => {} };
+    },
+  };
+  globals.fetch = (async (url: string, init: RequestInit) => {
+    init.signal?.throwIfAborted();
+    requested.push(url);
+    return new Response("{}");
+  }) as typeof fetch;
+  return { requested, opened, openStarted };
+}
+const files = (book: string) =>
+  Array.from({ length: 8 }, (_, index) => `/bible/${book}/${index + 1}.json`);
+
+test("a save cancelled before it starts downloads and reports nothing", async () => {
+  const device = quickDevice();
+  device.opened();
+  const controller = new AbortController();
+  controller.abort();
+  const reported: number[] = [];
+  await assert.rejects(
+    savePack(files("LEV"), (saved) => reported.push(saved), controller.signal),
+  );
+  assert.deepEqual(device.requested, []);
+  assert.deepEqual(reported, []);
+});
+
+test("a save cancelled while the cache opens downloads and reports nothing", async () => {
+  const device = quickDevice();
+  const controller = new AbortController();
+  const reported: number[] = [];
+  const save = savePack(
+    files("NUM"),
+    (saved) => reported.push(saved),
+    controller.signal,
+  );
+  const outcome = assert.rejects(save);
+  await device.openStarted;
+  controller.abort();
+  device.opened();
+  await outcome;
+  assert.deepEqual(device.requested, []);
+  assert.deepEqual(reported, []);
+});

@@ -71,30 +71,34 @@ export async function savePack(
   progress: (saved: number) => void,
   signal: AbortSignal,
 ) {
-  const cache = await caches.open(DATA_CACHE);
-  const kept = new Set((await cache.keys()).map((request) => request.url));
-  const todo = urls.filter((url) => !kept.has(absolute(url)));
-  let saved = urls.length - todo.length;
-  let next = 0;
-  progress(saved);
+  // Listen before the first wait: a cancel made before the save began, or
+  // while the cache opens, stops it too.
   const stop = new AbortController();
   const cancel = () => stop.abort(signal.reason);
-  signal.addEventListener("abort", cancel, { once: true });
-  async function work() {
-    while (next < todo.length) {
-      stop.signal.throwIfAborted();
-      const url = todo[next++];
-      const response = await fetch(url, {
-        headers: { [SAVE_HEADER]: "1" },
-        signal: stop.signal,
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      await cache.put(url, response);
-      stop.signal.throwIfAborted();
-      progress(++saved);
-    }
-  }
+  if (signal.aborted) cancel();
+  else signal.addEventListener("abort", cancel, { once: true });
   try {
+    const cache = await caches.open(DATA_CACHE);
+    const kept = new Set((await cache.keys()).map((request) => request.url));
+    stop.signal.throwIfAborted();
+    const todo = urls.filter((url) => !kept.has(absolute(url)));
+    let saved = urls.length - todo.length;
+    let next = 0;
+    progress(saved);
+    const work = async () => {
+      while (next < todo.length) {
+        stop.signal.throwIfAborted();
+        const url = todo[next++];
+        const response = await fetch(url, {
+          headers: { [SAVE_HEADER]: "1" },
+          signal: stop.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        await cache.put(url, response);
+        stop.signal.throwIfAborted();
+        progress(++saved);
+      }
+    };
     await Promise.all(
       Array.from({ length: AT_ONCE }, () =>
         work().catch((error) => {
