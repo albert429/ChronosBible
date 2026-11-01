@@ -1,12 +1,4 @@
-import {
-  lazy,
-  Suspense,
-  useId,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type ComponentType,
-} from "react";
+import { lazy, Suspense, useId, useState, type ComponentType } from "react";
 import {
   BookOpen,
   CalendarDays,
@@ -21,7 +13,8 @@ import {
 import type { ReadingTrack } from "../../domain/reading/identity";
 import { useProgress } from "../profiles/useProgress";
 import { Streak } from "../streak/lazy";
-import { downloadBackup, readBackupFile } from "../profiles/backupFile";
+import { downloadBackup } from "../profiles/backupFile";
+import { useBackupRestore } from "../profiles/useBackupRestore";
 import { ar } from "../../shared/lib/format";
 import { APP_INFO } from "../../shared/lib/appInfo";
 import {
@@ -88,29 +81,17 @@ export default function MenuPanel({
   about,
   close,
 }: Props) {
-  const progress = useProgress();
-  const { member, completion } = progress;
+  const { member, completion } = useProgress();
   const chronologyHeading = useId();
   const planHeading = useId();
   const readerHeading = useId();
-  const input = useRef<HTMLInputElement>(null);
   const [offline, setOffline] = useState(false);
   const days = completion.plan.length;
   const choose = (next: ReadingTrack) => close(() => chooseTrack(next));
-  async function restore(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      if (progress.restore(await readBackupFile(file)))
-        close(() =>
-          notify("تمت الاستعادة كقارئ منفصل. لم تُحذف أي قراءة سابقة."),
-        );
-    } catch (err) {
-      progress.fail(err);
-    } finally {
-      event.target.value = "";
-    }
-  }
+  // The notice waits until the sheet has closed.
+  const backup = useBackupRestore(() =>
+    close(() => notify("تمت الاستعادة كقارئ منفصل. لم تُحذف أي قراءة سابقة.")),
+  );
   return (
     <>
       <div className="menu-brand">
@@ -197,18 +178,11 @@ export default function MenuPanel({
               تنزيل نسخة احتياطية
             </button>
           )}
-          <button className="menu-row" onClick={() => input.current?.click()}>
+          <button className="menu-row" onClick={backup.choose}>
             <Upload size={18} aria-hidden="true" />
             استعادة نسخة احتياطية
           </button>
-          <input
-            ref={input}
-            type="file"
-            accept=".json,application/json"
-            hidden
-            onChange={restore}
-            aria-label="ملف النسخة الاحتياطية"
-          />
+          {backup.input}
           <p>
             {member
               ? "تحتوي النسخة اسمك وتقدمك وأماكن القراءة. لا توجد مزامنة تلقائية بين الأجهزة."

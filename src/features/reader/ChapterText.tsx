@@ -1,8 +1,8 @@
 import { Fragment, memo, useMemo } from "react";
 import type { BibleBlock, Verse } from "../../domain/scripture/types";
-import { ar } from "../../shared/lib/format";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { chapterSegments } from "./chapterSegments";
+import VerseNumber from "./VerseNumber";
 
 /** A source paragraph or poetry line starts a new line; `nb` continues one. */
 const startsLine = (block: BibleBlock) =>
@@ -101,16 +101,7 @@ export default memo(function ChapterText({
               {segments.map((segment, index) => (
                 <Fragment key={index}>
                   {index === 0 ? (
-                    <sup>
-                      <button
-                        type="button"
-                        className="verse-number"
-                        aria-haspopup="dialog"
-                        aria-label={`تفاصيل الآية ${ar(verse.number)}`}
-                      >
-                        {ar(verse.number)}
-                      </button>
-                    </sup>
+                    <VerseNumber number={verse.number} />
                   ) : (
                     <>
                       {segment.blocks.map((block, blockIndex) => (

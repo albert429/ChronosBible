@@ -1,5 +1,4 @@
 import { memo, Fragment, type Ref } from "react";
-import { ar } from "../../shared/lib/format";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useDiacritics } from "../appearance/appearance";
 import {
@@ -11,6 +10,7 @@ import type { BibleBlock, Passage } from "../../domain/scripture/types";
 import ChapterText from "./ChapterText";
 import PassageReference from "../../shared/ui/PassageReference";
 import ListenButton from "./ListenButton";
+import VerseNumber from "./VerseNumber";
 import { passageHeadingId, passageId } from "../../shared/browser/scriptureDom";
 import "./Scripture.css";
 
@@ -40,16 +40,7 @@ const PlainVerses = memo(function PlainVerses({
         <Fragment key={verse.number}>
           {verse.heading && <h3>{displayArabic(verse.heading, diacritics)}</h3>}
           <span className="verse" data-v={verse.number}>
-            <sup>
-              <button
-                type="button"
-                className="verse-number"
-                aria-haspopup="dialog"
-                aria-label={`تفاصيل الآية ${ar(verse.number)}`}
-              >
-                {ar(verse.number)}
-              </button>
-            </sup>
+            <VerseNumber number={verse.number} />
             {displayArabic(verse.text, diacritics)}{" "}
           </span>
         </Fragment>

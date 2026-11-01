@@ -2,6 +2,7 @@ import { useId, useState } from "react";
 import { catalog, findBibleBook } from "../../domain/scripture/catalog";
 import type { BibleLocation } from "../../domain/reading/types";
 import { ar } from "../../shared/lib/format";
+import { chapterLabel } from "../../domain/reading/labels";
 import { useProgress } from "../profiles/useProgress";
 import "./BiblePanel.css";
 
@@ -62,7 +63,7 @@ export default function BiblePanel({ location, go, close }: Props) {
             <button
               type="button"
               key={chapter}
-              aria-label={`${book.name} ${ar(chapter)}`}
+              aria-label={chapterLabel(book.name, chapter)}
               aria-description={
                 read.has(`${code}:${chapter}`) ? "مكتمل" : undefined
               }

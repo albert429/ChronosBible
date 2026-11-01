@@ -1,6 +1,5 @@
-import { useRef, type ChangeEvent, type ReactNode } from "react";
-import { readBackupFile } from "../backupFile";
-import { useProgress } from "../useProgress";
+import type { ReactNode } from "react";
+import { useBackupRestore } from "../useBackupRestore";
 import type { Actions } from ".";
 
 export default function RestoreButton({
@@ -9,36 +8,18 @@ export default function RestoreButton({
   setNotice,
   children,
 }: Actions & { children: ReactNode }) {
-  const progress = useProgress();
-  const input = useRef<HTMLInputElement>(null);
-  async function restore(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      if (progress.restore(await readBackupFile(file))) {
-        close();
-        navigate("read");
-        setNotice("تمت الاستعادة كقارئ منفصل. لم تُحذف أي قراءة سابقة.");
-      }
-    } catch (err) {
-      progress.fail(err);
-    } finally {
-      event.target.value = "";
-    }
-  }
+  // The dialog closes at once and returns to the reading.
+  const backup = useBackupRestore(() => {
+    close();
+    navigate("read");
+    setNotice("تمت الاستعادة كقارئ منفصل. لم تُحذف أي قراءة سابقة.");
+  });
   return (
     <>
-      <button className="setting-row" onClick={() => input.current?.click()}>
+      <button className="setting-row" onClick={backup.choose}>
         {children}
       </button>
-      <input
-        ref={input}
-        type="file"
-        accept=".json,application/json"
-        hidden
-        onChange={restore}
-        aria-label="ملف النسخة الاحتياطية"
-      />
+      {backup.input}
     </>
   );
 }

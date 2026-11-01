@@ -23,10 +23,10 @@ import {
 } from "../../domain/reading/types";
 import { trackOf, type ReadingTrack } from "../../domain/reading/identity";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import { ar } from "../../shared/lib/format";
 import type { TrackCompletion } from "../../domain/profiles/state";
 import { shareApp } from "./share";
 import {
+  chapterLabel,
   dayLabel,
   readingLabel,
   TRACK_NAMES,
@@ -121,7 +121,7 @@ export default function Navigation({
   const bible = location.mode === "bible" ? location : undefined;
   const chrono = location.mode === "chronological" ? location : undefined;
   const place = bible
-    ? `${findBibleBook(catalog, bible.book)!.name} ${ar(bible.chapter)}`
+    ? chapterLabel(findBibleBook(catalog, bible.book)!.name, bible.chapter)
     : chrono
       ? readingTitle
       : dayLabel(selected);

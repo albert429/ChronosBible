@@ -7,7 +7,7 @@ import {
   Suspense,
 } from "react";
 import { readingHasAudio } from "../audio/availability";
-import { catalog, findBibleBook } from "../../domain/scripture/catalog";
+import { catalog } from "../../domain/scripture/catalog";
 import {
   isChronologicalReading,
   type ReadingLocation,
@@ -17,8 +17,7 @@ import {
 } from "../../domain/reading/types";
 import { readingKey } from "../../domain/reading/identity";
 import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import { ar } from "../../shared/lib/format";
-import { readingLabel } from "../../domain/reading/labels";
+import { readingTitle } from "../../domain/reading/labels";
 import { Loading, LoadError, ChunkBoundary } from "../../shared/ui/Feedback";
 import { loadVerseStudy, type StudyTarget } from "../study/load";
 import CompletionBar from "./CompletionBar";
@@ -92,21 +91,6 @@ function studyView(
     structure: [],
   };
   return { reading: chapter, target: { ...target, passage: 0 } };
-}
-
-export function readingTitle(
-  location: ReadingLocation,
-  chronology?: ChronologyCatalog,
-  reading?: ScriptureReading,
-) {
-  if (location.mode === "plan") return readingLabel(location.day);
-  if (location.mode === "bible")
-    return `${findBibleBook(catalog, location.book)!.name} ${ar(location.chapter)}`;
-  return (
-    chronology?.readings.find((item) => item.id === location.readingId)
-      ?.title ??
-    (reading && isChronologicalReading(reading) ? reading.title : "")
-  );
 }
 
 /** What a reader does to move the page themselves. */

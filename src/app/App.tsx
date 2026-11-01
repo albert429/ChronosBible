@@ -10,7 +10,7 @@ import { Check, X } from "lucide-react";
 import { useProgress } from "../features/profiles/useProgress";
 import { dayIndex, pageFor, scheduledDay } from "../domain/reading/schedule";
 import { isReadingComplete } from "../domain/profiles/state";
-import Reader, { readingTitle } from "../features/reader/Reader";
+import Reader from "../features/reader/Reader";
 import Navigation, { type View } from "../features/navigation/Navigation";
 import PlanView from "../features/plan/PlanView";
 import { ChunkBoundary, Loading } from "../shared/ui/Feedback";
@@ -38,7 +38,7 @@ import { days } from "../data/plan/client";
 import { adjacentLocation } from "../domain/reading/adjacent";
 import { afterStartup } from "../shared/browser/afterStartup";
 import { today } from "../shared/lib/format";
-import { TRACK_NAMES } from "../domain/reading/labels";
+import { TRACK_NAMES, readingTitle } from "../domain/reading/labels";
 const Dialogs = lazy(() => import("../features/profiles/dialogs"));
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
   join: "القراء على هذا الجهاز",

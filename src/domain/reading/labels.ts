@@ -1,9 +1,42 @@
 import { ar } from "../../shared/lib/format.ts";
+import { catalog, findBibleBook } from "../scripture/catalog.ts";
 import type { ReadingTrack } from "./identity.ts";
 import type { Testament } from "../scripture/types.ts";
+import type { ChronologyCatalog } from "./chronology.ts";
+import {
+  isChronologicalReading,
+  type ReadingLocation,
+  type ScriptureReading,
+} from "./types.ts";
 
+/** The toolbar's compact plan place. */
 export const dayLabel = (day: number) => `اليوم ${ar(day)}`;
 export const readingLabel = (day: number) => `قراءة اليوم ${ar(day)}`;
+/** A canonical chapter: «تكوين ١». */
+export const chapterLabel = (book: string, chapter: number) =>
+  `${book} ${ar(chapter)}`;
+
+/**
+ * A reading's title in every track: the plan day, the chapter, or the
+ * chronological reading's title from its catalog, else from its text.
+ */
+export function readingTitle(
+  location: ReadingLocation,
+  chronology?: ChronologyCatalog,
+  reading?: ScriptureReading,
+) {
+  if (location.mode === "plan") return readingLabel(location.day);
+  if (location.mode === "bible")
+    return chapterLabel(
+      findBibleBook(catalog, location.book)!.name,
+      location.chapter,
+    );
+  return (
+    chronology?.readings.find((item) => item.id === location.readingId)
+      ?.title ??
+    (reading && isChronologicalReading(reading) ? reading.title : "")
+  );
+}
 
 export const TESTAMENT_NAMES: Record<Testament, string> = {
   OT: "العهد القديم",
