@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { catalog } from "../../domain/scripture/catalog";
 import {
   parseReadingLocation,
-  parsePlanOrBibleLocation,
   locationSearch,
   validReadingLocation,
 } from "../../domain/reading/location";
@@ -10,7 +9,6 @@ import {
   type ReadingLocation,
   type ChronologicalLocation,
   type PlanLocation,
-  type PlanOrBibleLocation,
 } from "../../domain/reading/types";
 import {
   readingKey,
@@ -28,7 +26,6 @@ import {
   freshPlaces,
   trackPlace,
   withPlace,
-  type ReaderPlaces,
 } from "../../domain/reading/places";
 import {
   loadPreferences,
@@ -70,28 +67,15 @@ function savedPlaces(reader: string) {
   }
 }
 
+const parse = (search: string) => parseReadingLocation(search, catalog);
+
 /**
  * The reading choice and each track's last place for the active reader
  * (`reader` is their id, "" for a guest), with history entries and links.
  * `scheduled` is their youth plan day, used until they have a plan place.
  * Places are saved per reader and track; opening a place never completes it.
- *
- * Until the UI renders chronology, `chronological` stays false: chronology
- * links are ignored and `location` equals `current`. With it on, `location`
- * may be chronological while `current` keeps the plan/Bible view.
  */
-export function useReadingLocation(
-  reader: string,
-  scheduled: number,
-  { chronological = false }: { chronological?: boolean } = {},
-) {
-  const parse = (search: string): ReadingLocation | undefined =>
-    chronological
-      ? parseReadingLocation(search, catalog)
-      : parsePlanOrBibleLocation(search, catalog);
-  const allowed = (next: unknown): next is ReadingLocation =>
-    validReadingLocation(next) &&
-    (chronological || next.mode !== "chronological");
+export function useReadingLocation(reader: string, scheduled: number) {
   const [state, setState] = useState(() => {
     const saved = savedPlaces(reader);
     // An explicit link wins over the remembered place.
@@ -109,13 +93,9 @@ export function useReadingLocation(
     [places, state.scheduled],
   );
   const here = useMemo(
-    () => currentPlace(places, state.scheduled, chronological),
-    [places, state.scheduled, chronological],
+    () => currentPlace(places, state.scheduled),
+    [places, state.scheduled],
   );
-  const current: PlanOrBibleLocation =
-    here.mode === "chronological"
-      ? (trackPlace(places, "bible", state.scheduled) as PlanOrBibleLocation)
-      : here;
   const [navigation, setNavigation] = useState(0);
   // Opening the app, Back/Forward and returning to a mode resume where the
   // reader was; moving on to another place starts at its top.
@@ -152,11 +132,10 @@ export function useReadingLocation(
     } catch {
       /* session only */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [places, here, state.reader, state.continuous]);
   useEffect(() => {
     const pop = (event: PopStateEvent) => {
-      const next = allowed(event.state?.scripture)
+      const next = validReadingLocation(event.state?.scripture)
         ? (event.state.scripture as ReadingLocation)
         : parse(location.search);
       if (next) {
@@ -171,14 +150,13 @@ export function useReadingLocation(
     };
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chronological]);
+  }, []);
   /**
    * Opens a place. Choosing the reading already open is still a manual
    * selection (it restarts that reading), but adds no history entry.
    */
   function go(next: ReadingLocation, replace = false, resume = false) {
-    if (!allowed(next)) return;
+    if (!validReadingLocation(next)) return;
     if (next.verse === undefined && readingKey(next) === readingKey(here))
       replace = true;
     remember(here);
@@ -193,12 +171,8 @@ export function useReadingLocation(
     setNavigation((n) => n + 1);
   }
   return {
-    /** The plan or Bible place the current reader UI renders. */
-    current,
-    /** The true current place, chronological when enabled. */
+    /** The current place, in any track. */
     location: here,
-    track: places.track,
-    places: places as ReaderPlaces,
     navigation,
     /** Whether the reader should resume its remembered position. */
     restore,
@@ -211,7 +185,7 @@ export function useReadingLocation(
      */
     chooseMode(track: ReadingTrack, start?: ChronologicalLocation): boolean {
       const next = trackPlace(places, track, state.scheduled) ?? start;
-      if (!next || !allowed(next)) return false;
+      if (!next || !validReadingLocation(next)) return false;
       go(next, false, true);
       return true;
     },

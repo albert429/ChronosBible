@@ -9,7 +9,6 @@ import {
   parseReaderPlaces,
   type ReaderPlaces,
 } from "../../domain/reading/places.ts";
-import { isPlanDay } from "../../domain/reading/schedule.ts";
 import {
   INVALID,
   addReader,
@@ -178,22 +177,6 @@ export function setReadingCompletion(
     return result.state;
   });
   return updated!;
-}
-/** Youth plan days for a profile; kept for existing callers. */
-export function setCompletion(
-  storage: StorageLike,
-  id: string,
-  day: number,
-  completed: boolean,
-): ReaderProfile {
-  if (!isPlanDay(day)) throw Error("اليوم غير صالح.");
-  if (!id) throw Error("اختر القارئ أولًا.");
-  return setReadingCompletion(
-    storage,
-    id,
-    { mode: "plan", day },
-    completed,
-  ) as ReaderProfile;
 }
 export function selectReader(storage: StorageLike, id: string | null) {
   let selected: ReaderProfile | null = null;

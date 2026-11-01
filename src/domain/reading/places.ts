@@ -67,23 +67,15 @@ export function trackPlace(
   if (track === "bible") return FIRST_CHAPTER;
 }
 /**
- * Where the reader is now. Without chronology support, or before a
- * chronology has a place, the Bible place stands in.
+ * Where the reader is now. Before a chronology has a place, the Bible place
+ * stands in.
  */
-export function currentPlace(
+export const currentPlace = (
   reader: ReaderPlaces,
   scheduled: number,
-  chronological = true,
-): ReadingLocation {
-  const track =
-    !chronological && reader.track.startsWith("chrono:")
-      ? "bible"
-      : reader.track;
-  return (
-    trackPlace(reader, track, scheduled) ??
-    (trackPlace(reader, "bible", scheduled) as BibleLocation)
-  );
-}
+): ReadingLocation =>
+  trackPlace(reader, reader.track, scheduled) ??
+  (trackPlace(reader, "bible", scheduled) as BibleLocation);
 /** Move within, or switch to, the location's own track. */
 export const withPlace = (
   reader: ReaderPlaces,

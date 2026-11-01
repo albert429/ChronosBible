@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  initialPreferences,
   loadPreferences,
-  planLocation,
-  withLocation,
+  placesFromPreferences,
 } from "../src/domain/profiles/legacy.ts";
 import {
   readingPosition,
@@ -17,7 +15,7 @@ import {
 import { sameLocation } from "../src/domain/reading/identity.ts";
 import { chapterSegments } from "../src/features/reader/chapterSegments.ts";
 
-test("each reader's last plan place, the Bible place and the mode are remembered", () => {
+test("v1 device places keep each reader's last plan place, the Bible place and the mode", () => {
   const saved = {
     version: 1,
     mode: "bible",
@@ -30,70 +28,30 @@ test("each reader's last plan place, the Bible place and the mode are remembered
   };
   const loaded = loadPreferences(JSON.stringify(saved));
   assert.deepEqual(loaded, saved);
-  assert.deepEqual(planLocation(loaded, "reader-a", 10), {
-    mode: "plan",
-    day: 83,
+  assert.deepEqual(placesFromPreferences(loaded, "reader-a"), {
+    track: "bible",
+    places: { bible: saved.bible, plan: { mode: "plan", day: 83 } },
   });
-  assert.deepEqual(planLocation(loaded, "", 1), {
+  assert.deepEqual(placesFromPreferences(loaded, "").places.plan, {
     mode: "plan",
     day: 5,
     verse: 2,
   });
-  // A reader without a place of their own starts on their scheduled day.
-  assert.deepEqual(planLocation(loaded, "reader-b", 12), {
-    mode: "plan",
-    day: 12,
+  // A reader without a place of their own gets none (their scheduled day).
+  assert.deepEqual(placesFromPreferences(loaded, "reader-b"), {
+    track: "bible",
+    places: { bible: saved.bible },
   });
-  // Moving in the plan updates only the active reader; the Bible place stays.
-  const moved = withLocation(loaded, "reader-b", { mode: "plan", day: 13 });
-  assert.equal(moved.mode, "plan");
-  assert.deepEqual(moved.plans["reader-a"], saved.plans["reader-a"]);
-  assert.deepEqual(moved.plans["reader-b"], { mode: "plan", day: 13 });
-  assert.deepEqual(moved.bible, saved.bible);
-  const read = withLocation(moved, "reader-b", {
-    mode: "bible",
-    book: "PSA",
-    chapter: 119,
-  });
-  assert.equal(read.mode, "bible");
-  assert.deepEqual(read.plans, moved.plans);
   // Places are bounded, keeping the most recently used readers.
-  let many = loadPreferences(null);
-  for (let i = 0; i < 25; i++)
-    many = withLocation(many, `r${i}`, { mode: "plan", day: i + 1 });
+  const plans = Object.fromEntries(
+    Array.from({ length: 25 }, (_, i) => [
+      `r${i}`,
+      { mode: "plan", day: i + 1 },
+    ]),
+  );
+  const many = loadPreferences(JSON.stringify({ ...saved, plans }));
   assert.equal(Object.keys(many.plans).length, 20);
   assert.ok(many.plans.r24 && !many.plans.r4);
-});
-
-test("explicit links choose the place and update the active reader's plan place", () => {
-  const saved = JSON.stringify({
-    version: 1,
-    mode: "bible",
-    plans: { "reader-a": { mode: "plan", day: 83 } },
-    bible: { mode: "bible", book: "JHN", chapter: 3 },
-    continuous: false,
-  });
-  const linked = initialPreferences("reader-a", "?day=7", saved);
-  assert.equal(linked.mode, "plan");
-  assert.deepEqual(linked.plans["reader-a"], { mode: "plan", day: 7 });
-  const chapter = initialPreferences(
-    "reader-a",
-    "?mode=bible&book=REV&chapter=22&verse=21",
-    saved,
-  );
-  assert.equal(chapter.mode, "bible");
-  assert.deepEqual(chapter.bible, {
-    mode: "bible",
-    book: "REV",
-    chapter: 22,
-    verse: 21,
-  });
-  assert.deepEqual(chapter.plans, JSON.parse(saved).plans);
-  // An invalid link is ignored rather than replacing a remembered place.
-  assert.deepEqual(
-    initialPreferences("reader-a", "?mode=bible&book=XYZ&chapter=1", saved),
-    loadPreferences(saved),
-  );
 });
 
 test("plan days reached in the app keep the bare URL; chapters get a static link", () => {
@@ -151,24 +109,22 @@ test("source structure splits by Unicode codepoint without altering Arabic text"
 
 test("reader ids that name Object.prototype members still get their own plan place", () => {
   for (const id of ["constructor", "toString", "__proto__", "hasOwnProperty"]) {
-    // No saved place: the scheduled day, never an inherited member.
-    assert.deepEqual(planLocation(loadPreferences(), id, 7), {
-      mode: "plan",
-      day: 7,
+    // No saved place: none inherited from Object.prototype.
+    assert.deepEqual(placesFromPreferences(loadPreferences(), id).places, {
+      bible: { mode: "bible", book: "GEN", chapter: 1 },
     });
-    // A stored place survives saving and loading as an own entry.
-    const moved = withLocation(loadPreferences(), id, {
+    // A stored place is read back as an own entry.
+    const raw = `{"version":1,"mode":"plan","plans":{${JSON.stringify(id)}:{"mode":"plan","day":42}},"bible":{"mode":"bible","book":"GEN","chapter":1},"continuous":false}`;
+    const reloaded = loadPreferences(raw);
+    assert.ok(Object.hasOwn(reloaded.plans, id));
+    assert.deepEqual(placesFromPreferences(reloaded, id).places.plan, {
       mode: "plan",
       day: 42,
     });
-    assert.deepEqual(planLocation(moved, id, 7), { mode: "plan", day: 42 });
-    const reloaded = loadPreferences(JSON.stringify(moved));
-    assert.ok(Object.hasOwn(reloaded.plans, id));
-    assert.deepEqual(planLocation(reloaded, id, 7), { mode: "plan", day: 42 });
-    assert.deepEqual(planLocation(reloaded, "other", 3), {
-      mode: "plan",
-      day: 3,
-    });
+    assert.equal(
+      placesFromPreferences(reloaded, "other").places.plan,
+      undefined,
+    );
   }
 });
 

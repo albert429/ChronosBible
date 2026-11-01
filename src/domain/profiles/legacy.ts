@@ -3,11 +3,7 @@
  * progress (`nt-reading-progress-v1`) and device places
  * (`bible-reader-location-v1`). Neither is ever written or removed.
  */
-import { catalog } from "../scripture/catalog.ts";
-import {
-  parsePlanOrBibleLocation,
-  validPlanOrBibleLocation,
-} from "../reading/location.ts";
+import { validPlanOrBibleLocation } from "../reading/location.ts";
 import type { ReaderPlaces } from "../reading/places.ts";
 import type {
   BibleLocation,
@@ -73,45 +69,6 @@ export function loadPreferences(raw?: string | null): ReaderPreferences {
   } catch {
     return initial;
   }
-}
-/** A reader's last plan place, or their scheduled day before they have one. */
-export const planLocation = (
-  preferences: ReaderPreferences,
-  reader: string,
-  scheduled: number,
-): PlanLocation =>
-  // Own properties only: ids such as "constructor" or "__proto__" are valid.
-  (Object.prototype.hasOwnProperty.call(preferences.plans, reader)
-    ? preferences.plans[reader]
-    : undefined) ?? { mode: "plan", day: scheduled };
-/** Move to a place; a plan place belongs to the active reader only. */
-export function withLocation(
-  preferences: ReaderPreferences,
-  reader: string,
-  location: PlanOrBibleLocation,
-): ReaderPreferences {
-  if (location.mode === "bible")
-    return { ...preferences, mode: "bible", bible: location };
-  const others = Object.entries(preferences.plans).filter(
-    ([id]) => id !== reader,
-  );
-  return {
-    ...preferences,
-    mode: "plan",
-    plans: {
-      ...Object.fromEntries(others.slice(-(MAX_PLAN_READERS - 1))),
-      [reader]: location,
-    },
-  };
-}
-export function initialPreferences(
-  reader: string,
-  search: string,
-  raw?: string | null,
-) {
-  const saved = loadPreferences(raw);
-  const linked = parsePlanOrBibleLocation(search, catalog);
-  return linked ? withLocation(saved, reader, linked) : saved;
 }
 /** Legacy v1 preferences as one reader's v2 places. */
 export function placesFromPreferences(

@@ -52,7 +52,6 @@ export default function App() {
   const locationState = useReadingLocation(
     member?.id ?? "",
     member ? scheduledDay(member.startDate, today()) : 1,
-    { chronological: true },
   );
   const location = locationState.location;
   const selected = locationState.plan.day;

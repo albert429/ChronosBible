@@ -87,15 +87,6 @@ export function parseReadingLocation(
   if (isPlanDay(day)) return { mode: "plan", day, ...withVerse };
 }
 
-/** Plan and canonical links only, for readers without chronology. */
-export function parsePlanOrBibleLocation(
-  search: string,
-  catalog: readonly BibleBook[],
-): PlanOrBibleLocation | undefined {
-  const location = parseReadingLocation(search, catalog);
-  return location?.mode === "chronological" ? undefined : location;
-}
-
 export function readingSearch(location: ReadingLocation): string {
   const query = new URLSearchParams();
   if (location.mode === "bible") {

@@ -15,7 +15,6 @@ import {
   loadProgress,
   migrateProgress,
   selectReader,
-  setCompletion,
   setReadingCompletion,
 } from "./storage";
 
@@ -114,8 +113,6 @@ const actions = {
   create: (name: string, start: string) =>
     act(() => createReader(localStorage, name, start), 1),
   restore: (text: string) => act(() => importBackup(localStorage, text), 1),
-  complete: (id: string, day: number, done: boolean) =>
-    act(() => setCompletion(localStorage, id, day, done)),
   /** Explicitly mark any track's reading done or not done ("" = guest). */
   completeReading: (id: string, location: ReadingLocation, done: boolean) =>
     act(() => setReadingCompletion(localStorage, id, location, done)),
