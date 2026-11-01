@@ -7,7 +7,15 @@ import {
   recordRequests,
   stubConnection,
 } from "./helpers";
-import { POSITION_KEY, fulfillWav } from "./chapterAudio";
+import {
+  POSITION_KEY,
+  blockExternal,
+  fulfillWav,
+  mediaProbe,
+  probeMedia,
+  rejectNextPlay,
+  sameMediaElement,
+} from "./audioFixtures";
 import type { AudioManifestV3 } from "../../src/domain/audio/types.ts";
 
 // Chronological readings are v3 playlists: several immutable files played in
@@ -51,15 +59,8 @@ function accelerated(id: string, seconds: number): AudioManifestV3 {
 const sources = (id: string) => playlist(id).entries.map((e) => e.src);
 
 async function route(page: Page, seconds: Record<string, number>) {
-  const external: string[] = [];
+  const external = await blockExternal(page);
   const served = new Map<string, number>();
-  await page.route(
-    (url) => url.hostname !== "127.0.0.1",
-    (r) => {
-      external.push(r.request().url());
-      return r.abort();
-    },
-  );
   for (const [id, length] of Object.entries(seconds)) {
     const manifest = accelerated(id, length);
     for (const entry of manifest.entries) served.set(entry.src, entry.duration);
@@ -75,62 +76,6 @@ async function route(page: Page, seconds: Record<string, number>) {
   });
   return { external };
 }
-
-type Probe = {
-  starts: [string, number][];
-  ended: string[];
-  first: Element | null;
-  rejectNext: boolean;
-  plays: number;
-};
-/** Record every native start and end; optionally reject the next play(). */
-async function probe(page: Page) {
-  await page.addInitScript(() => {
-    const state = {
-      starts: [],
-      ended: [],
-      first: null,
-      rejectNext: false,
-      plays: 0,
-    } as Probe;
-    Object.assign(window, { __probe: state });
-    document.addEventListener(
-      "playing",
-      (event) => {
-        const el = event.target as HTMLAudioElement;
-        state.first ??= el;
-        state.starts.push([el.currentSrc, el.currentTime]);
-      },
-      true,
-    );
-    document.addEventListener(
-      "ended",
-      (event) => state.ended.push((event.target as HTMLAudioElement).src),
-      true,
-    );
-    const play = HTMLMediaElement.prototype.play;
-    HTMLMediaElement.prototype.play = function () {
-      state.plays += 1;
-      if (state.rejectNext) {
-        state.rejectNext = false;
-        return Promise.reject(new DOMException("blocked", "NotAllowedError"));
-      }
-      return play.call(this);
-    };
-  });
-}
-const state = (page: Page) =>
-  page.evaluate(() => (window as unknown as { __probe: Probe }).__probe);
-const arm = (page: Page) =>
-  page.evaluate(() => {
-    (window as unknown as { __probe: Probe }).__probe.rejectNext = true;
-  });
-const sameElement = (page: Page) =>
-  page.evaluate(
-    () =>
-      document.querySelector("audio") ===
-      (window as unknown as { __probe: Probe }).__probe.first,
-  );
 
 const audio = (page: Page) => page.locator("audio");
 const progress = (page: Page) =>
@@ -152,7 +97,7 @@ const filename = (src: string) => src.split("/").pop()!;
 test("no media is requested before Listen; native ended moves through the playlist once", async ({
   page,
 }) => {
-  await probe(page);
+  await probeMedia(page);
   const { external } = await route(page, { "gen-1-1": 2 });
   const requests = recordRequests(page, (path) => path.includes("/audio/"));
   await stubConnection(page, { saveData: true });
@@ -166,14 +111,14 @@ test("no media is requested before Listen; native ended moves through the playli
   await expect(page.getByText("انتهى التسجيل", { exact: true })).toBeVisible({
     timeout: 12000,
   });
-  const { starts, ended } = await state(page);
+  const { starts, ended } = await mediaProbe(page);
   expect(starts.map(([src]) => media(src))).toEqual([
     expect.stringContaining(filename(first)),
     expect.stringContaining(filename(second)),
   ]);
   expect(starts[1][1]).toBeLessThan(0.5);
   expect(ended.map(filename)).toEqual([filename(first), filename(second)]);
-  expect(await sameElement(page)).toBe(true);
+  expect(await sameMediaElement(page)).toBe(true);
   expect(await progress(page)).toBeCloseTo(4, 0);
   expect(
     requests.filter((path) => path.endsWith(".m4a")).map(filename),
@@ -184,14 +129,14 @@ test("no media is requested before Listen; native ended moves through the playli
 test("a rejected autoplay at the file switch pauses at once, keeps the place and retries on the same element", async ({
   page,
 }) => {
-  await probe(page);
+  await probeMedia(page);
   await route(page, { "gen-1-1": 2 });
   await stubConnection(page, { saveData: true });
   await open(page, "gen-1-1");
   await listen(page).click();
-  await expect.poll(async () => (await state(page)).starts.length).toBe(1);
+  await expect.poll(async () => (await mediaProbe(page)).starts.length).toBe(1);
   // The browser refuses the play() that follows the first file's ended.
-  await arm(page);
+  await rejectNextPlay(page);
   await expect(button(page, "تشغيل التسجيل")).toBeVisible({ timeout: 8000 });
   const [, second] = sources("gen-1-1");
   await expect(audio(page)).toHaveAttribute(
@@ -202,23 +147,23 @@ test("a rejected autoplay at the file switch pauses at once, keeps the place and
   await expect(alertBox(page)).toHaveCount(0);
   await expect(page.getByText("جارٍ تحميل التسجيل…")).toHaveCount(0);
   expect(await progress(page)).toBeCloseTo(2, 0);
-  expect((await state(page)).starts).toHaveLength(1);
+  expect((await mediaProbe(page)).starts).toHaveLength(1);
   await button(page, "تشغيل التسجيل").click();
-  await expect.poll(async () => (await state(page)).starts.length).toBe(2);
-  expect((await state(page)).starts[1][0]).toContain(filename(second));
-  expect(await sameElement(page)).toBe(true);
+  await expect.poll(async () => (await mediaProbe(page)).starts.length).toBe(2);
+  expect((await mediaProbe(page)).starts[1][0]).toContain(filename(second));
+  expect(await sameMediaElement(page)).toBe(true);
   await expect(page.getByText("انتهى التسجيل", { exact: true })).toBeVisible({
     timeout: 8000,
   });
   // One normal play per file plus the rejected one and its retry; no extras.
-  expect((await state(page)).plays).toBe(3);
-  expect((await state(page)).ended).toHaveLength(2);
+  expect((await mediaProbe(page)).plays).toBe(3);
+  expect((await mediaProbe(page)).ended).toHaveLength(2);
 });
 
 test("a failed second file shows retry at its place; seek, speed and resume survive file switches", async ({
   page,
 }) => {
-  await probe(page);
+  await probeMedia(page);
   await route(page, { "gen-5-1": 3 });
   await stubConnection(page, { saveData: true });
   const [, clip] = sources("gen-5-1");
@@ -235,9 +180,9 @@ test("a failed second file shows retry at its place; seek, speed and resume surv
   fail = false;
   await page.getByRole("button", { name: "حاول مرة أخرى" }).click();
   await expect(alertBox(page)).toHaveCount(0);
-  await expect.poll(async () => (await state(page)).starts.length).toBe(2);
-  expect((await state(page)).starts[1][0]).toContain(filename(clip));
-  expect(await sameElement(page)).toBe(true);
+  await expect.poll(async () => (await mediaProbe(page)).starts.length).toBe(2);
+  expect((await mediaProbe(page)).starts[1][0]).toContain(filename(clip));
+  expect(await sameMediaElement(page)).toBe(true);
 
   // Speed is kept when the next file loads (loading resets playbackRate).
   await page.getByRole("button", { name: /^سرعة القراءة:/ }).click();
@@ -252,7 +197,7 @@ test("a failed second file shows retry at its place; seek, speed and resume surv
   expect(
     await audio(page).evaluate((el: HTMLAudioElement) => el.playbackRate),
   ).toBe(rate);
-  expect(await sameElement(page)).toBe(true);
+  expect(await sameMediaElement(page)).toBe(true);
   // Verse skip back from the last file lands in the clip: a file switch.
   await button(page, "إيقاف مؤقت").click();
   await button(page, "الآية السابقة").click();
@@ -263,7 +208,7 @@ test("a failed second file shows retry at its place; seek, speed and resume surv
   expect(await progress(page)).toBeGreaterThanOrEqual(3);
   await button(page, "تشغيل التسجيل").click();
   await expect(button(page, "إيقاف مؤقت")).toBeVisible();
-  expect(await sameElement(page)).toBe(true);
+  expect(await sameMediaElement(page)).toBe(true);
 
   // Resume: reopening continues inside the clip, not at the start.
   await button(page, "إيقاف مؤقت").click();
@@ -282,12 +227,12 @@ test("a failed second file shows retry at its place; seek, speed and resume surv
 });
 
 test("manual navigation stops and releases the playlist", async ({ page }) => {
-  await probe(page);
+  await probeMedia(page);
   await route(page, { "gen-1-1": 6 });
   await stubConnection(page, { saveData: true });
   await open(page, "gen-1-1");
   await listen(page).click();
-  await expect.poll(async () => (await state(page)).starts.length).toBe(1);
+  await expect.poll(async () => (await mediaProbe(page)).starts.length).toBe(1);
   await button(page, "القراءة التالية").click();
   await ready(page);
   await expect(page.getByRole("article")).toHaveAttribute(
@@ -297,13 +242,13 @@ test("manual navigation stops and releases the playlist", async ({ page }) => {
   await expect(audio(page)).toHaveCount(0);
   // The old playlist never starts a second file after navigation.
   await page.waitForTimeout(1000);
-  expect((await state(page)).starts).toHaveLength(1);
+  expect((await mediaProbe(page)).starts).toHaveLength(1);
 });
 
 test("the next playlist's timing is prefetched as metadata only", async ({
   page,
 }) => {
-  await probe(page);
+  await probeMedia(page);
   await route(page, { "gen-1-1": 5, "gen-3-1": 3 });
   const requests = recordRequests(page, (path) => path.includes("/audio/"));
   await open(page, "gen-1-1");

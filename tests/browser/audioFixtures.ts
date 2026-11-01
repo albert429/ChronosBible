@@ -95,18 +95,12 @@ export function fulfillWav(route: Route, seconds: number) {
 }
 
 /**
- * Serve accelerated chapter manifests and synthetic media for the fixture
- * build (VITE_AUDIO_BASE_URL=https://audio.example.test). Every other request
- * leaving 127.0.0.1 is aborted and listed in `external`, so a test can prove
- * that no CDN or recording host was reached.
+ * Abort every request leaving 127.0.0.1 and list it, so a test can prove that
+ * no CDN or recording host was reached. Register it before specific routes:
+ * later routes take precedence.
  */
-export async function routeChapterAudio(
-  page: Page,
-  timings: Record<string, ChapterTiming> = {},
-) {
+export async function blockExternal(page: Page) {
   const external: string[] = [];
-  const served = new Map<string, AudioManifestV2>();
-  // Registered first, so the specific routes below take precedence.
   await page.route(
     (url) => url.hostname !== "127.0.0.1",
     (route) => {
@@ -114,6 +108,84 @@ export async function routeChapterAudio(
       return route.abort();
     },
   );
+  return external;
+}
+
+export type MediaProbe = {
+  /** Every native start: the source and position it started at. */
+  starts: [string, number][];
+  /** The source of every native `ended`. */
+  ended: string[];
+  /** The first media element that played. */
+  first: Element | null;
+  /** Reject the next play() as a browser refusing autoplay would. */
+  rejectNext: boolean;
+  plays: number;
+};
+/** From page load, record every media start and end, and count play() calls. */
+export async function probeMedia(page: Page) {
+  await page.addInitScript(() => {
+    const state: MediaProbe = {
+      starts: [],
+      ended: [],
+      first: null,
+      rejectNext: false,
+      plays: 0,
+    };
+    Object.assign(window, { __media: state });
+    // Media events do not bubble, but a capturing document listener sees them.
+    document.addEventListener(
+      "playing",
+      (event) => {
+        const element = event.target as HTMLAudioElement;
+        state.first ??= element;
+        state.starts.push([element.currentSrc, element.currentTime]);
+      },
+      true,
+    );
+    document.addEventListener(
+      "ended",
+      (event) => state.ended.push((event.target as HTMLAudioElement).src),
+      true,
+    );
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      state.plays += 1;
+      if (state.rejectNext) {
+        state.rejectNext = false;
+        return Promise.reject(new DOMException("blocked", "NotAllowedError"));
+      }
+      return play.call(this);
+    };
+  });
+}
+type Probed = { __media: MediaProbe };
+export const mediaProbe = (page: Page) =>
+  page.evaluate(() => (window as unknown as Probed).__media);
+export const rejectNextPlay = (page: Page) =>
+  page.evaluate(() => {
+    (window as unknown as Probed).__media.rejectNext = true;
+  });
+/** Whether the audio element now on the page is the first one that played. */
+export const sameMediaElement = (page: Page) =>
+  page.evaluate(
+    () =>
+      document.querySelector("audio") ===
+      (window as unknown as Probed).__media.first,
+  );
+
+/**
+ * Serve accelerated chapter manifests and synthetic media for the fixture
+ * build (VITE_AUDIO_BASE_URL=https://audio.example.test). Every other request
+ * leaving 127.0.0.1 is aborted and listed in `external` (`blockExternal`).
+ */
+export async function routeChapterAudio(
+  page: Page,
+  timings: Record<string, ChapterTiming> = {},
+) {
+  // Registered first, so the specific routes below take precedence.
+  const external = await blockExternal(page);
+  const served = new Map<string, AudioManifestV2>();
   await page.route("**/audio/chapters/*/*.json", (route) => {
     const [book, file] = new URL(route.request().url()).pathname
       .split("/")
