@@ -24,10 +24,7 @@ export type BibleChapter = {
   passages: [Passage];
   structure: BibleBlock[];
 };
-/**
- * Plan days and canonical chapters only: the shape the study sheet still
- * receives (chronological passages are adapted to a chapter for it).
- */
+/** Plan days and canonical chapters (the non-chronological tracks). */
 export type PlanOrBibleReading = Day | BibleChapter;
 /** Every fetched reading, including self-paced chronological readings. */
 export type ScriptureReading = PlanOrBibleReading | ChronologicalReading;
