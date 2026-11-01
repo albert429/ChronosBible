@@ -3,6 +3,7 @@ import {
   closeSheet,
   menuButton,
   menuDialog,
+  noOverflow,
   openSection,
   ready,
   study,
@@ -162,8 +163,18 @@ test("the menu's download button saves everything in the background and stops on
   expect(box!.y).toBe(share!.y);
   expect(box!.height).toBeGreaterThanOrEqual(44);
   await download.click();
-  const stop = menu.getByRole("button", { name: /^إيقاف التنزيل، تم / });
+  const stop = menu.getByRole("button", {
+    name: /^إيقاف تنزيل الكتاب المقدس /,
+  });
   await expect(stop).toBeVisible();
+  // The labelled button keeps Share and Close on screen on the narrowest phones.
+  await page.setViewportSize({ width: 320, height: 720 });
+  await noOverflow(page);
+  const closeBox = await menu
+    .getByRole("button", { name: "إغلاق النافذة" })
+    .boundingBox();
+  expect(closeBox!.x).toBeGreaterThanOrEqual(0);
+  await page.setViewportSize({ width: 390, height: 844 });
   // The offline section shows the same queue: Scripture text first.
   await menu.getByText("القراءة دون اتصال وتثبيت التطبيق").click();
   await expect(
