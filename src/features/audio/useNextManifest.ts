@@ -3,14 +3,18 @@ import { type ReadingLocation } from "../../domain/reading/types.ts";
 import { readingKey } from "../../domain/reading/identity.ts";
 import { readingHasAudio } from "./availability.ts";
 import { audioManifests } from "./client.ts";
+import {
+  currentConnection,
+  type ConnectionFacts,
+} from "../../shared/browser/network.ts";
 
-type Connection = { saveData?: boolean; effectiveType?: string };
-
-/** True when the reader asked to save data or the connection is very slow. */
+/**
+ * True when the reader asked to save data or the connection is very slow.
+ * Deliberately looser than reading prefetch (3G still fetches a few
+ * kilobytes of timing for a recording that is already playing).
+ */
 export function constrainedConnection(
-  connection: Connection | undefined = (
-    navigator as Navigator & { connection?: Connection }
-  ).connection,
+  connection: ConnectionFacts | undefined = currentConnection(),
 ) {
   return (
     !!connection?.saveData ||
