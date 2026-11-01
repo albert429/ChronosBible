@@ -3,29 +3,32 @@ import type { ReadingLocation } from "../domain/reading/types";
 import type { View } from "../features/navigation/model";
 import { pagingTarget } from "./keyboardPaging";
 
-/** Arrow keys page the reading (see `pagingTarget`). */
-export function useKeyboardPaging(paging: {
+/** Arrow keys page the reading (see `pagingTarget`), not the calendar. */
+export function useKeyboardPaging(session: {
   view: View;
   previous?: ReadingLocation;
   next?: ReadingLocation;
-  go: (location: ReadingLocation) => void;
+  actions: { go: (location: ReadingLocation) => void };
 }) {
-  const latest = useRef(paging);
+  const latest = useRef(session);
   useLayoutEffect(() => {
-    latest.current = paging;
+    latest.current = session;
   });
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      const { view, previous, next, go } = latest.current;
-      const target = pagingTarget(event, {
-        reading: view === "read",
-        previous,
-        next,
-        dialogOpen: () => !!document.querySelector("dialog[open]"),
-      });
+      const { view, previous, next, actions } = latest.current;
+      // Only the reading pages, never the plan calendar.
+      const target =
+        view === "read" &&
+        pagingTarget(
+          event,
+          previous,
+          next,
+          () => !!document.querySelector("dialog[open]"),
+        );
       if (!target) return;
       event.preventDefault();
-      go(target);
+      actions.go(target);
     };
     addEventListener("keydown", key);
     return () => removeEventListener("keydown", key);

@@ -40,34 +40,25 @@ export function createChoiceGuard(marks: () => SessionMarks) {
   };
 }
 
-type TrackChoice = {
-  /** Opens the track at its last place, or at `start`; false without one. */
-  open: (track: ReadingTrack, start?: ChronologicalLocation) => boolean;
-  loadCatalog: (testament: Testament) => Promise<ChronologyCatalog>;
-  /** The track opened. */
-  opened: () => void;
-  failed: (message: string) => void;
-};
-
 /**
- * Opens a track where the reader left it. A chronology opens on its first
- * reading the first time, once its catalog loads, unless the choice has
- * been superseded by then; a failure is reported only while it is current.
+ * Opens a track where the reader left it, with `open` (false without a
+ * place, or `start`). A chronology opens on its first reading the first
+ * time, once its catalog loads, unless the choice has been superseded by
+ * then. Resolves whether the track opened; a failure rejects only while the
+ * choice is current.
  */
 export async function chooseTrack(
   track: ReadingTrack,
   superseded: () => boolean,
-  { open, loadCatalog, opened, failed }: TrackChoice,
-) {
-  if (open(track)) {
-    opened();
-    return;
-  }
+  open: (track: ReadingTrack, start?: ChronologicalLocation) => boolean,
+  loadCatalog: (testament: Testament) => Promise<ChronologyCatalog>,
+): Promise<boolean> {
+  if (open(track)) return true;
   try {
     const catalog = await loadCatalog(track === "chrono:OT" ? "OT" : "NT");
-    if (superseded()) return;
-    if (open(track, firstChronologicalLocation(catalog))) opened();
+    return !superseded() && open(track, firstChronologicalLocation(catalog));
   } catch (err) {
-    if (!superseded()) failed((err as Error).message);
+    if (superseded()) return false;
+    throw err;
   }
 }

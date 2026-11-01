@@ -134,48 +134,86 @@ export function useReadingSession(main: RefObject<HTMLElement | null>) {
     place.go(next);
     navigate("read");
   }
+  const previous = adjacentLocation(location, -1, chronology.data);
+  const next = adjacentLocation(location, 1, chronology.data);
+  const title = readingTitle(location, chronology.data, reading.data);
+  const goDay = (day: number) => go({ mode: "plan", day });
   return {
     progress,
-    member,
-    completion,
     location,
-    navigation: place.navigation,
-    /** Whether the reader resumes its remembered position. */
-    restore: place.restore,
-    continuous: place.preferences.continuous,
-    setContinuous: place.setContinuous,
-    /** Continuous listening moves on without taking keyboard focus. */
-    onContinue: place.go,
-    selected,
-    page,
-    setPage,
     view,
-    start,
-    currentDate,
-    current: dayIndex(start, currentDate),
-    reading,
-    planReading,
-    chronology,
-    previous: adjacentLocation(location, -1, chronology.data),
-    next: adjacentLocation(location, 1, chronology.data),
-    title: readingTitle(location, chronology.data, reading.data),
-    done,
+    title,
+    previous,
+    next,
     alert: progress.error || modeError,
     dismissAlert() {
       progress.clearError();
       setModeError("");
     },
-    navigate,
-    go,
-    async chooseTrack(track: ReadingTrack) {
-      const superseded = guard.begin();
-      setModeError("");
-      await chooseTrack(track, superseded, {
-        open: place.chooseMode,
-        loadCatalog: (testament) => chronologyCatalogs.load(testament),
-        opened: () => navigate("read"),
-        failed: setModeError,
-      });
+    /** The reading choices the navigation offers. */
+    actions: {
+      go,
+      navigate,
+      goDay,
+      async chooseTrack(track: ReadingTrack) {
+        const superseded = guard.begin();
+        setModeError("");
+        try {
+          if (
+            await chooseTrack(
+              track,
+              superseded,
+              place.chooseMode,
+              (testament) => chronologyCatalogs.load(testament),
+            )
+          )
+            navigate("read");
+        } catch (err) {
+          setModeError((err as Error).message);
+        }
+      },
+    },
+    /** The reader's props, apart from completion (see `complete`). */
+    reader: {
+      location,
+      navigation: place.navigation,
+      restore: place.restore,
+      previous,
+      next,
+      onPage: go,
+      continuous: place.preferences.continuous,
+      setContinuous: place.setContinuous,
+      // Continuous listening moves on without taking keyboard focus.
+      onContinue: place.go,
+      reading: reading.data,
+      chronology: chronology.data,
+      error: reading.error,
+      retry: reading.retry,
+      done,
+    },
+    /** The plan calendar's props, apart from joining. */
+    plan: {
+      member,
+      completed: completion.plan,
+      start,
+      currentDate,
+      current: dayIndex(start, currentDate),
+      page,
+      setPage,
+      go: goDay,
+    },
+    /** What the navigation sheets show. */
+    sheets: {
+      chronology: chronology.data,
+      chronologyError: chronology.error,
+      retryChronology: chronology.retry,
+      completion,
+      continuous: place.preferences.continuous,
+      setContinuous: place.setContinuous,
+      selected,
+      reading: planReading.data,
+      readingError: planReading.error,
+      retryReading: planReading.retry,
     },
     /** Another reader, or none (null); false when it could not be saved. */
     chooseReader(id: string | null) {
@@ -184,7 +222,10 @@ export function useReadingSession(main: RefObject<HTMLElement | null>) {
       setView("read");
       return true;
     },
-    /** Explicit only; opening or listening never completes a reading. */
+    /**
+     * Explicitly marks the reading done or not done; returns the notice.
+     * Opening or listening never completes a reading.
+     */
     complete() {
       return progress.completeReading(member?.id ?? "", location, !done)
         ? done

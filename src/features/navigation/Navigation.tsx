@@ -37,10 +37,7 @@ export default function Navigation({
   actions,
   data,
 }: Props) {
-  const model = navigationModel(location, {
-    readingTitle,
-    selected: data.selected,
-  });
+  const model = navigationModel(location, readingTitle, data.selected);
   const sheet = useSheetController();
   // After the page settles, fetch the sheets this reader is likely to open.
   const picker = model.chrono

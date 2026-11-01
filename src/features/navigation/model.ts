@@ -6,7 +6,6 @@ import {
   dayLabel,
   readingLabel,
   TRACK_NAMES,
-  TRACK_SHORT_NAMES,
 } from "../../domain/reading/labels.ts";
 
 export type View = "read" | "calendar";
@@ -35,15 +34,10 @@ const ADJACENT_LABELS = {
  */
 export function navigationModel(
   location: ReadingLocation,
-  {
-    readingTitle,
-    selected,
-  }: {
-    /** The chronological reading's title, "" while its catalog loads. */
-    readingTitle: string;
-    /** The reader's plan day. */
-    selected: number;
-  },
+  /** The chronological reading's title, "" while its catalog loads. */
+  readingTitle: string,
+  /** The reader's plan day. */
+  selected: number,
 ) {
   const track = trackOf(location);
   const bible = location.mode === "bible" ? location : undefined;
@@ -53,7 +47,6 @@ export function navigationModel(
     : chrono
       ? readingTitle
       : dayLabel(selected);
-  const [previousLabel, nextLabel] = ADJACENT_LABELS[location.mode];
   const pickerPanel: Panel = bible ? "bible" : chrono ? "chronology" : "day";
   const pickerLabel = bible
     ? `اختيار السفر والإصحاح: ${place}`
@@ -73,9 +66,8 @@ export function navigationModel(
     bible,
     chrono,
     place,
-    trackName: TRACK_SHORT_NAMES[track],
-    previousLabel,
-    nextLabel,
+    /** The chevrons' labels: previous, next. */
+    adjacentLabels: ADJACENT_LABELS[location.mode],
     pickerPanel,
     pickerLabel,
     titles,

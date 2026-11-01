@@ -9,23 +9,14 @@ const EDITABLE = "input, select, textarea, [contenteditable]";
 
 /**
  * Where an arrow key pages, like the toolbar's chevrons: in a right-to-left
- * book the next reading is on the left. Nothing pages away from the
- * reading, with a modifier, from a field, or while any dialog is open.
+ * book the next reading is on the left. Nothing pages with a modifier, from
+ * a field, or while any dialog is open (`dialogOpen` is asked last).
  */
 export function pagingTarget<T>(
   event: PagingKey,
-  {
-    reading,
-    previous,
-    next,
-    dialogOpen,
-  }: {
-    /** Whether the reading is on screen (not the plan calendar). */
-    reading: boolean;
-    previous?: T;
-    next?: T;
-    dialogOpen: () => boolean;
-  },
+  previous: T | undefined,
+  next: T | undefined,
+  dialogOpen: () => boolean,
 ): T | undefined {
   const target =
     event.key === "ArrowLeft"
@@ -35,7 +26,6 @@ export function pagingTarget<T>(
         : undefined;
   if (
     !target ||
-    !reading ||
     event.defaultPrevented ||
     event.altKey ||
     event.ctrlKey ||

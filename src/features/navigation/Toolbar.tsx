@@ -7,7 +7,7 @@ import {
   Settings,
 } from "lucide-react";
 import type { ReadingLocation } from "../../domain/reading/types";
-import { TRACK_NAMES } from "../../domain/reading/labels";
+import { TRACK_NAMES, TRACK_SHORT_NAMES } from "../../domain/reading/labels";
 import type { NavigationModel, View } from "./model";
 import type { SheetController } from "./useSheetController";
 import { loadAppearancePanel, warm } from "./panels";
@@ -35,6 +35,7 @@ export default function Toolbar({
   /** Loads the picker sheet for this mode. */
   picker: () => Promise<unknown>;
 }) {
+  const warmPicker = warm(picker);
   return (
     <>
       <a className="skip-link" href="#main">
@@ -59,7 +60,7 @@ export default function Toolbar({
                 className="icon-button previous-day"
                 disabled={!previous}
                 onClick={() => previous && go(previous)}
-                aria-label={model.previousLabel}
+                aria-label={model.adjacentLabels[0]}
               >
                 <ChevronRight size={20} aria-hidden="true" />
               </button>
@@ -70,14 +71,16 @@ export default function Toolbar({
                   aria-haspopup="dialog"
                   aria-expanded={sheet.expanded(model.pickerPanel)}
                   data-track={model.track}
-                  onPointerDown={warm(picker)}
-                  onFocus={warm(picker)}
+                  onPointerDown={warmPicker}
+                  onFocus={warmPicker}
                   onClick={(event) =>
                     sheet.show(model.pickerPanel, event.currentTarget)
                   }
                 >
                   <span className="toolbar-place">
-                    <small aria-hidden="true">{model.trackName}</small>
+                    <small aria-hidden="true">
+                      {TRACK_SHORT_NAMES[model.track]}
+                    </small>
                     <span>{model.place || "…"}</span>
                   </span>
                   <ChevronDown size={14} aria-hidden="true" />
@@ -87,7 +90,7 @@ export default function Toolbar({
                 className="icon-button next-day"
                 disabled={!next}
                 onClick={() => next && go(next)}
-                aria-label={model.nextLabel}
+                aria-label={model.adjacentLabels[1]}
               >
                 <ChevronLeft size={20} aria-hidden="true" />
               </button>

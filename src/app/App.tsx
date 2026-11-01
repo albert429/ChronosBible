@@ -16,24 +16,19 @@ export default function App() {
   const main = useRef<HTMLElement>(null);
   const menuToggle = useRef<HTMLButtonElement>(null);
   const session = useReadingSession(main);
-  const { member, location, reading, view } = session;
+  const { location, view } = session;
+  const member = session.progress.member;
   const dialogs = useProfileDialogs(session);
   const { modal } = dialogs;
   const [notice, setNotice] = useNotice();
-  useShownPreload(location, reading.data);
+  useShownPreload(location, session.reader.reading);
   useDocumentTitle(view, session.title);
-  useKeyboardPaging({
-    view,
-    previous: session.previous,
-    next: session.next,
-    go: session.go,
-  });
+  useKeyboardPaging(session);
 
   function complete() {
     const done = session.complete();
     if (done) setNotice(done);
   }
-  const goDay = (day: number) => session.go({ mode: "plan", day });
   return (
     <div className="app">
       <Navigation
@@ -44,27 +39,13 @@ export default function App() {
         view={view}
         menuToggle={menuToggle}
         actions={{
-          go: session.go,
-          chooseTrack: session.chooseTrack,
-          navigate: session.navigate,
+          ...session.actions,
           readers: () => dialogs.open({ kind: member ? "settings" : "join" }),
           invite: (text) => dialogs.open({ kind: "invite", text }),
           notify: setNotice,
-          goDay,
           passages: passageJump,
         }}
-        data={{
-          chronology: session.chronology.data,
-          chronologyError: session.chronology.error,
-          retryChronology: session.chronology.retry,
-          completion: session.completion,
-          continuous: session.continuous,
-          setContinuous: session.setContinuous,
-          selected: session.selected,
-          reading: session.planReading.data,
-          readingError: session.planReading.error,
-          retryReading: session.planReading.retry,
-        }}
+        data={session.sheets}
       />
       <main
         id="main"
@@ -87,32 +68,12 @@ export default function App() {
         {view === "read" ? (
           <Reader
             key={member?.id || "guest"}
-            location={location}
-            navigation={session.navigation}
-            restore={session.restore}
-            previous={session.previous}
-            next={session.next}
-            onPage={session.go}
-            continuous={session.continuous}
-            setContinuous={session.setContinuous}
-            onContinue={session.onContinue}
-            reading={reading.data}
-            chronology={session.chronology.data}
-            error={reading.error}
-            retry={reading.retry}
-            done={session.done}
+            {...session.reader}
             complete={complete}
           />
         ) : (
           <PlanView
-            member={member}
-            completed={session.completion.plan}
-            start={session.start}
-            currentDate={session.currentDate}
-            current={session.current}
-            page={session.page}
-            setPage={session.setPage}
-            go={goDay}
+            {...session.plan}
             join={() => dialogs.open({ kind: "join" })}
           />
         )}
@@ -122,7 +83,7 @@ export default function App() {
         close={dialogs.close}
         notice={notice}
         setNotice={setNotice}
-        navigate={session.navigate}
+        navigate={session.actions.navigate}
         chooseReader={dialogs.chooseReader}
         fallbackFocus={menuToggle}
       />
