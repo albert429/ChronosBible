@@ -226,3 +226,34 @@ test("where the browser offers it, the menu's button installs the app first, the
   await expect(stop).toBeVisible();
   await stop.click();
 });
+
+test("the installed app downloads by itself on first opening, unless the reader stopped it", async ({
+  page,
+}) => {
+  // The browser tests never run installed: open as the home-screen app,
+  // on a connection that is not saving data.
+  await stubConnection(page, {});
+  await page.addInitScript(() =>
+    Object.defineProperty(navigator, "standalone", { value: true }),
+  );
+  await page.goto("/");
+  await ready(page);
+  await menuButton(page).click();
+  const menu = menuDialog(page);
+  // No tap: Scripture text starts once the page has settled.
+  const stop = menu.getByRole("button", {
+    name: /^إيقاف تنزيل الكتاب المقدس /,
+  });
+  await expect(stop).toBeVisible({ timeout: 15000 });
+  await stop.click();
+  // Stopped once, the next opening leaves it to the reader.
+  await page.reload();
+  await ready(page);
+  await page.waitForTimeout(5000);
+  await menuButton(page).click();
+  await expect(
+    menuDialog(page).getByRole("button", {
+      name: "تنزيل الكتاب المقدس وملاحظات الدراسة للقراءة دون اتصال",
+    }),
+  ).toBeVisible();
+});
