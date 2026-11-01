@@ -31,20 +31,15 @@ export const linkedPassage = (reading: ScriptureReading, verse: number) =>
  * `restore` asks for it, the remembered position, else the top. Placement is
  * repeated once fonts settle unless the reader has moved the page since.
  */
-export function usePositionRestore({
-  current,
-  identity,
-  verse,
-  navigation,
-  restore,
-}: {
+export function usePositionRestore(
   /** The reading on screen, once it matches `identity`. */
-  current: ScriptureReading | undefined;
-  identity: string;
-  verse: number | undefined;
-  navigation: number;
-  restore: boolean;
-}) {
+  current: ScriptureReading | undefined,
+  identity: string,
+  /** The linked verse, if any. */
+  verse: number | undefined,
+  navigation: number,
+  restore: boolean,
+) {
   useLayoutEffect(() => {
     let target: HTMLElement | null;
     let offset: number | undefined;

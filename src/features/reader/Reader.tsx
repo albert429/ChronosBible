@@ -11,11 +11,7 @@ import { Loading, LoadError, ChunkBoundary } from "../../shared/ui/Feedback";
 import { loadVerseStudy } from "../study/load";
 import CompletionBar from "./CompletionBar";
 import Scripture from "./Scripture";
-import {
-  useAdjacentPrefetch,
-  useChapterPrefetch,
-  useChronologyPrefetch,
-} from "./useAdjacentPrefetch";
+import { useAdjacentPrefetch } from "./useAdjacentPrefetch";
 import { useVerseTap } from "./useVerseTap";
 import { useSwipePaging } from "./useSwipePaging";
 import { usePositionRestore } from "./usePositionRestore";
@@ -74,14 +70,7 @@ export default function Reader({
   const current =
     reading && readingKey(reading) === identity ? reading : undefined;
   const plan = location.mode === "plan";
-  useAdjacentPrefetch(
-    plan ? location.day : 0,
-    current && "day" in current ? current : undefined,
-    error,
-    plan,
-  );
-  useChapterPrefetch(location, current, error);
-  useChronologyPrefetch(location, current, error, chronology);
+  useAdjacentPrefetch(location, current, error, chronology);
   const listen = useListeningSession({
     current,
     identity,
@@ -93,23 +82,16 @@ export default function Reader({
     const target = direction === 1 ? next : previous;
     if (target) onPage(target);
   });
-  const [seenNavigation, setSeenNavigation] = useState(navigation);
-  const [seenIdentity, setSeenIdentity] = useState(identity);
   // Reset against requested navigation, even while the new text is still cold.
   // Only native ended creates a listening intent for the next navigation.
-  if (seenNavigation !== navigation || seenIdentity !== identity) {
-    setSeenNavigation(navigation);
-    setSeenIdentity(identity);
+  const seen = `${navigation} ${identity}`;
+  const [seenPlace, setSeenPlace] = useState(seen);
+  if (seenPlace !== seen) {
+    setSeenPlace(seen);
     listen.navigated();
     tap.reset();
   }
-  usePositionRestore({
-    current,
-    identity,
-    verse: location.verse,
-    navigation,
-    restore,
-  });
+  usePositionRestore(current, identity, location.verse, navigation, restore);
   const audio = readingHasAudio(location);
   // Where «متابعة» may continue: the next place in this mode whose recording
   // is published. The player decides whether to (its «عند الانتهاء»).
@@ -156,10 +138,7 @@ export default function Reader({
                 setContinuous={setContinuous}
                 done={done}
                 onComplete={complete}
-                initialTime={listen.initialTime}
-                onPosition={listen.onPosition}
-                onEnded={listen.ended}
-                onClose={listen.close}
+                {...listen.player}
               />
             </Suspense>
           </ChunkBoundary>

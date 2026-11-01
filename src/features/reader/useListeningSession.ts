@@ -51,26 +51,29 @@ export function useListeningSession({
       if (!listeningSurvives(listening, navigation, identity))
         setListening(null);
     },
-    initialTime: (source: string) =>
-      listening?.continuing ? 0 : playbackPosition(source),
-    onPosition(seconds: number, source: string) {
-      playerSource.current = source;
-      savePlaybackPosition(source, seconds);
-    },
-    /** The natural end, with the place «متابعة» continues to, if any. */
-    ended(next?: ReadingLocation) {
-      if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
-      if (!reading || !next) return;
-      setListening(continuedListening(reading, next, navigation));
-      onContinue(next);
-    },
-    /** Closes the player and returns focus to the listen button. */
-    close() {
-      const trigger = listenButton.current;
-      setListening(null);
-      requestAnimationFrame(() => {
-        if (trigger?.isConnected) trigger.focus({ preventScroll: true });
-      });
+    /** The player's session callbacks. */
+    player: {
+      initialTime: (source: string) =>
+        listening?.continuing ? 0 : playbackPosition(source),
+      onPosition(seconds: number, source: string) {
+        playerSource.current = source;
+        savePlaybackPosition(source, seconds);
+      },
+      /** The natural end, with the place «متابعة» continues to, if any. */
+      onEnded(next?: ReadingLocation) {
+        if (playerSource.current) savePlaybackPosition(playerSource.current, 0);
+        if (!reading || !next) return;
+        setListening(continuedListening(reading, next, navigation));
+        onContinue(next);
+      },
+      /** Closes the player and returns focus to the listen button. */
+      onClose() {
+        const trigger = listenButton.current;
+        setListening(null);
+        requestAnimationFrame(() => {
+          if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+        });
+      },
     },
   };
 }

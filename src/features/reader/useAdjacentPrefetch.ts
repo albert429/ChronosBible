@@ -6,7 +6,6 @@ import { chapters } from "../../data/bible/client";
 import {
   type ReadingLocation,
   type ScriptureReading,
-  type Day,
 } from "../../domain/reading/types";
 import { readingKey } from "../../domain/reading/identity";
 import { chronologicalReadings } from "../../data/chronology/client";
@@ -37,83 +36,49 @@ function afterSettle(prefetch: () => void) {
   };
 }
 
-export function useAdjacentPrefetch(
-  selected: number,
-  reading: Day | undefined,
-  error: string | undefined,
-  active: boolean,
-) {
-  useEffect(() => {
-    if (
-      !active ||
-      reading?.day !== selected ||
-      error ||
-      !connectionAllowsPrefetch()
-    )
-      return;
-    return afterSettle(() => {
-      void days.prefetchDay(selected - 1);
-      void days.prefetchDay(selected + 1);
-    });
-  }, [selected, reading?.day, error, active]);
-}
-
-/** Prepare only the immediate canonical neighbors, after text and fonts settle. */
-export function useChapterPrefetch(
+/**
+ * The neighbours worth fetching ahead, per mode: both plan days and both
+ * canonical chapters; only the next chronological reading, as a reading
+ * spans several chapters and readers move forward through a chronology.
+ */
+function prefetchNeighbours(
   location: ReadingLocation,
-  reading: ScriptureReading | undefined,
-  error: string | undefined,
+  chronology: ChronologyCatalog | undefined,
 ) {
-  const identity = readingKey(location);
-  const loaded = reading ? readingKey(reading) : undefined;
-  const book = location.mode === "bible" ? location.book : undefined;
-  const chapter = location.mode === "bible" ? location.chapter : undefined;
-  useEffect(() => {
-    if (
-      !book ||
-      !chapter ||
-      loaded !== identity ||
-      error ||
-      !connectionAllowsPrefetch()
-    )
-      return;
-    return afterSettle(() => {
-      const current = { mode: "bible" as const, book, chapter };
-      for (const direction of [-1, 1] as const) {
-        const next = adjacentChapter(catalog, current, direction);
-        if (next) void chapters.prefetchChapter(next);
-      }
-    });
-  }, [identity, loaded, book, chapter, error]);
+  if (location.mode === "plan") {
+    void days.prefetchDay(location.day - 1);
+    void days.prefetchDay(location.day + 1);
+  } else if (location.mode === "bible") {
+    for (const direction of [-1, 1] as const) {
+      const next = adjacentChapter(catalog, location, direction);
+      if (next) void chapters.prefetchChapter(next);
+    }
+  } else {
+    const next =
+      chronology && adjacentChronologicalLocation(chronology, location, 1);
+    if (next) void chronologicalReadings.prefetchReading(next);
+  }
 }
 
 /**
- * Prepare the next chronological reading only: a reading spans several
- * chapters, and readers move forward through a chronology.
+ * Prepare the immediate neighbours of the reading on screen once its text
+ * and fonts settle (a chronology also needs its catalog), unless the
+ * connection asks to save data.
  */
-export function useChronologyPrefetch(
+export function useAdjacentPrefetch(
   location: ReadingLocation,
-  reading: ScriptureReading | undefined,
+  /** The reading on screen, once it matches `location`. */
+  current: ScriptureReading | undefined,
   error: string | undefined,
   chronology: ChronologyCatalog | undefined,
 ) {
   const identity = readingKey(location);
-  const loaded = reading ? readingKey(reading) : undefined;
-  const chronological = location.mode === "chronological" ? location : null;
+  const ready =
+    !!current && !error && (location.mode !== "chronological" || !!chronology);
   useEffect(() => {
-    if (
-      !chronological ||
-      !chronology ||
-      loaded !== identity ||
-      error ||
-      !connectionAllowsPrefetch()
-    )
-      return;
-    return afterSettle(() => {
-      const next = adjacentChronologicalLocation(chronology, chronological, 1);
-      if (next) void chronologicalReadings.prefetchReading(next);
-    });
+    if (!ready || !connectionAllowsPrefetch()) return;
+    return afterSettle(() => prefetchNeighbours(location, chronology));
     // The location object changes identity on every render; its key does not.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [identity, loaded, error, chronology]);
+  }, [identity, ready, chronology]);
 }
