@@ -4,6 +4,26 @@ The layered `src/` structure below is the result of the architecture refactor
 recorded in [the (historical) plan](plans/architecture-refactor.md), which also
 holds its decisions, verification results and deferred ideas.
 
+## Repository agents
+
+Codex discovers the repository skills in `.agents/skills/`. Invoke
+[`$code-review`](../.agents/skills/code-review/SKILL.md) with a PR, commit range,
+or local changes, or invoke
+[`$promo-video`](../.agents/skills/promo-video/SKILL.md) with a video brief.
+For example: “Use $code-review to review PR #18” or “Use $promo-video to make
+a 30-second Arabic Reel about offline reading.”
+
+Claude Code has native agents at
+[`.claude/agents/code-review.md`](../.claude/agents/code-review.md) and
+[`.claude/agents/promo-video.md`](../.claude/agents/promo-video.md). Ask Claude to
+use the named agent with the same task. Both reviewer entry points use one
+[review workflow](../.agents/skills/code-review/references/review-guide.md) and
+[repository map](../.agents/skills/code-review/references/repository-map.md).
+The Codex promo skill reads the existing Claude promo playbook. Update these
+shared references when contracts change rather than maintaining duplicate prompts.
+Only `.agents/skills/` is versioned; local worktrees elsewhere in `.agents/`
+remain ignored.
+
 ## Structure
 
 | Path                                                                  | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -19,7 +39,7 @@ holds its decisions, verification results and deferred ideas.
 | `src/features/audio/`                                                 | Player and controls, media element, Media Session, highlighting, playlist controller, playback position, availability flags                                                                                                                                                                                                                                                                                                                             |
 | `src/features/study/`                                                 | Lazy full-Bible study sheet: translations, Greek/Hebrew/Aramaic words, optional AI card                                                                                                                                                                                                                                                                                                                                                                 |
 | `src/features/ai/`                                                    | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), request and guard control, SSE parsing, cache, answer formatting                                                                                                                                                                                                                                                                                                   |
-| `src/features/appearance/`, `src/features/offline/`                   | Text size, theme and diacritics; offline packs, update notice, service-worker registration, rules and the classic worker source (`sw.ts`)                                                                                                                                                                                                                                                                                                               |
+| `src/features/appearance/`, `src/features/offline/`                   | Text size, theme and diacritics; offline packs and their download queue (the menu's download button, the installed app's automatic download), update notice, service-worker registration, rules and the classic worker source (`sw.ts`)                                                                                                                                                                                                                 |
 | `src/shared/`                                                         | `ui/` (native-dialog `Sheet`, `Feedback`, `PassageReference`, `ReactIcon`, form styles), `hooks/`, `lib/` (pure helpers, app credits), `browser/` (`afterStartup`, `network`, the Scripture markup contract) and `styles/` (design tokens, base, global); component CSS sits beside its component                                                                                                                                                       |
 | `data/`                                                               | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)                                                                                                                                                                                                                                                                                                                                |
 | `data/bible/`                                                         | Full Van Dyck source (66 books, structure), catalog and provenance (see `data/bible/SOURCES.md`)                                                                                                                                                                                                                                                                                                                                                        |

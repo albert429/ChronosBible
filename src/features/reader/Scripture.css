@@ -1,5 +1,5 @@
 .passage {
-  scroll-margin-top: calc(80px + env(safe-area-inset-top, 0px));
+  scroll-margin-top: calc(68px + env(safe-area-inset-top, 0px));
 }
 .passage:focus {
   outline: none;

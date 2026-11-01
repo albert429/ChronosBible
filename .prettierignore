@@ -24,7 +24,8 @@ data/audio/reading-catalog.json
 
 # Local or Git-ignored work (keep in step with eslint.config.js)
 worktrees/
-.agents/
+.agents/*
+!.agents/skills/
 .claude/worktrees/
 .claude/settings.local.json
 .wrangler/

@@ -10,16 +10,17 @@
 .audio-player-inner {
   max-width: 832px;
   margin-inline: auto;
-  padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px
-    max(12px, env(safe-area-inset-left, 0px));
+  padding: 0 max(8px, env(safe-area-inset-right, 0px)) 4px
+    max(8px, env(safe-area-inset-left, 0px));
   display: flex;
   align-items: center;
-  gap: 2px;
 }
 .audio-current {
   flex: 1;
   min-width: 0;
+  padding-inline-end: 4px;
   font-size: 12px;
+  line-height: 1.5;
 }
 .audio-current > span {
   display: block;
@@ -30,8 +31,16 @@
 .audio-reference {
   color: var(--muted);
 }
+/* Narrower than tall: every control still a 44px-high target, in one row. */
 .audio-player .icon-button {
-  flex: 0 0 44px;
+  flex: 0 0 40px;
+  width: 40px;
+  min-width: 40px;
+}
+.audio-player .audio-play {
+  flex-basis: 44px;
+  width: 44px;
+  min-width: 44px;
 }
 .audio-player .audio-play {
   color: var(--button-ink);
@@ -59,18 +68,18 @@
   text-decoration: underline;
   min-height: 44px;
 }
-/* Second row: where the recording is, its speed and what happens at its end. */
+/* A thin first row: where the recording is, between its two times. */
 .audio-timeline {
   max-width: 832px;
   margin-inline: auto;
-  padding: 0 max(12px, env(safe-area-inset-right, 0px)) 4px
+  padding: 2px max(12px, env(safe-area-inset-right, 0px)) 0
     max(12px, env(safe-area-inset-left, 0px));
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .audio-time {
-  min-width: 34px;
+  min-width: 32px;
   color: var(--muted);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
@@ -79,7 +88,7 @@
 .audio-seek {
   flex: 1;
   min-width: 0;
-  height: 44px;
+  height: 26px;
   margin: 0;
   accent-color: var(--olive);
   cursor: pointer;
@@ -135,7 +144,7 @@
 }
 /* The fixed player's height, for the space kept under the text and the toast. */
 :root:has(.audio-player) {
-  --player-height: calc(112px + env(safe-area-inset-bottom, 0px));
+  --player-height: calc(76px + env(safe-area-inset-bottom, 0px));
 }
 .reading-layout:has(.audio-player) {
   padding-bottom: calc(var(--player-height) + 24px);

@@ -1,0 +1,87 @@
+/* A 44px-high target around a smaller labelled pill. */
+.offline-button {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 2px;
+  color: var(--olive);
+  background: none;
+}
+.offline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding-inline: 10px 12px;
+  border: 1px solid var(--olive);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 120ms ease;
+}
+.offline-pill-text {
+  font-variant-numeric: tabular-nums;
+}
+.offline-button:hover:not([aria-disabled="true"]) .offline-pill {
+  background: var(--soft);
+}
+.offline-button:focus-visible {
+  outline: none;
+}
+.offline-button:focus-visible .offline-pill {
+  outline: 2px solid var(--olive);
+  outline-offset: 2px;
+}
+.offline-button[data-state="saving"] .offline-pill {
+  border-color: var(--line);
+}
+.offline-button[data-state="done"] {
+  cursor: default;
+}
+.offline-button[data-state="done"] .offline-pill {
+  border-color: transparent;
+  background: var(--soft);
+}
+.offline-button[data-state="failed"] .offline-pill {
+  color: var(--ink);
+  border-color: var(--line);
+}
+.offline-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.offline-ring-svg {
+  position: absolute;
+  inset: 0;
+  /* The ring fills clockwise from the top. */
+  transform: rotate(-90deg);
+}
+.offline-ring circle {
+  fill: none;
+  stroke-width: 4;
+}
+.offline-ring-track {
+  stroke: var(--line);
+}
+.offline-ring-value {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 300ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .offline-pill,
+  .offline-ring-value {
+    transition: none;
+  }
+}
+@media (max-width: 359px) {
+  .offline-wide {
+    display: none;
+  }
+}

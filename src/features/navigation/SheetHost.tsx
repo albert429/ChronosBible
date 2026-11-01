@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, type ComponentType } from "react";
 import { Share2 } from "lucide-react";
 import type {
   ReadingLocation,
@@ -27,6 +27,10 @@ const ChronologyPanel = lazy(loadChronologyPanel);
 const BiblePanel = lazy(loadBiblePanel);
 const DayPanel = lazy(loadDayPanel);
 const AppearancePanel = lazy(loadAppearancePanel);
+// The menu's download button loads with the menu's first opening.
+const OfflineButton = lazy<ComponentType>(() =>
+  import("../offline/OfflineButton").catch(() => ({ default: () => null })),
+);
 
 export type SheetActions = {
   go: (location: ReadingLocation) => void;
@@ -90,15 +94,22 @@ export default function SheetHost({
       keepsAudio={panel === "appearance"}
       headerActions={
         panel === "menu" ? (
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="مشاركة التطبيق"
-            disabled={sharing}
-            onClick={share}
-          >
-            <Share2 size={20} aria-hidden="true" />
-          </button>
+          <>
+            {"caches" in window && (
+              <Suspense fallback={null}>
+                <OfflineButton />
+              </Suspense>
+            )}
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="مشاركة التطبيق"
+              disabled={sharing}
+              onClick={share}
+            >
+              <Share2 size={20} aria-hidden="true" />
+            </button>
+          </>
         ) : undefined
       }
       onClose={() => close()}

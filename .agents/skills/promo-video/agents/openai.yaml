@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChronosBible Promo Video"
+  short_description: "Create and review Arabic Remotion promo videos"
+  default_prompt: "Use $promo-video to create an Arabic portrait promo for ChronosBible using its real UI and the repository playbook."
