@@ -1,52 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Download, MonitorDown, X } from "lucide-react";
 import { ar } from "../../shared/lib/format";
-import { installApp, useAppUpdate } from "./register";
-import { savePack, savedCount, storageUsed } from "./downloads";
-import { packUrls, type Pack } from "./packs";
+import { installApp, standalone, useAppUpdate } from "./register";
+import { storageUsed } from "./downloads";
+import type { Pack } from "./packs";
+import { isComplete } from "./packStatus";
+import { PACK_ORDER } from "./downloadQueue";
 import {
-  isComplete,
-  packController,
-  type PackDevice,
-  type PackStatus,
-} from "./packStatus";
+  saveOffline,
+  stopSaving,
+  useOfflineDownloads,
+} from "./offlineDownloads";
 import "./OfflinePanel.css";
 
-const PACKS: { pack: Pack; title: string; size: string }[] = [
-  { pack: "text", title: "نص الكتاب المقدس", size: "نحو ٣ ميغابايت للتنزيل" },
-  { pack: "study", title: "ملاحظات الدراسة", size: "نحو ١٣ ميغابايت للتنزيل" },
-];
-const device: PackDevice = { list: packUrls, savedCount, save: savePack };
+const PACKS: Record<Pack, { title: string; size: string }> = {
+  text: { title: "نص الكتاب المقدس", size: "نحو ٣ ميغابايت للتنزيل" },
+  study: { title: "ملاحظات الدراسة", size: "نحو ١٣ ميغابايت للتنزيل" },
+};
 
-/** A pack row's status and actions, for as long as the row is shown. */
-function usePack(pack: Pack, changed: () => void) {
-  const [status, setStatus] = useState<PackStatus>({ kind: "checking" });
-  const controller = useRef<ReturnType<typeof packController>>(null);
-  useEffect(() => {
-    const current = packController(pack, device, setStatus);
-    controller.current = current;
-    return () => current.close();
-  }, [pack]);
-  return {
-    status,
-    save: () => void controller.current?.save().then(changed),
-    cancel: () => controller.current?.cancel(),
-  };
-}
-
-function PackRow({
-  pack,
-  title,
-  size,
-  changed,
-}: {
-  pack: Pack;
-  title: string;
-  size: string;
-  changed: () => void;
-}) {
-  const { status, save, cancel } = usePack(pack, changed);
+function PackRow({ pack }: { pack: Pack }) {
+  const downloads = useOfflineDownloads();
+  const { title, size } = PACKS[pack];
+  const status = downloads.packs[pack];
   const complete = isComplete(status);
+  const waiting = downloads.queued.includes(pack);
+  const saving = status.kind === "saving" && downloads.active === pack;
   return (
     <div className="offline-pack">
       <div className="offline-pack-text">
@@ -54,15 +32,17 @@ function PackRow({
         <small>
           {complete
             ? "محفوظ على هذا الجهاز"
-            : status.kind === "saving"
+            : saving
               ? `${ar(status.saved)} من ${ar(status.total)} ملفًا`
-              : status.kind === "error"
-                ? status.message
-                : status.kind === "ready" && status.saved
-                  ? `محفوظ جزئيًا · ${size}`
-                  : size}
+              : waiting
+                ? "في الانتظار"
+                : status.kind === "error"
+                  ? status.message
+                  : status.kind === "ready" && status.saved
+                    ? `محفوظ جزئيًا · ${size}`
+                    : size}
         </small>
-        {status.kind === "saving" && (
+        {saving && (
           <progress
             value={status.saved}
             max={status.total}
@@ -72,11 +52,11 @@ function PackRow({
       </div>
       {complete ? (
         <Check size={20} className="offline-done" aria-hidden="true" />
-      ) : status.kind === "saving" ? (
+      ) : saving || waiting ? (
         <button
           className="icon-button"
           aria-label={`إيقاف حفظ ${title}`}
-          onClick={cancel}
+          onClick={stopSaving}
         >
           <X size={18} aria-hidden="true" />
         </button>
@@ -85,7 +65,7 @@ function PackRow({
           className="quiet-button offline-save"
           disabled={status.kind === "checking"}
           aria-label={`حفظ ${title} للقراءة دون اتصال`}
-          onClick={save}
+          onClick={() => void saveOffline([pack])}
         >
           <Download size={17} aria-hidden="true" />
           حفظ
@@ -98,16 +78,14 @@ function PackRow({
 const ios =
   /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-const standalone = () =>
-  matchMedia("(display-mode: standalone)").matches ||
-  (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 /** Install the app and keep Scripture for reading without a connection. */
 export default function OfflinePanel() {
   const { install } = useAppUpdate();
+  const { active } = useOfflineDownloads();
   const [used, setUsed] = useState<number>();
-  const refresh = () => void storageUsed().then(setUsed);
-  useEffect(refresh, []);
+  // Measured again whenever a pack starts or stops saving.
+  useEffect(() => void storageUsed().then(setUsed), [active]);
   return (
     <div className="offline-panel">
       {install ? (
@@ -124,11 +102,12 @@ export default function OfflinePanel() {
           </p>
         )
       )}
-      {PACKS.map((item) => (
-        <PackRow key={item.pack} {...item} changed={refresh} />
+      {PACK_ORDER.map((pack) => (
+        <PackRow key={pack} pack={pack} />
       ))}
       <p>
-        تُحفظ كل قراءة تفتحها تلقائيًا. التسجيلات الصوتية تحتاج إلى اتصال.
+        تُحفظ كل قراءة تفتحها تلقائيًا، ويحفظ التطبيق المثبّت النص ثم ملاحظات
+        الدراسة بنفسه. التسجيلات الصوتية تحتاج إلى اتصال.
         {used !== undefined &&
           ` يستخدم التطبيق ${ar(Math.round(used * 10) / 10)} ميغابايت على هذا الجهاز.`}
       </p>

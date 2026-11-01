@@ -1,0 +1,38 @@
+.offline-button[data-state="done"] {
+  color: var(--olive);
+  cursor: default;
+}
+.offline-button[data-state="done"]:hover {
+  background: none;
+}
+.offline-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--olive);
+}
+.offline-ring-svg {
+  position: absolute;
+  inset: 0;
+  /* The ring fills clockwise from the top. */
+  transform: rotate(-90deg);
+}
+.offline-ring circle {
+  fill: none;
+  stroke-width: 3;
+}
+.offline-ring-track {
+  stroke: var(--line);
+}
+.offline-ring-value {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 300ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .offline-ring-value {
+    transition: none;
+  }
+}

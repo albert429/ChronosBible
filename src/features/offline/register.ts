@@ -11,6 +11,18 @@ let waiting: ServiceWorker | null = null;
 let prompt: InstallPrompt | null = null;
 let updating = false;
 const listeners = new Set<() => void>();
+
+/** Running as the installed app rather than in a browser tab. */
+export const standalone = () =>
+  matchMedia("(display-mode: standalone)").matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+/** The installed app downloads Scripture, then study notes, by itself. */
+const autoSave = () =>
+  void import("./offlineDownloads").then(
+    (module) => module.autoSave(),
+    () => {},
+  );
 function set(patch: Partial<State>) {
   state = { ...state, ...patch };
   listeners.forEach((listener) => listener());
@@ -37,7 +49,10 @@ export function registerServiceWorker() {
   addEventListener("appinstalled", () => {
     prompt = null;
     set({ install: false });
+    // The tab that installed shares its saved files with the app.
+    autoSave();
   });
+  if (standalone()) autoSave();
   if (!__SERVICE_WORKER__ || !("serviceWorker" in navigator)) return;
   const offer = (worker: ServiceWorker | null) => {
     // The first install has nothing to replace; only updates are offered.

@@ -290,7 +290,7 @@ test("Bible navigation and picker fit phones, dark maximum text and 200% reflow"
   for (const width of [320, 360, 390, 430, 195]) {
     await page.setViewportSize({ width, height: width === 195 ? 422 : 844 });
     await noOverflow(page);
-    expect((await page.locator(".topbar").boundingBox())!.height).toBe(60);
+    expect((await page.locator(".topbar").boundingBox())!.height).toBe(48);
     const trigger = chapterButton(page);
     await trigger.click();
     const sheet = page.getByRole("dialog", {

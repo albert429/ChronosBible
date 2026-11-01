@@ -43,7 +43,7 @@ export function packController(
   };
   let urls: string[] = [];
   let saving: AbortController | undefined;
-  device
+  const checked = device
     .list(pack, closed.signal)
     .then(async (list) => {
       urls = list;
@@ -52,6 +52,8 @@ export function packController(
     })
     .catch(() => display({ kind: "error", message: CHECK_FAILED }));
   return {
+    /** Settles once the first count is shown (or the check failed). */
+    checked,
     /** Save the files not kept yet; resolves once saved, cancelled or failed. */
     async save() {
       const controller = new AbortController();

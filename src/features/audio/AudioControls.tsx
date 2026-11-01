@@ -99,6 +99,27 @@ export default function AudioControls({
           العودة إلى الآية الحالية
         </button>
       )}
+      {/* A thin timeline above one row of controls keeps the player short. */}
+      <div className="audio-timeline">
+        <span className="audio-time" aria-hidden="true">
+          {clock(position)}
+        </span>
+        <input
+          type="range"
+          className="audio-seek"
+          aria-label="موضع التسجيل"
+          aria-valuetext={`${clock(position)} من ${clock(duration)}`}
+          min={0}
+          max={duration || 1}
+          step={1}
+          value={position}
+          disabled={!ready || !duration}
+          onChange={(event) => onSeek(Number(event.target.value))}
+        />
+        <span className="audio-time" aria-hidden="true">
+          {clock(duration)}
+        </span>
+      </div>
       <div className="audio-player-inner">
         <div className="audio-current">
           <span>{label}</span>
@@ -143,35 +164,6 @@ export default function AudioControls({
         >
           <SkipBack size={18} aria-hidden="true" />
         </button>
-        {!error && (
-          <button
-            className="icon-button audio-close"
-            aria-label="إغلاق المشغل"
-            onClick={onClose}
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
-        )}
-      </div>
-      <div className="audio-timeline">
-        <span className="audio-time" aria-hidden="true">
-          {clock(position)}
-        </span>
-        <input
-          type="range"
-          className="audio-seek"
-          aria-label="موضع التسجيل"
-          aria-valuetext={`${clock(position)} من ${clock(duration)}`}
-          min={0}
-          max={duration || 1}
-          step={1}
-          value={position}
-          disabled={!ready || !duration}
-          onChange={(event) => onSeek(Number(event.target.value))}
-        />
-        <span className="audio-time" aria-hidden="true">
-          {clock(duration)}
-        </span>
         <button
           className="icon-button audio-speed"
           aria-label={`سرعة القراءة: ${ar(rate)}×`}
@@ -190,6 +182,15 @@ export default function AudioControls({
         >
           <EndIcon size={18} aria-hidden="true" />
         </button>
+        {!error && (
+          <button
+            className="icon-button audio-close"
+            aria-label="إغلاق المشغل"
+            onClick={onClose}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        )}
       </div>
       {error || !ready || waiting ? (
         <div className="audio-status" role={error ? "alert" : "status"}>

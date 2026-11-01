@@ -144,3 +144,39 @@ test("an install offer made before offline support loads is kept for the menu", 
     .toBe(true);
   await expect(install).toHaveCount(0);
 });
+
+test("the menu's download button saves everything in the background and stops on a second tap", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await ready(page);
+  await menuButton(page).click();
+  const menu = menuDialog(page);
+  const download = menu.getByRole("button", {
+    name: "تنزيل الكتاب المقدس وملاحظات الدراسة للقراءة دون اتصال",
+  });
+  const share = await menu
+    .getByRole("button", { name: "مشاركة التطبيق" })
+    .boundingBox();
+  const box = await download.boundingBox();
+  expect(box!.y).toBe(share!.y);
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  await download.click();
+  const stop = menu.getByRole("button", { name: /^إيقاف التنزيل، تم / });
+  await expect(stop).toBeVisible();
+  // The offline section shows the same queue: Scripture text first.
+  await menu.getByText("القراءة دون اتصال وتثبيت التطبيق").click();
+  await expect(
+    menu.getByRole("button", { name: "إيقاف حفظ نص الكتاب المقدس" }),
+  ).toBeVisible();
+  await expect(
+    menu.getByRole("button", { name: "إيقاف حفظ ملاحظات الدراسة" }),
+  ).toBeVisible();
+  await stop.click();
+  await expect(download).toBeVisible();
+  await expect(
+    menu.getByRole("button", {
+      name: "حفظ ملاحظات الدراسة للقراءة دون اتصال",
+    }),
+  ).toBeVisible();
+});

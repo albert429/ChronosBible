@@ -82,12 +82,12 @@ test("scrollDelta keeps a 24px gap above the player", () => {
 test("scrollDelta falls back to fixed geometry when the bars are missing", () => {
   const input = { verseTop: 100, verseBottom: 200, ...view };
   assert.equal(scrollDelta(input), null);
-  assert.equal(scrollDelta({ ...input, verseTop: 70 }), 70 - 76);
-  assert.equal(scrollDelta({ ...input, verseBottom: 777 }), 100 - 76);
+  assert.equal(scrollDelta({ ...input, verseTop: 60 }), 60 - 64);
+  assert.equal(scrollDelta({ ...input, verseBottom: 777 }), 100 - 64);
   assert.equal(scrollDelta({ ...input, verseBottom: 776 }), null);
   assert.equal(
-    scrollDelta({ ...input, topbarBottom: 0, playerTop: 0, verseTop: 70 }),
-    70 - 76,
+    scrollDelta({ ...input, topbarBottom: 0, playerTop: 0, verseTop: 60 }),
+    60 - 64,
   );
 });
 

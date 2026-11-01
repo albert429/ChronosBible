@@ -38,7 +38,7 @@ const VIEWPORTS = [
 
 async function toolbarIsOneRow(page: Page, width: number) {
   const header = await page.locator(".topbar").boundingBox();
-  expect(header!.height).toBe(60);
+  expect(header!.height).toBe(48);
   const buttons = await page.locator(".topbar button").evaluateAll((elements) =>
     elements.map((element) => {
       const { x, y, width, height } = element.getBoundingClientRect();
@@ -111,7 +111,7 @@ test.describe("layout", () => {
       await expect(trigger.locator(".toolbar-place small")).toHaveText(
         "زمني · العهد القديم",
       );
-      expect((await page.locator(".topbar").boundingBox())!.height).toBe(60);
+      expect((await page.locator(".topbar").boundingBox())!.height).toBe(48);
     }
   });
 });
@@ -226,7 +226,7 @@ test.describe("200% reflow", () => {
         "38px",
       );
       await noOverflow(page);
-      expect((await page.locator(".topbar").boundingBox())!.height).toBe(60);
+      expect((await page.locator(".topbar").boundingBox())!.height).toBe(48);
       const trigger = page.locator(".day-trigger");
       await trigger.focus();
       await page.keyboard.press("Enter");

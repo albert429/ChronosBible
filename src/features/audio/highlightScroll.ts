@@ -1,4 +1,4 @@
-const TOPBAR_FALLBACK = 60;
+const TOPBAR_FALLBACK = 48;
 const TOP_MARGIN = 16;
 const BOTTOM_MARGIN = 24;
 
