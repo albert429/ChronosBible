@@ -5,20 +5,24 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { catalog } from "../src/domain/scripture/catalog.ts";
 import type { ChronologicalReading } from "../src/domain/reading/chronology.ts";
+import { audioManifestUrl } from "../src/domain/audio/identity.ts";
+import { validManifest } from "../src/domain/audio/manifest.ts";
+import {
+  matchesReading,
+  readingHash,
+} from "../src/domain/audio/compatibility.ts";
 import {
   activeCueIndex,
   announcementAt,
-  audioManifestUrl,
   entryAt,
-  matchesReading,
-  readingHash,
   stepCueIndex,
   toTimeline,
-  validManifest,
-  type AudioManifestV2,
-  type AudioManifestV3,
-  type LegacyAudioManifest,
-} from "../src/domain/audio/manifest.ts";
+} from "../src/domain/audio/timeline.ts";
+import type {
+  AudioManifestV2,
+  AudioManifestV3,
+  LegacyAudioManifest,
+} from "../src/domain/audio/types.ts";
 import {
   PlaylistController,
   type MediaLike,

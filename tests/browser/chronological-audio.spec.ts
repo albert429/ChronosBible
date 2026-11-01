@@ -8,7 +8,7 @@ import {
   stubConnection,
 } from "./helpers";
 import { POSITION_KEY, fulfillWav } from "./chapterAudio";
-import type { AudioManifestV3 } from "../../src/domain/audio/manifest.ts";
+import type { AudioManifestV3 } from "../../src/domain/audio/types.ts";
 
 // Chronological readings are v3 playlists: several immutable files played in
 // order by one persistent <audio> element. The fixture build advertises every

@@ -2,14 +2,15 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
-  readingHash,
   readingTranscript,
-  matchesReading,
   validManifest,
-  cueAt,
-  type LegacyAudioManifest,
-  type Cue,
 } from "../src/domain/audio/manifest.ts";
+import {
+  matchesReading,
+  readingHash,
+} from "../src/domain/audio/compatibility.ts";
+import { cueAt } from "../src/domain/audio/timeline.ts";
+import type { Cue, LegacyAudioManifest } from "../src/domain/audio/types.ts";
 import { audioUrl } from "../src/domain/audio/url.ts";
 import type { Day } from "../src/domain/reading/types.ts";
 

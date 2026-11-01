@@ -6,13 +6,10 @@ import {
 } from "../../domain/reading/types";
 import { useResource } from "../../shared/hooks/useResource";
 import { audioManifests } from "./client";
-import {
-  audioReadingKey,
-  matchesReading,
-  toTimeline,
-  type AudioManifest,
-  type Timeline,
-} from "../../domain/audio/manifest";
+import { readingKey } from "../../domain/reading/identity";
+import { matchesReading } from "../../domain/audio/compatibility";
+import { toTimeline, type Timeline } from "../../domain/audio/timeline";
+import type { AudioManifest } from "../../domain/audio/types";
 
 const mismatch = (reading: ScriptureReading) =>
   `يحتاج التسجيل إلى تحديث ليتطابق مع ${
@@ -28,7 +25,7 @@ const mismatch = (reading: ScriptureReading) =>
  * screen (identity, passages and transcript hash), as one playable timeline.
  */
 export function useAudioManifest(reading: ScriptureReading) {
-  const key = audioReadingKey(reading);
+  const key = readingKey(reading);
   const { data, error, retry } = useResource(audioManifests, key);
   const [checked, setChecked] = useState<{
     data: AudioManifest;

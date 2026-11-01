@@ -1,8 +1,6 @@
 import { createJsonClient } from "../../data/jsonClient.ts";
-import {
-  audioManifestUrl,
-  validManifest,
-} from "../../domain/audio/manifest.ts";
+import { audioManifestUrl } from "../../domain/audio/identity.ts";
+import { validManifest } from "../../domain/audio/manifest.ts";
 
 export const audioManifests = createJsonClient({
   url: audioManifestUrl,

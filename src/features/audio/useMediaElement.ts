@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { audioUrl } from "../../domain/audio/url";
-import type { Timeline } from "../../domain/audio/manifest";
+import type { Timeline } from "../../domain/audio/timeline";
 import {
   initialMediaState,
   isPlaying,

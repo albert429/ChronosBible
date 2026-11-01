@@ -14,7 +14,8 @@ import {
   announcementAt,
   entryAt,
   stepCueIndex,
-} from "../../domain/audio/manifest";
+  stepCueStart,
+} from "../../domain/audio/timeline";
 import { nextRate } from "./speed.ts";
 import { useAudioManifest } from "./useAudioManifest";
 import { useMediaElement } from "./useMediaElement";
@@ -92,12 +93,8 @@ export default function AudioPlayer({
         : undefined;
   const label = readingTitle(reading);
   const step = (direction: number) => {
-    if (!timeline?.cues.length) return;
-    const target = stepCueIndex(timeline, time, direction);
-    seekTo(
-      timeline.cues[Math.max(0, Math.min(target, timeline.cues.length - 1))]
-        .start,
-    );
+    const target = timeline && stepCueStart(timeline, time, direction);
+    if (target !== undefined) seekTo(target);
   };
 
   usePauseOnDialog(pause);

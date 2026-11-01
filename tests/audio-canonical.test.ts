@@ -2,16 +2,19 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { BibleChapter } from "../src/domain/reading/types.ts";
 import type { Day } from "../src/domain/reading/types.ts";
+import { audioManifestUrl } from "../src/domain/audio/identity.ts";
+import { validManifest } from "../src/domain/audio/manifest.ts";
+import {
+  matchesReading,
+  readingHash,
+} from "../src/domain/audio/compatibility.ts";
 import {
   activeCueIndex,
   announcementAt,
-  audioManifestUrl,
-  matchesReading,
-  readingHash,
   stepCueIndex,
-  validManifest,
-  type AudioManifestV2,
-} from "../src/domain/audio/manifest.ts";
+  stepCueStart,
+} from "../src/domain/audio/timeline.ts";
+import type { AudioManifestV2 } from "../src/domain/audio/types.ts";
 const reading: BibleChapter = {
   mode: "bible",
   usfm: "GEN",
@@ -101,6 +104,14 @@ test("Announcements clear the highlight and both next controls land directly on 
   assert.equal(activeCueIndex(m, 6), -1);
   assert.equal(activeCueIndex(m, 7), 1);
   assert.equal(announcementAt(m, 6)?.reference, "الآية الثانية");
+  // The player's verse buttons and the lock screen's track skips seek to the
+  // same places: the upcoming verse, never past the first or last one.
+  assert.equal(stepCueStart(m, 1, 1), 3);
+  assert.equal(stepCueStart(m, 6, 1), 7);
+  assert.equal(stepCueStart(m, 6, -1), 3);
+  assert.equal(stepCueStart(m, 3.5, -1), 3);
+  assert.equal(stepCueStart(m, 8, 1), 7);
+  assert.equal(stepCueStart(await canonical(), 5, 1), undefined);
   assert.equal(
     validManifest(
       { ...m, announcements: [{ ...m.announcements[0], end: 4 }] },

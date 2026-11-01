@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from "react";
-import { stepCueIndex, type Timeline } from "../../domain/audio/manifest";
+import { stepCueStart, type Timeline } from "../../domain/audio/timeline";
 import appIcon from "../../assets/favicon.svg";
 
 type MediaSessionOptions = {
@@ -28,10 +28,8 @@ export function useMediaSession({
   onClose,
 }: MediaSessionOptions) {
   const stepCue = useEffectEvent((timeline: Timeline, step: number) => {
-    const { cues } = timeline;
-    if (!cues.length) return;
-    const index = stepCueIndex(timeline, time, step);
-    seekTo(cues[Math.max(0, Math.min(index, cues.length - 1))].start);
+    const target = stepCueStart(timeline, time, step);
+    if (target !== undefined) seekTo(target);
   });
   const scrub = useEffectEvent((timeline: Timeline, seconds: number) =>
     seekTo(Math.max(0, Math.min(seconds, timeline.duration))),
