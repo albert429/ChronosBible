@@ -25,6 +25,7 @@ import wave
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from chronos_tools.audio_timing import passage_span, DAY_SETTINGS as SETTINGS
 from chronos_tools.audio_references import reference_id  # noqa: E402
 from chronos_tools.audio_text import chapter_text_hash, chapter_verses, reading_hash  # noqa: E402
 from chronos_tools.books import usfm_by_name  # noqa: E402
@@ -33,7 +34,6 @@ from chronos_tools.media import probe_duration, run_ffmpeg  # noqa: E402
 from chronos_tools.paths import ROOT  # noqa: E402
 
 RATE = 24000
-SETTINGS = {"codec": "aac", "bitrate": "48k", "rate": RATE, "channels": 1}
 SEPARATION = (0.2, 0.35)
 # Active-speech RMS: 50 ms frames above -45 dBFS; the clip gain keeps peaks
 # at or below 0.89 of full scale. Scripture samples are never scaled.
@@ -48,23 +48,6 @@ def chapter_alignment(aligned, code, passage, chapter_hashes, day_number):
     if chapter["textHash"] != chapter_hashes[(passage["book"], passage["chapter"])]:
         raise ValueError(f"Transcript changed: realign {path.name} before rebuilding")
     return path, chapter
-
-
-def passage_span(chapter, passage, label):
-    """Seconds of one passage in its chapter recording, on the output sample grid."""
-    verses = chapter["verses"]
-    selected = [v for v in verses if passage["start"] <= v["verse"] <= passage["end"]]
-    if [v["verse"] for v in selected] != [v["number"] for v in passage["verses"]]:
-        raise ValueError(f"Incomplete verse coverage: {label}")
-    # Keep short breaths at the edges, without including adjacent speech.
-    previous = next((v for v in verses if v["verse"] == passage["start"] - 1), None)
-    following = next((v for v in verses if v["verse"] == passage["end"] + 1), None)
-    begin = max(selected[0]["start"] - .12, previous["end"] if previous else 0)
-    end = min(selected[-1]["end"] + .20, following["start"] if following else chapter["duration"])
-    if end <= begin or any(v["end"] <= v["start"] for v in selected):
-        raise ValueError(f"Invalid timestamps: {label}")
-    # Quantize to the output sample grid so concatenation never drifts.
-    return round(begin * RATE) / RATE, round(end * RATE) / RATE, selected
 
 
 def assemble(day, books, chapter_hashes, source, aligned, output):
@@ -425,7 +408,7 @@ def main():
              "days": reports}, ensure_ascii=False, indent=2) + "\n")
         return
     output = args.output or ROOT / "public/audio"
-    manifests = ROOT / "data/audio/manifests"
+    manifests = args.manifests or ROOT / "data/audio/manifests"
     manifests.mkdir(parents=True, exist_ok=True)
     stray = stray_manifest_days(manifests, plan)
     if stray:
@@ -437,7 +420,7 @@ def main():
         (manifests / f"{day['day']}.json").write_text(content)
         print(f"Built day {day['day']}: {manifest['duration']:.1f}s", flush=True)
     days = sorted(int(p.stem) for p in manifests.glob("*.json") if p.stem.isdigit())
-    (ROOT / "data/audio/catalog.json").write_text(json.dumps({"days": days}, indent=2) + "\n")
+    (manifests.parent / "catalog.json").write_text(json.dumps({"days": days}, indent=2) + "\n")
 
 
 if __name__ == "__main__":

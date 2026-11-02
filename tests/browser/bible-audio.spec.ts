@@ -54,11 +54,11 @@ async function setContinuous(page: Page, enabled: boolean) {
 }
 const starts = async (page: Page) => (await mediaProbe(page)).starts;
 
-test("chapter audio loads only on request; Old Testament recordings disclose chapter-only timing", async ({
+test("Old Testament verse timing loads only on Listen and clears the highlight during the opening", async ({
   page,
 }) => {
   const { external } = await routeChapterAudio(page, {
-    "GEN:1": { duration: 30 },
+    "GEN:1": { opening: 4, verse: 1 },
   });
   const requests = recordRequests(page, (path) => path.includes("/audio/"));
   await open(page, "GEN", 1);
@@ -71,11 +71,15 @@ test("chapter audio loads only on request; Old Testament recordings disclose cha
   );
   await expect.poll(() => currentTime(page)).toBeGreaterThan(0);
   await expect(player(page)).toContainText("التكوين ١");
-  await expect(player(page)).toContainText("تسجيل الإصحاح دون تتبع الآيات");
-  // No verse cues are invented for an unaligned recording.
   await expect(page.locator("[data-listening]")).toHaveCount(0);
-  await expect(button(page, "الآية السابقة")).toBeDisabled();
-  await expect(button(page, "الآية التالية")).toBeDisabled();
+  await button(page, "الآية التالية").click();
+  await expect(page.locator('.verse[data-listening][data-v="1"]')).toHaveCount(
+    1,
+  );
+  await button(page, "الآية التالية").click();
+  await expect(page.locator('.verse[data-listening][data-v="2"]')).toHaveCount(
+    1,
+  );
   expect(requests[0]).toBe("/audio/chapters/GEN/1.json");
   expect(requests.slice(1).every((path) => /GEN-1-.+\.m4a$/.test(path))).toBe(
     true,
@@ -578,4 +582,18 @@ test("listening continues under the reading settings; speed and seeking persist"
     .poll(() => audio(page).evaluate((el: HTMLAudioElement) => el.playbackRate))
     .toBe(1.25);
   expect(external).toEqual([]);
+});
+
+test("a synthetic chapter-only manifest retains compatibility controls", async ({
+  page,
+}) => {
+  await routeChapterAudio(page, {
+    "GEN:1": { chapterOnly: true, duration: 30 },
+  });
+  await open(page, "GEN", 1);
+  await listen(page).click();
+  await expect(player(page)).toContainText("تسجيل الإصحاح دون تتبع الآيات");
+  await expect(page.locator("[data-listening]")).toHaveCount(0);
+  await expect(button(page, "الآية السابقة")).toBeDisabled();
+  await expect(button(page, "الآية التالية")).toBeDisabled();
 });

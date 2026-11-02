@@ -27,14 +27,18 @@ test.skip(
   "Needs the audio fixture build (npm run test:e2e)",
 );
 
-const playlist = (id: string) =>
+const playlist = (id: string, testament = "OT") =>
   JSON.parse(
-    readFileSync(`data/audio/readings/OT/${id}.json`, "utf8"),
+    readFileSync(`data/audio/readings/${testament}/${id}.json`, "utf8"),
   ) as AudioManifestV3;
 
 /** Each entry shrinks to `seconds`, keeping its cues in proportion. */
-function accelerated(id: string, seconds: number): AudioManifestV3 {
-  const real = playlist(id);
+function accelerated(
+  id: string,
+  seconds: number,
+  testament = "OT",
+): AudioManifestV3 {
+  const real = playlist(id, testament);
   const entries = real.entries.map((entry) => {
     const scale = seconds / entry.duration;
     const fit = <T extends { start: number; end: number }>(item: T) => ({
@@ -58,13 +62,17 @@ function accelerated(id: string, seconds: number): AudioManifestV3 {
 
 const sources = (id: string) => playlist(id).entries.map((e) => e.src);
 
-async function route(page: Page, seconds: Record<string, number>) {
+async function route(
+  page: Page,
+  seconds: Record<string, number>,
+  testament = "OT",
+) {
   const external = await blockExternal(page);
   const served = new Map<string, number>();
   for (const [id, length] of Object.entries(seconds)) {
-    const manifest = accelerated(id, length);
+    const manifest = accelerated(id, length, testament);
     for (const entry of manifest.entries) served.set(entry.src, entry.duration);
-    await page.route(`**/audio/chrono/OT/${id}.json`, (r) =>
+    await page.route(`**/audio/chrono/${testament}/${id}.json`, (r) =>
       r.fulfill({ json: manifest }),
     );
   }
@@ -200,6 +208,7 @@ test("a failed second file shows retry at its place; seek, speed and resume surv
   expect(await sameMediaElement(page)).toBe(true);
   // Verse skip back from the last file lands in the clip: a file switch.
   await button(page, "إيقاف مؤقت").click();
+  await page.getByRole("slider", { name: "موضع التسجيل" }).fill("6");
   await button(page, "الآية السابقة").click();
   await expect(audio(page)).toHaveAttribute("src", new RegExp(filename(clip)));
   expect(
@@ -302,5 +311,38 @@ for (const connection of [
     await page.waitForTimeout(1000);
     expect(requests).not.toContain("/audio/chrono/OT/gen-3-1.json");
     expect(requests.filter((path) => path.includes("gen-3-1"))).toEqual([]);
+  });
+}
+
+for (const [testament, id] of [
+  ["OT", "exo-1-1"],
+  ["NT", "mrk-12-13"],
+]) {
+  test(`${testament} passages highlight their exact verses after seeking across files`, async ({
+    page,
+  }) => {
+    await route(page, { [id]: 10 }, testament);
+    await page.goto(
+      `/?mode=chronological&testament=${testament}&reading=${id}`,
+    );
+    await ready(page);
+    await listen(page).click();
+    await expect(button(page, "إيقاف مؤقت")).toBeVisible();
+    await button(page, "إيقاف مؤقت").click();
+    const manifest = accelerated(id, 10, testament);
+    for (const [index, entry] of manifest.entries.entries()) {
+      const relative = Math.ceil(entry.cues[0].start + 0.01);
+      const cue = [...entry.cues].reverse().find((c) => c.start <= relative)!;
+      const time = index * 10 + relative;
+      await page
+        .getByRole("slider", { name: "موضع التسجيل" })
+        .fill(String(time));
+      await expect(
+        page.locator(
+          `#passage-${entry.passage} [data-listening][data-v="${cue.verse}"]`,
+        ),
+      ).toHaveCount(1);
+      await expect(page.locator("[data-listening]")).toHaveCount(1);
+    }
   });
 }

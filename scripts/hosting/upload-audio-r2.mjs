@@ -13,7 +13,9 @@ import {
 export const UPLOAD_RETRIES = 3;
 
 /** The wrangler arguments that put one batch file into the bucket. */
-export function bulkPutArguments(batch) {
+export function bulkPutArguments(batch, concurrency = 20) {
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 20)
+    throw new Error("Upload concurrency must be an integer from 1 to 20");
   return [
     "wrangler@4",
     "r2",
@@ -28,7 +30,7 @@ export function bulkPutArguments(batch) {
     AUDIO_CACHE_CONTROL,
     "--remote",
     "--concurrency",
-    "20",
+    String(concurrency),
   ];
 }
 
@@ -47,7 +49,7 @@ export function listBatches(dir) {
  * fails after its retries and returns the batches uploaded so far.
  *
  * @param {string[]} batches
- * @param {{ run?: (args: string[]) => number | null; log?: (line: string) => void }} options
+ * @param {{ run?: (args: string[]) => number | null; log?: (line: string) => void; concurrency?: number }} options
  */
 export function runUploads(
   batches,
@@ -58,6 +60,7 @@ export function runUploads(
         env: { ...process.env, WRANGLER_SEND_METRICS: "false" },
       }).status,
     log = console.log,
+    concurrency = 20,
   } = {},
 ) {
   const uploaded = [];
@@ -65,7 +68,7 @@ export function runUploads(
     let status = null;
     for (let attempt = 0; attempt <= UPLOAD_RETRIES; attempt += 1) {
       if (attempt) log(`Retry ${attempt}/${UPLOAD_RETRIES}: ${batch}`);
-      status = run(bulkPutArguments(batch));
+      status = run(bulkPutArguments(batch, concurrency));
       if (status === 0) break;
     }
     if (status !== 0) {
@@ -87,6 +90,7 @@ if (isMain(import.meta.url)) {
   const { values } = parseArgs({
     options: {
       dir: { type: "string", default: "artifacts/r2-audio-upload" },
+      concurrency: { type: "string", default: "20" },
       from: { type: "string", default: "1" },
       "dry-run": { type: "boolean", default: false },
     },
@@ -99,12 +103,14 @@ if (isMain(import.meta.url)) {
   } else if (values["dry-run"]) {
     for (const batch of batches)
       console.log(
-        ["npx", ...bulkPutArguments(batch)]
+        ["npx", ...bulkPutArguments(batch, Number(values.concurrency))]
           .map((arg) => (/\s/.test(arg) ? JSON.stringify(arg) : arg))
           .join(" "),
       );
   } else {
-    const { failed } = runUploads(batches);
+    const { failed } = runUploads(batches, {
+      concurrency: Number(values.concurrency),
+    });
     if (failed) process.exitCode = 1;
     else
       console.log(

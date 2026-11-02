@@ -170,3 +170,12 @@ test("copyMedia stages both namespaces from any media root and refuses unsafe fi
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("R2 upload concurrency can be reduced for unreliable connections", () => {
+  assert.deepEqual(bulkPutArguments("batch.json", 2).slice(-2), [
+    "--concurrency",
+    "2",
+  ]);
+  for (const value of [0, -1, 21, 1.5, NaN])
+    assert.throws(() => bulkPutArguments("batch.json", value));
+});

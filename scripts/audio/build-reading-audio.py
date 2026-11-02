@@ -39,6 +39,7 @@ files, symlinks and hand-edited manifests stop the run. A --limit pilot removes
 nothing. Needs ffmpeg/ffprobe only when a clip is missing.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import sys
@@ -46,8 +47,12 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from chronos_tools.audio_sources import (alignment_problems, bible_chapters, detect_silences,  # noqa: E402
+from chronos_tools.audio_sources import (bible_chapters, detect_silences,  # noqa: E402
                                          load_source_trims, source_files)
+from chronos_tools.audio_alignments import (DEFAULT_FOLDERS, DEFAULT_REVIEWS, alignment_paths,
+    flagged_verses, reviewed_digests, load_alignments, listening_results, unresolved_verses)
+from chronos_tools.audio_timing import clip_bounds, clip_entry, clip_name
+from chronos_tools.audio_timing import SETTINGS
 from chronos_tools.audio_text import reading_hash  # noqa: E402
 from chronos_tools.fingerprints import compact, digest, fingerprint  # noqa: E402
 from chronos_tools.media import probe_duration as probe_seconds, run_ffmpeg  # noqa: E402
@@ -56,40 +61,9 @@ from chronos_tools.paths import ROOT  # noqa: E402
 
 # Playlist manifests this tool owns: data/audio/readings/<OT|NT>/<reading id>.json.
 READING_MANIFEST = re.compile(r'^(?:OT|NT)/[A-Za-z0-9][A-Za-z0-9_-]*\.json$')
-SETTINGS = {'codec': 'aac', 'bitrate': '48k', 'rate': 24000, 'channels': 1, 'faststart': True}
-TAG = 'chapter-clip-v1'
-PAD = 0.25
 SILENCE_TOLERANCE = 0.1
 MIN_SILENCE = 0.3
 MAX_BYTES = 8 * 1024 * 1024
-
-
-def flagged_verses(summaries):
-    """{'GEN-5': {6, ...}} from review summaries; chapters with notes only are fine."""
-    flagged = {}
-    for summary in summaries:
-        for key, item in summary.get('flags', {}).items():
-            flagged.setdefault(key, set()).update(int(v) for v in item.get('flags', {}))
-    return flagged
-
-
-def clip_bounds(verses, first, last, duration):
-    """(start, end) for verses first..last of an aligned chapter, in source seconds.
-
-    The cut sits PAD seconds outside the verses, but never past the midpoint of the
-    silence shared with the neighbouring verse, so neither neighbour is audible.
-    """
-    by_number = {v['verse']: v for v in verses}
-    a, b = by_number[first], by_number[last]
-    start = max(0.0, a['start'] - PAD)
-    if first - 1 in by_number:
-        start = max(start, (by_number[first - 1]['end'] + a['start']) / 2)
-    end = min(duration, b['end'] + PAD)
-    if last + 1 in by_number:
-        end = min(end, (b['end'] + by_number[last + 1]['start']) / 2)
-    if not 0 <= start < a['start'] + 1e-9 or end <= b['end'] - 1e-9 or end <= start:
-        raise ValueError('degenerate clip bounds')
-    return round(start, 3), round(end, 3)
 
 
 def questionable_verses(alignment, flagged, key, min_score):
@@ -137,31 +111,17 @@ def plan_clip(alignment, questionable, key, first, last, silences):
             'questionable': inside, 'silences': evidence}, None
 
 
-def clip_name(code, chapter, first, last, source_hash, text_hash, start, end):
-    return f'{code}-{chapter}-{first}-{last}-' + fingerprint([source_hash, text_hash, SETTINGS, start, end, TAG]) + '.m4a'
-
-
-def clip_entry(passage, alignment, bounds, name, duration):
-    start, end = bounds
-    cues = []
-    for verse in alignment['verses']:
-        if passage['from'] <= verse['verse'] <= passage['to']:
-            cues.append({'verse': verse['verse'], 'start': round(max(0.0, verse['start'] - start), 3),
-                         'end': round(min(duration, verse['end'] - start), 3)})
-    return cues
-
-
 def encode_clip(source, start, end, target):
     if target.exists():
         return
     target.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='bible-clip-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='bible-clip-', dir=target.parent) as tmp:
         temp = Path(tmp) / target.name
         run_ffmpeg(['-ss', f'{start:.3f}', '-to', f'{end:.3f}',
                     '-i', source, '-map', '0:a:0', '-c:a', 'aac', '-b:a', SETTINGS['bitrate'],
                     '-ac', '1', '-ar', SETTINGS['rate'], '-movflags', '+faststart', '-map_metadata', '-1',
                     temp])
-        target.write_bytes(temp.read_bytes())
+        temp.replace(target)
     if target.stat().st_size > MAX_BYTES:
         target.unlink()
         raise ValueError(f'{target.name} exceeds {MAX_BYTES} bytes')
@@ -173,7 +133,7 @@ def probe_duration(path):
 
 def build_reading(testament, definition, readings, chapter_manifests, alignments, flagged, originals,
                   records, output, min_score, encode=encode_clip, measure=probe_duration, silences=None,
-                  unusable=None, notes=None):
+                  unusable=None, notes=None, resolved=None, preview=False):
     """(playlist manifest | None, blocker reason | None).
 
     `unusable` maps chapter keys to why their alignment was refused; `notes`
@@ -209,7 +169,9 @@ def build_reading(testament, definition, readings, chapter_manifests, alignments
         if alignment is None:
             return None, f"{key}: {unusable.get(key, 'no verse alignment')}"
         source = originals[(code, chapter)]
-        plan, reason = plan_clip(alignment, questionable_verses(alignment, flagged, key, min_score), key,
+        questionable = questionable_verses(alignment, flagged, key, min_score)
+        questionable = {n: why for n, why in questionable.items() if n not in (resolved or {}).get(key, set())}
+        plan, reason = plan_clip(alignment, questionable, key,
                                  first, last, lambda low, high: silences(source, low, high))
         if reason:
             return None, reason
@@ -220,10 +182,10 @@ def build_reading(testament, definition, readings, chapter_manifests, alignments
         target = output / 'audio/clips' / name
         encode(source, start, end, target)
         duration = measure(target)
-        verse_timed = plan['alignment'] == 'verse'
+        verse_timed = preview or plan['alignment'] == 'verse'
         entries.append({
             'passage': index, 'book': code, 'chapter': chapter, 'from': first, 'to': last,
-            'src': f'/audio/clips/{name}', 'duration': duration, 'alignment': plan['alignment'],
+            'src': f'/audio/clips/{name}', 'duration': duration, 'alignment': 'verse' if verse_timed else 'chapter',
             'cues': clip_entry(passage, alignment, (start, end), name, duration) if verse_timed else [],
             'announcements': []})
         if plan['questionable'] or plan['silences']:
@@ -232,43 +194,6 @@ def build_reading(testament, definition, readings, chapter_manifests, alignments
     return {'version': 3, 'identity': f"chrono:{testament}:{definition['id']}",
             'readingHash': reading_hash(transcript),
             'duration': round(sum(e['duration'] for e in entries), 3), 'entries': entries}, None
-
-
-def reviewed_digests(summaries):
-    """{chapter key: SHA-256 of the alignment file each review summary checked}."""
-    digests = {}
-    for summary in summaries:
-        digests.update(summary.get('reviewed', {}))
-    return digests
-
-
-def load_alignments(folders, readings, records, trims, reviewed):
-    """({key: alignment}, {key: why refused}), validated against current sources and text.
-
-    A reviewed source trim shortens the usable recording to its end.
-    """
-    alignments, unusable = {}, {}
-    for folder in folders:
-        for path in sorted(folder.glob('*.json')):
-            raw = path.read_bytes()
-            data = json.loads(raw)
-            identity = f"bible:{data.get('book')}:{data.get('chapter')}"
-            key = path.stem
-            if identity not in readings or key != f"{data['book']}-{data['chapter']}":
-                unusable[key] = 'unknown or misnamed alignment'
-                continue
-            end = trims[identity]['end'] if identity in trims else None
-            if end is not None and records.get(identity, {}).get('trimEnd') != end:
-                unusable[key] = 'canonical provenance does not carry the reviewed source trim'
-                continue
-            problems = alignment_problems(data, readings[identity], records.get(identity), end)
-            if not problems and reviewed.get(key) != digest(raw):
-                problems = ['alignment file is not the one the review summaries checked']
-            if problems:
-                unusable[key] = '; '.join(problems)
-                continue
-            alignments[key] = data if end is None else {**data, 'duration': min(data['duration'], end)}
-    return alignments, unusable
 
 
 def main(argv=None):
@@ -280,65 +205,90 @@ def main(argv=None):
                         help='Media root receiving audio/clips/ (use with AUDIO_MEDIA_ROOT)')
     parser.add_argument('--bible', type=Path, default=ROOT / 'data/bible/source.json.gz')
     parser.add_argument('--alignments', type=Path, nargs='+',
-                        default=[ROOT / 'data/audio/alignments', ROOT / 'data/audio/alignments/ot'])
+                        default=DEFAULT_FOLDERS)
     parser.add_argument('--review', type=Path, nargs='*',
-                        default=[ROOT / 'data/audio/review/ot.json', ROOT / 'data/audio/review/nt.json'])
+                        default=DEFAULT_REVIEWS)
     parser.add_argument('--trims', type=Path, default=ROOT / 'data/audio/source-trims.json')
     parser.add_argument('--min-score', type=float, default=0.30)
     parser.add_argument('--limit', type=int, help='Build only the first N readings per testament (pilot)')
+    parser.add_argument('--data-root', type=Path, default=ROOT / 'data/audio')
+    parser.add_argument('--listening', type=Path, default=ROOT / 'data/audio/review/listening.json')
+    parser.add_argument('--preview', action='store_true', help='Include unresolved verse cues for listening review')
+    parser.add_argument('--workers', type=int, default=6)
     args = parser.parse_args(argv)
+    if args.min_score < .30:
+        parser.error('--min-score cannot be below 0.30')
     chapters = list(bible_chapters(args.bible))
     readings = {f"bible:{r['usfm']}:{r['chapter']}": r for _, r in chapters}
     originals = source_files(args.ot, args.nt, chapters)
-    sources = json.loads((ROOT / 'data/audio/canonical-sources.json').read_text())
+    sources = json.loads((args.data_root / 'canonical-sources.json').read_text())
     records = {r['identity']: r for r in sources['chapters']}
     chapter_manifests = {}
-    for identity in json.loads((ROOT / 'data/audio/chapter-catalog.json').read_text())['chapters']:
+    for identity in json.loads((args.data_root / 'chapter-catalog.json').read_text())['chapters']:
         _, code, number = identity.split(':')
-        chapter_manifests[identity] = json.loads((ROOT / f'data/audio/chapters/{code}/{number}.json').read_text())
+        chapter_manifests[identity] = json.loads((args.data_root / f'chapters/{code}/{number}.json').read_text())
     summaries = [json.loads(p.read_text()) for p in args.review if p.exists()]
     alignments, unusable = load_alignments(args.alignments, readings, records, load_source_trims(args.trims),
                                            reviewed_digests(summaries))
     flagged = flagged_verses(summaries)
+    accepted, listening_errors = listening_results(args.listening, alignment_paths(args.alignments), alignments)
+    unresolved = unresolved_verses(alignments, flagged, accepted, args.min_score)
+    all_flags = unresolved_verses(alignments, flagged, {}, args.min_score)
+    resolved = {key: numbers - unresolved.get(key, set()) for key, numbers in all_flags.items()}
     notes = []
     published, blocked, built = [], {}, {'OT': 0, 'NT': 0}
-    manifests_out = ROOT / 'data/audio/readings'
+    manifests_out = args.data_root / 'readings'
     outputs = {}
+    jobs = []
     for testament in ('OT', 'NT'):
         catalog = json.loads((args.chronology / f'{testament}.json').read_text())
         for summary in catalog['readings'][:args.limit]:
             definition = json.loads((args.chronology / testament / f"{summary['id']}.json").read_text())
-            manifest, reason = build_reading(testament, definition, readings, chapter_manifests, alignments,
-                                             flagged, originals, records, args.output, args.min_score,
-                                             unusable=unusable, notes=notes)
-            key = f"chrono:{testament}:{summary['id']}"
+            jobs.append((testament, summary['id'], definition))
+    def build_job(job):
+        testament, reading_id, definition = job
+        local_notes = []
+        manifest, reason = build_reading(testament, definition, readings, chapter_manifests, alignments,
+            flagged, originals, records, args.output, args.min_score, unusable=unusable,
+            notes=local_notes, resolved=resolved, preview=args.preview)
+        return testament, reading_id, manifest, reason, local_notes
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        for testament, reading_id, manifest, reason, local_notes in pool.map(build_job, jobs):
+            notes.extend(local_notes)
+            key = f'chrono:{testament}:{reading_id}'
             if manifest is None:
                 blocked[key] = reason
                 continue
-            outputs[f"{testament}/{summary['id']}.json"] = (compact(manifest) + '\n').encode()
+            outputs[f'{testament}/{reading_id}.json'] = (compact(manifest) + '\n').encode()
             published.append(key)
             built[testament] += 1
+            if len(published) % 25 == 0:
+                print(f'Built {len(published)}/{len(jobs)} playlists', flush=True)
     # Validated as a whole, then published: a full run removes only unmodified
     # manifests it wrote earlier (inventory.json); a pilot (--limit) removes none.
     publish_owned(manifests_out, outputs, READING_MANIFEST, prune=not args.limit)
-    (ROOT / 'data/audio/reading-catalog.json').write_text(
+    (args.data_root / 'reading-catalog.json').write_text(
         json.dumps({'version': 1, 'readings': published}, indent=2) + '\n')
     clips = sorted((args.output / 'audio/clips').glob('*.m4a')) if (args.output / 'audio/clips').exists() else []
     report = ROOT / 'artifacts/audio-work/reading-audio-report.json'
     report.parent.mkdir(parents=True, exist_ok=True)
     unique = {n['clip']: n for n in notes}
     if not args.limit:
-        (ROOT / 'data/audio/review/clips.json').write_text(json.dumps({
-            'version': 1, 'method': 'machine evidence only (scores, review flags, ffmpeg silencedetect); not listening review',
+        (args.data_root / 'review').mkdir(parents=True, exist_ok=True)
+        (args.data_root / 'review/clips.json').write_text(json.dumps({
+            'version': 1, 'preview': args.preview, 'method': 'machine evidence only (scores, review flags, ffmpeg silencedetect); not listening review',
             'silence': {'noise': '-35dB', 'minimumSeconds': MIN_SILENCE, 'toleranceSeconds': SILENCE_TOLERANCE},
-            'clips': {k: {'chapterOnly': unique[k]['chapterOnly'], 'silenceCuts': unique[k]['silenceCuts']}
+            'clips': {k: {'chapterOnly': [] if args.preview else unique[k]['chapterOnly'], 'pendingListening': unique[k]['chapterOnly'], 'silenceCuts': unique[k]['silenceCuts']}
                       for k in sorted(unique)}}, ensure_ascii=False, indent=2) + '\n')
-    report.write_text(json.dumps({'built': built, 'blocked': blocked, 'clips': len(clips),
+    report.write_text(json.dumps({'built': built, 'blocked': blocked, 'preview': args.preview,
+                                  'listeningErrors': listening_errors,
+                                  'unresolvedVerses': {k: sorted(v) for k, v in unresolved.items()}, 'clips': len(clips),
                                   'clipBytes': sum(p.stat().st_size for p in clips),
                                   'unusableAlignments': unusable,
                                   'reviewedClips': [unique[k] for k in sorted(unique)]},
                                  ensure_ascii=False, indent=1) + '\n')
     print(f'Built {built} playlists; {len(blocked)} blocked on review/alignment; {len(clips)} clips.')
+    return 1 if blocked or unusable or listening_errors else 0
 
 
 if __name__ == '__main__':

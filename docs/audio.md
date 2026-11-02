@@ -60,9 +60,11 @@ Generated output:
 
 `scripts/audio/build-canonical-audio.py --ot <OT folder> --nt <NT folder>` encodes each of
 the 1,189 original chapter recordings once, whole, with the same settings. It
-checks the exact 929 + 260 source coverage, reuses the verified NT alignments,
-and never invents verse timing: chapters without an alignment get
-`"alignment": "chapter"` and no cues. Output:
+checks the exact 929 + 260 source coverage and resolves the existing alignments
+for both testaments. All 1,189 chapters have machine-reviewed verse timings.
+`--alignments DIR...` selects timing directories; the legacy `--aligned DIR`
+option remains available. Chapter-only manifests remain supported by the player
+for compatibility. Output:
 
 - `data/audio/chapters/<USFM>/<n>.json`: version-2 manifests (`identity`
   `bible:<USFM>:<n>`, `alignment`, `cues`, `announcements`), published by the build
@@ -140,11 +142,12 @@ The machine review is not listening review. The 929 Old Testament alignments
 (`data/audio/alignments/ot/`, MMS_FA, committed timings only) pass structurally;
 their review flags are in `data/audio/review/`. Nobody has yet listened to every
 cut, and the build does not claim they are perfect: it only refuses what the
-evidence cannot support. Whole-chapter OT playback stays chapter-only; its
-alignments only serve clip cuts.
+evidence cannot support. Whole-chapter OT playback now uses the same canonical verse cues.
+The dev preview exposes unresolved clip cues for listening review; the release
+audit requires accepted listening results.
 
 With the chronology of 23 October 2026 all 553 readings build (OT 412, NT 141)
-from 1,095 deduplicated clips. Some clips use chapter-only tracking because a
+from 1,095 deduplicated clips. Without `--preview`, some clips use chapter-only tracking because a
 verse inside them is questionable (the parent audit counted 26 occurrences; the
 exact figure belongs to the generated report, not to this guide). That is the
 passage-level fallback: the passage still plays, tracked at passage level with no
@@ -464,3 +467,87 @@ is configured. Machine timing review remains separate from functional tests.
 - Browser checks use synthetic media only (`tests/browser/bible-audio.spec.ts`).
   They do not show that a phone keeps playing across chapters while locked; that
   needs physical iOS and Android testing.
+
+## Full verse coverage and listening acceptance
+
+The full-coverage dev preview includes all 150 days, 1,189 chapters (31,104
+verses), 412 OT and 141 NT chronological readings. The preview includes
+unresolved machine timings so they can be checked on dev.chronosbible.com.
+Automated coverage does not establish listening accuracy: 18 OT and 21 NT
+flagged verses and the representative samples still require actual listening.
+
+Stage builds outside the published catalogs using `--data-root
+artifacts/verse-audio/data/audio` on the canonical and chronological builders.
+Initialize that directory with `canonical-sources.json` from `data/audio/`.
+Canonical media goes under `--output artifacts/verse-audio/media/audio`;
+chronological clips use `--output artifacts/verse-audio/media`. Use `--preview`
+on the chronological builder only for a review preview: it exposes verse cues
+inside flagged clips while retaining the existing acoustic cut checks. A normal
+build retains explicit chapter-only fallbacks until those flags are resolved.
+Daily assembly supports `--manifests artifacts/verse-audio/data/audio/manifests`.
+Copy its catalog and manifests together. Rebuild affected days after NT timing
+corrections; their immutable names include the corrected cues and passage cuts.
+
+Generate the listening package (original source excerpts, Arabic text, exact
+hashes, timestamps and dev links, all outside Git):
+
+```sh
+python3 scripts/audio/prepare-listening-review.py --ot <OT> --nt <NT> --excerpts
+```
+
+Open `artifacts/verse-audio/listening/index.html`. Review verse transitions
+within 0.5 seconds of the audible start, with no accumulating drift and no
+clipped Scripture. Check generated playback on dev as well as source excerpts.
+Failed samples require review and correction of the surrounding passage.
+Preserve original model scores when correcting source timestamps, regenerate
+machine review summaries, then regenerate the checklist and affected media.
+
+Record actual results in `data/audio/review/listening.json`, for example:
+
+```json
+{
+  "version": 1,
+  "acceptanceSeconds": 0.5,
+  "reviews": [
+    {
+      "chapter": "GEN-1",
+      "alignmentHash": "<SHA-256 of the exact final alignment file>",
+      "from": 1,
+      "to": 3,
+      "reviewer": "<reviewer name>",
+      "date": "<YYYY-MM-DD>",
+      "notes": "<observations from actual listening>",
+      "result": "accepted",
+      "maxStartErrorSeconds": 0.5,
+      "drift": false,
+      "clippedScripture": false
+    }
+  ]
+}
+```
+
+A listening resolution includes the flagged verse and its neighbours. Stale
+hashes, failed reviews, missing names/notes, drift, clipping, and starts outside
+the target cannot resolve a flag. Scores and thresholds remain unchanged.
+
+Before promoting staged manifests, run the coverage audit against the stage:
+
+```sh
+python3 scripts/audio/audit-verse-coverage.py \
+  --data-root artifacts/verse-audio/data/audio \
+  --media artifacts/verse-audio/media
+```
+
+It checks exact displayed verses and repeated passage occurrences, whole-chapter
+cue reuse, clip-relative cues/cuts, source openings, daily cue propagation,
+immutable names, and encoded durations. `--release` additionally requires all
+listening ranges and host-verified publication hashes. It must pass before a
+production release. An empty listening ledger explicitly means pending review.
+Use `verify-canonical-audio.py --data-root ... --media ... --ot ... --nt ...`
+for canonical encoding and original-source verification.
+
+R2 preparation accepts `--root artifacts/verse-audio` to read staged catalogs.
+Prepare, upload and verify immutable recordings through the existing hosting
+workflow before promoting manifests. On unreliable connections,
+`npm run audio:host:upload -- --concurrency 2` reduces concurrent transfers
+(the default remains 20). Preserve older verified objects for rollback.

@@ -6,12 +6,13 @@ export const POSITION_KEY = "bible-reader-audio-position-v1";
 
 /** Accelerated timing for one chapter's committed manifest. */
 export type ChapterTiming = {
-  /** Seconds of the recording's own opening (NT chapters only). */
+  /** Seconds of the recording's own opening (verse-timed chapters). */
   opening?: number;
-  /** Seconds per verse cue, including a short gap (NT chapters only). */
+  /** Seconds per verse cue, including a short gap (verse-timed chapters). */
   verse?: number;
-  /** Total seconds of a chapter-level (OT) recording. */
+  /** Total seconds of a synthetic chapter-level recording. */
   duration?: number;
+  chapterOnly?: boolean;
   /** Replace the immutable media path, as a rebuilt recording would. */
   src?: string;
   /** Replace the transcript fingerprint, as a stale manifest would. */
@@ -35,10 +36,20 @@ export function acceleratedChapter(
     src: timing.src ?? real.src,
     readingHash: timing.readingHash ?? real.readingHash,
   };
-  if (real.alignment === "chapter")
-    return { ...base, duration: timing.duration ?? 1.2 };
+  if (timing.chapterOnly || real.alignment === "chapter")
+    return {
+      ...base,
+      alignment: "chapter",
+      cues: [],
+      announcements: [],
+      duration: timing.duration ?? 1.2,
+    };
   const opening = real.announcements.length ? (timing.opening ?? 0.3) : 0;
-  const step = timing.verse ?? 0.2;
+  const step =
+    timing.verse ??
+    (timing.duration
+      ? (timing.duration - opening - 0.1) / real.cues.length
+      : 0.2);
   const cues = real.cues.map((cue, index) => ({
     ...cue,
     start: +(opening + index * step).toFixed(3),

@@ -29,6 +29,7 @@ test("Every catalogued playlist is valid, unique and uses published media", () =
     string,
     { chapterOnly: number[]; silenceCuts: { between: number[] }[] }
   > = json("data/audio/review/clips.json").clips;
+  const preview = json("data/audio/review/clips.json").preview === true;
   for (const key of catalog) {
     const [, testament, id] = key.split(":");
     const manifest: AudioManifestV3 = json(
@@ -54,10 +55,14 @@ test("Every catalogued playlist is valid, unique and uses published media", () =
           if (verse in review) inside.push(verse);
         assert.equal(
           entry.alignment,
-          inside.length ? "chapter" : "verse",
+          inside.length && !preview ? "chapter" : "verse",
           `${key}: ${name}`,
         );
-        assert.deepEqual(evidence[name]?.chapterOnly ?? [], inside, name);
+        assert.deepEqual(
+          evidence[name]?.chapterOnly ?? [],
+          preview ? [] : inside,
+          name,
+        );
         for (const [before, after] of [
           [entry.from - 1, entry.from],
           [entry.to, entry.to + 1],

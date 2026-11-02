@@ -221,6 +221,7 @@ export function writeUploadBatches(dir, batches) {
 if (isMain(import.meta.url)) {
   const { values } = parseArgs({
     options: {
+      root: { type: "string", default: "." },
       media: { type: "string", multiple: true },
       output: { type: "string", default: "artifacts/r2-audio" },
       inventory: {
@@ -238,6 +239,7 @@ if (isMain(import.meta.url)) {
     ? values.media
     : (process.env.AUDIO_MEDIA_ROOT || "public").split(delimiter);
   const inventory = prepareRelease({
+    root: values.root,
     output: resolve(values.output),
     roots,
     retain: values.retain,
