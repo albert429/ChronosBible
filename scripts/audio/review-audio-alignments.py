@@ -22,7 +22,6 @@ alignment the summary does not describe. Standard library only.
 """
 import argparse
 import json
-import re
 import shutil
 import statistics
 import sys
@@ -30,6 +29,7 @@ import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from chronos_tools.audio_alignments import alignment_paths as load_alignments
 from chronos_tools.audio_sources import alignment_problems, bible_chapters, load_source_trims  # noqa: E402
 from chronos_tools.fingerprints import digest  # noqa: E402
 from chronos_tools.paths import ROOT  # noqa: E402
@@ -40,15 +40,6 @@ TRAILER_LIMIT = 90.0
 def letters(text):
     """Arabic base letters only: no diacritics, punctuation or digits."""
     return sum(1 for ch in text if unicodedata.category(ch) == "Lo")
-
-
-def load_alignments(folders):
-    found = {}
-    for folder in folders:
-        for path in sorted(Path(folder).glob("*.json")):
-            if re.fullmatch(r"[A-Z0-9]{3}-[1-9]\d{0,2}", path.stem):
-                found[path.stem] = path
-    return found
 
 
 def review(paths, readings, provenance, min_score, rate_mads, trims=None):

@@ -21,7 +21,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 from chronos_tools.audio_sources import (bible_chapters, check_source_trim, load_source_trims,  # noqa: E402
-                                         source_files, verified_alignment)
+                                         source_files, alignment_problems)
+from chronos_tools.audio_alignments import (DEFAULT_FOLDERS, DEFAULT_REVIEWS, alignment_paths,
+    load_alignments, reviewed_digests)
 from chronos_tools.audio_text import reading_hash  # noqa: E402
 from chronos_tools.fingerprints import file_hash, fingerprint  # noqa: E402
 from chronos_tools.media import probe_json  # noqa: E402
@@ -55,7 +57,7 @@ def probe(path):
             "rate": int(stream["sample_rate"]), "duration": float(data["format"]["duration"])}
 
 
-def check_chapter(reading, manifest, record, settings, aligned, media, trim=None):
+def check_chapter(reading, manifest, record, settings, aligned, media, trim=None, validated=None):
     problems = []
     identity = f"bible:{reading['usfm']}:{reading['chapter']}"
     text_hash = reading_hash(reading)
@@ -72,9 +74,13 @@ def check_chapter(reading, manifest, record, settings, aligned, media, trim=None
                            + ([{"trimEnd": end}] if end is not None else []))
     if name != f"{reading['usfm']}-{reading['chapter']}-{expected}.m4a":
         problems.append("media name fingerprint differs from its inputs")
-    alignment_path = aligned / f"{reading['usfm']}-{reading['chapter']}.json"
+    key = f"{reading['usfm']}-{reading['chapter']}"
+    alignment_path = alignment_paths(aligned).get(key) if validated is None else None
     if manifest["alignment"] == "verse":
-        alignment = verified_alignment(alignment_path, reading, record["sourceHash"])
+        alignment = (validated.get(key) if validated is not None else
+                     json.loads(alignment_path.read_text()) if alignment_path else None)
+        if alignment is not None:
+            problems.extend(alignment_problems(alignment, reading, record, end))
         if alignment is None:
             problems.append("verse timing without a tracked alignment")
         elif [(c["verse"], c["start"], c["end"]) for c in manifest["cues"]] != \
@@ -84,7 +90,7 @@ def check_chapter(reading, manifest, record, settings, aligned, media, trim=None
         if [(a["start"], a["end"], a["kind"]) for a in manifest["announcements"]] != \
                 ([(0, opening, "source")] if opening > 0 else []):
             problems.append("opening interval differs from the first verse")
-    elif manifest["cues"] or manifest["announcements"] or alignment_path.exists():
+    elif manifest["cues"] or manifest["announcements"] or alignment_path is not None or (validated is not None and key in validated):
         problems.append("chapter-only timing carries cues or ignores an alignment")
     file = next((root / manifest["src"].lstrip("/") for root in media
                  if (root / manifest["src"].lstrip("/")).exists()), None)
@@ -118,22 +124,27 @@ def main():
     parser.add_argument("--ot", type=Path, help="Original Old Testament MP3 folder (hash check)")
     parser.add_argument("--nt", type=Path, help="Original New Testament MP3 folder (hash check)")
     parser.add_argument("--report", type=Path, default=ROOT / "artifacts/canonical-audio-verification.json")
+    parser.add_argument('--data-root', type=Path, default=ROOT / 'data/audio')
+    parser.add_argument('--alignments', type=Path, nargs='+', default=DEFAULT_FOLDERS)
+    parser.add_argument('--review', type=Path, nargs='+', default=DEFAULT_REVIEWS)
     args = parser.parse_args()
     chapters = list(bible_chapters(ROOT / "data/bible/source.json.gz"))
     readings = {f"bible:{r['usfm']}:{r['chapter']}": r for _, r in chapters}
-    catalog = json.loads((ROOT / "data/audio/chapter-catalog.json").read_text())["chapters"]
-    sources = json.loads((ROOT / "data/audio/canonical-sources.json").read_text())
+    catalog = json.loads((args.data_root / "chapter-catalog.json").read_text())["chapters"]
+    sources = json.loads((args.data_root / "canonical-sources.json").read_text())
     records = {r["identity"]: r for r in sources["chapters"]}
     trims = load_source_trims(args.trims)
-    problems, measured = {}, {}
+    validated, unusable = load_alignments(args.alignments, readings, records, trims,
+        reviewed_digests([json.loads(p.read_text()) for p in args.review]))
+    problems, measured = {key: [reason] for key, reason in unusable.items()}, {}
     if catalog != list(readings):
         problems["catalog"] = ["catalog is not every chapter in canonical order"]
     originals = source_files(args.ot, args.nt, chapters) if args.ot and args.nt else None
     for identity in catalog:
         reading = readings[identity]
-        manifest = json.loads((ROOT / f"data/audio/chapters/{reading['usfm']}/{reading['chapter']}.json").read_text())
+        manifest = json.loads((args.data_root / f"chapters/{reading['usfm']}/{reading['chapter']}.json").read_text())
         found, info = check_chapter(reading, manifest, records[identity], sources["settings"],
-                                    ROOT / "data/audio/alignments", args.media, trims.get(identity))
+                                    args.alignments, args.media, trims.get(identity), validated)
         if originals is not None:
             original = originals[(reading["usfm"], reading["chapter"])]
             if original.name != records[identity]["source"] or file_hash(original) != records[identity]["sourceHash"]:

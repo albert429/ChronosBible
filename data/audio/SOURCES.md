@@ -42,7 +42,7 @@ forced alignment of the whole file against Job 36 + Job 37 text
 score 0.5327) and detected silence 266.867-268.659 s fix the cut at 267.75 s,
 the midpoint after 36:33 (ends 266.9 s). `source-trims.json` records it; the
 build re-derives the end from that evidence and refuses it outside silence.
-The trimmed recording is `JOB-36-6ed5b7c644686255de11.m4a` (267.75 s,
+The trimmed recording is `JOB-36-14abb03e0d6c340a1c6f.m4a` (267.75 s,
 1,685,262 bytes); the superseded whole-file encoding
 `JOB-36-26fa3a24ae2029ba3164.m4a` (471.30 s, 2,953,613 bytes) is no longer
 catalogued and is kept only for rollback.
@@ -50,11 +50,16 @@ catalogued and is kept only for rollback.
 - **260 NT chapters** reuse the verse timings above unchanged (the transcript
   hashes match the full-Bible text). The recording's own spoken opening before
   verse 1 is an explicit `source` interval, so no verse is highlighted during it.
-- **929 OT chapters** have **chapter-level timing only**: no verse cues are
-  inferred, verse skip is unavailable and the player says so. A five-chapter OT
-  alignment benchmark (GEN 1, LEV 11, PSA 23, PSA 119, ISA 53) ran at about 32×
-  real time with no verse under the 0.30 review score; aligning all 929 chapters
-  would take roughly 2.4 hours here and has not been run or reviewed.
+- **929 OT chapters** now reuse the committed OT alignments, with a cue for
+  every displayed verse and an explicit source-opening interval. The complete
+  chapter catalog covers **31,104 verses**. All alignments match the current
+  text, source provenance and machine-review hashes.
+- **Listening status:** pending. The dev preview exposes machine timings for
+  review, including the 18 OT and 21 NT flagged verses. The empty
+  `review/listening.json` records no completed listening reviews. Review tooling
+  generates 296 focused ranges including neighbouring verses, affected clip
+  boundaries, each book's first chapter samples and the named special chapters.
+  The production release audit requires hash-bound listening results.
 
 `scripts/audio/verify-canonical-audio.py` re-checks manifests, fingerprints, alignments
 and encoded media, and with `--ot`/`--nt` every original hash; on 23 October 2026

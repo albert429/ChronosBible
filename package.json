@@ -41,7 +41,8 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "app:host:build": "node scripts/cloudflare-app.mjs build production",
     "app:host:build:dev": "node scripts/cloudflare-app.mjs build dev",
-    "app:host:deploy:dev": "node scripts/cloudflare-app.mjs deploy dev"
+    "app:host:deploy:dev": "node scripts/cloudflare-app.mjs deploy dev",
+    "audio:coverage": "python3 scripts/audio/audit-verse-coverage.py"
   },
   "dependencies": {
     "fflate": "^0.8.2",

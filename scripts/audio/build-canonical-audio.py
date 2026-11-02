@@ -17,13 +17,16 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 from chronos_tools.audio_sources import (bible_chapters, check_source_trim, detect_silences, load_source_trims,  # noqa: E402
-                                         source_files, verified_alignment)
+                                         source_files)
+from chronos_tools.audio_alignments import (DEFAULT_FOLDERS, DEFAULT_REVIEWS, alignment_paths,
+    load_alignments, reviewed_digests)
+from chronos_tools.audio_sources import alignment_problems
+from chronos_tools.audio_timing import SETTINGS
 from chronos_tools.audio_text import reading_hash  # noqa: E402
 from chronos_tools.fingerprints import compact, file_hash, fingerprint  # noqa: E402
 from chronos_tools.media import probe_duration, run_ffmpeg  # noqa: E402
 from chronos_tools.paths import ROOT  # noqa: E402
 
-SETTINGS = {'codec': 'aac', 'bitrate': '48k', 'rate': 24000, 'channels': 1, 'faststart': True}
 MAX_BYTES = 8 * 1024 * 1024
 
 
@@ -40,11 +43,19 @@ def trim_end(trim, reading, source, source_hash, readings):
     return facts['end']
 
 
-def encode(reading, source, aligned, output, manifests, trim=None, readings=None):
+def encode(reading, source, aligned, output, manifests, trim=None, readings=None, validated=None):
     source_hash = file_hash(source)
     code, number = reading['usfm'], reading['chapter']
     end = trim_end(trim, reading, source, source_hash, readings)
-    alignment = verified_alignment(aligned / f'{code}-{number}.json', reading, source_hash)
+    if validated is None:
+        path = alignment_paths(aligned).get(f'{code}-{number}')
+        alignment = json.loads(path.read_text()) if path else None
+    else:
+        alignment = validated.get(f'{code}-{number}')
+    if alignment is not None:
+        problems = alignment_problems(alignment, reading, {'sourceHash': source_hash, 'source': source.name}, end)
+        if problems:
+            raise ValueError(f'{code}-{number}: {problems}')
     cues = [] if alignment is None else [
         {'passage': 0, 'verse': v['verse'], 'start': v['start'], 'end': v['end']} for v in alignment['verses']]
     announcements = []
@@ -99,13 +110,18 @@ def main():
     parser.add_argument('--ot', type=Path, required=True)
     parser.add_argument('--nt', type=Path, required=True)
     parser.add_argument('--bible', type=Path, default=ROOT / 'data/bible/source.json.gz')
-    parser.add_argument('--aligned', type=Path, default=ROOT / 'data/audio/alignments')
+    parser.add_argument('--aligned', type=Path, help='Legacy single alignment directory')
+    parser.add_argument('--alignments', type=Path, nargs='+', default=DEFAULT_FOLDERS)
+    parser.add_argument('--review', type=Path, nargs='+', default=DEFAULT_REVIEWS)
+    parser.add_argument('--data-root', type=Path, default=ROOT / 'data/audio')
     parser.add_argument('--output', type=Path, default=ROOT / 'public/audio')
-    parser.add_argument('--manifests', type=Path, default=ROOT / 'data/audio/chapters')
+    parser.add_argument('--manifests', type=Path)
     parser.add_argument('--chapters', help='Optional comma-separated CODE:N pilot; coverage still checked against full sources')
     parser.add_argument('--trims', type=Path, default=ROOT / 'data/audio/source-trims.json')
     parser.add_argument('--workers', type=int, default=4)
     args = parser.parse_args()
+    args.manifests = args.manifests or args.data_root / 'chapters'
+    folders = [args.aligned] if args.aligned else args.alignments
     chapters = list(bible_chapters(args.bible))
     if len(chapters) != 1189:
         raise ValueError(f'Expected 1189 chapters, got {len(chapters)}')
@@ -119,10 +135,17 @@ def main():
     if set(trims) - set(readings):
         raise ValueError(f'Source trims for unknown chapters: {sorted(set(trims) - set(readings))}')
     selected = [r for _, r in chapters if not args.chapters or f"{r['usfm']}:{r['chapter']}" in args.chapters.split(',')]
+    records = {r['identity']: r for r in json.loads((args.data_root / 'canonical-sources.json').read_text())['chapters']}
+    summaries = [json.loads(path.read_text()) for path in args.review]
+    validated, unusable = load_alignments(folders, readings, records, trims, reviewed_digests(summaries))
+    for reading in selected:
+        key = f"{reading['usfm']}-{reading['chapter']}"
+        if key not in validated:
+            raise ValueError(f"{key}: {unusable.get(key, 'missing reviewed alignment')}")
     results = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = {pool.submit(encode, r, files[(r['usfm'], r['chapter'])], args.aligned, args.output, args.manifests,
-                               trims.get(f"bible:{r['usfm']}:{r['chapter']}"), readings): r for r in selected}
+        futures = {pool.submit(encode, r, files[(r['usfm'], r['chapter'])], folders, args.output, args.manifests,
+                               trims.get(f"bible:{r['usfm']}:{r['chapter']}"), readings, validated): r for r in selected}
         for future in as_completed(futures):
             result = future.result()
             results.append(result)
@@ -130,12 +153,12 @@ def main():
                 print(f"Encoded {len(results)}/{len(selected)} chapters", flush=True)
     ordered = sorted(results, key=lambda x: next(i for i, (_, r) in enumerate(chapters) if x['identity'] == f"bible:{r['usfm']}:{r['chapter']}"))
     if not args.chapters:
-        (ROOT / 'data/audio/chapter-catalog.json').write_text(json.dumps({'version': 1, 'chapters': [r['identity'] for r in ordered]}, indent=2) + '\n')
+        (args.data_root / 'chapter-catalog.json').write_text(json.dumps({'version': 1, 'chapters': [r['identity'] for r in ordered]}, indent=2) + '\n')
     report = ROOT / 'artifacts/audio-work/canonical-report.json'
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps({'settings': SETTINGS, 'chapters': ordered, 'bytes': sum(r['bytes'] for r in results),
                                   'duration': sum(r['duration'] for r in results), 'largest': max(results, key=lambda r: r['bytes'])}, indent=2) + '\n')
-    sources = ROOT / 'data/audio/canonical-sources.json'
+    sources = args.data_root / 'canonical-sources.json'
     if args.chapters and sources.exists():
         built = {r['identity']: r for r in ordered}
         previous = json.loads(sources.read_text())['chapters']

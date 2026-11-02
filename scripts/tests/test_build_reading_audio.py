@@ -162,6 +162,17 @@ class Planning(unittest.TestCase):
         self.assertEqual(encoded[0][1:], (19.75, 48.25))  # same cut as a fully trusted clip
         self.assertEqual(notes, [{"clip": encoded[0][0], "chapterOnly": [3], "silenceCuts": []}])
 
+    def test_preview_exposes_flagged_cues_without_changing_clip_name(self):
+        passages = [{"usfm": "GEN", "chapter": 2, "from": 2, "to": 4}]
+        (preview, reason), encoded = self.make(passages, flagged={"GEN-2": {3}}, preview=True)
+        (fallback, _), old = self.make(passages, flagged={"GEN-2": {3}})
+        self.assertIsNone(reason)
+        self.assertEqual(preview["entries"][0]["alignment"], "verse")
+        self.assertEqual([v["verse"] for v in preview["entries"][0]["cues"]], [2, 3, 4])
+        self.assertEqual(encoded, old)
+        (resolved, _), _ = self.make(passages, flagged={"GEN-2": {3}}, resolved={"GEN-2": {3}})
+        self.assertEqual(resolved["entries"][0]["cues"], preview["entries"][0]["cues"])
+
 
 class Loading(unittest.TestCase):
     def load(self, data, reviewed=True, trims=None, record=RECORD):
