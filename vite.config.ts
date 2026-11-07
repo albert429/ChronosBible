@@ -3,7 +3,7 @@
 // constants, so a disabled feature leaves no code in the bundle.
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import { aiBuildConfig } from "./src/features/ai/config.ts";
+import { aiBuildConfig } from "./scripts/build/ai-config.ts";
 import { audioPublication } from "./scripts/build/audio-publication.ts";
 import { dataVersions } from "./scripts/build/data-versions.ts";
 import { inlineStartup } from "./scripts/build/inline-startup.ts";
@@ -13,17 +13,31 @@ import { serviceWorker } from "./scripts/build/service-worker.ts";
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const audio = audioPublication(env);
-  // Optional AI explanations: off unless VITE_AI_PROVIDERS is set. Values are
+  // Optional AI explanations: off unless VITE_AI_ENABLED is true. Values are
   // inlined as constants so a disabled build drops every AI module.
-  const ai = aiBuildConfig(env);
+  const ai = aiBuildConfig({ ...env, VERCEL: process.env.VERCEL });
   const versions = dataVersions();
   return {
     plugins: [
       react(),
+      {
+        name: "ai-data-version",
+        generateBundle() {
+          this.emitFile({
+            type: "asset",
+            fileName: "ai-data-version.json",
+            source: JSON.stringify({
+              bible: versions.bible,
+              study: versions.study,
+            }),
+          });
+        },
+      },
       removeUnpublishedManifests(audio.published),
       serviceWorker(versions),
       inlineStartup(versions),
     ],
+    server: { proxy: { "/api/ai/": "http://127.0.0.1:8787" } },
     define: {
       __AUDIO_BASE_URL__: JSON.stringify(audio.base),
       __AUDIO_DAYS__: JSON.stringify(audio.advertised.days),
@@ -33,9 +47,7 @@ export default defineConfig(({ command, mode }) => {
       // Registered from production builds only (src/features/offline/register.ts).
       __SERVICE_WORKER__: JSON.stringify(command === "build"),
       __AI_ENABLED__: JSON.stringify(ai !== null),
-      __AI_DAILY_CAP__: JSON.stringify(ai?.dailyCap ?? 0),
-      __AI_ATTEMPT_CAP__: JSON.stringify(ai?.attemptCap ?? 0),
-      __AI_CONFIG__: JSON.stringify(ai),
+      __TURNSTILE_SITE_KEY__: JSON.stringify(ai?.siteKey ?? ""),
     },
   };
 });

@@ -1,4 +1,8 @@
-import { AiError, type AiErrorKind, type StreamCallbacks } from "./types.ts";
+import {
+  AiError,
+  type AiErrorKind,
+  type StreamCallbacks,
+} from "../src/domain/ai/types.ts";
 
 export const MAX_LINE = 65536;
 
@@ -63,8 +67,14 @@ export function errorFrom(
 export async function readChatStream(
   body: ReadableStream<Uint8Array>,
   callbacks: StreamCallbacks,
+  signal?: AbortSignal,
 ): Promise<{ model: string; finish: "stop" | "length" }> {
   const reader = body.getReader();
+  const stop = () => {
+    void reader.cancel().catch(() => {});
+  };
+  signal?.addEventListener("abort", stop, { once: true });
+  if (signal?.aborted) stop();
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
   let model = "";
@@ -128,6 +138,8 @@ export async function readChatStream(
     if (buffer.length > MAX_LINE)
       throw new AiError("server", gotText, { model });
     for (const line of lines) {
+      if (line.length > MAX_LINE)
+        throw new AiError("server", gotText, { model });
       handleLine(line);
       if (done) return;
     }
@@ -145,8 +157,11 @@ export async function readChatStream(
       drain(true);
     }
   } finally {
-    if (done) reader.cancel().catch(() => {});
+    signal?.removeEventListener("abort", stop);
+    reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
+  if (signal?.aborted) throw new AiError("aborted", gotText, { model });
   if (!gotText) throw new AiError("empty", false, { model });
   if (!done && finish === undefined)
     throw new AiError("network", true, { model });

@@ -9,8 +9,8 @@ import {
   saveAnswer,
   usage,
 } from "../src/features/ai/cache.ts";
-import { PROMPT_VERSION } from "../src/features/ai/chips.ts";
-import { MAX_TEXT } from "../src/features/ai/format.ts";
+import { PROMPT_VERSION } from "../src/domain/ai/chips.ts";
+import { MAX_TEXT } from "../src/domain/ai/text.ts";
 import { createGuards } from "../src/features/ai/guards.ts";
 import { reportMailto } from "../src/features/ai/report.ts";
 import {
@@ -22,17 +22,10 @@ import {
   AiError,
   type AiMeta,
   type StreamCallbacks,
-} from "../src/features/ai/types.ts";
+} from "../src/domain/ai/types.ts";
 
 const DATE = "2026-11-01";
 const tick = () => new Promise((resolve) => setTimeout(resolve));
-const verse = { number: 1, text: "في البدء كان الكلمة" };
-const material = {
-  book: "يوحنا",
-  passage: { book: "يوحنا", chapter: 1, start: 1, end: 1, verses: [verse] },
-  verse,
-};
-
 function memory() {
   const map = new Map<string, string>();
   return {
@@ -101,7 +94,6 @@ function harness(
       {
         chip,
         id: "JHN.1.1",
-        material,
         question: options.question ?? "",
         fresh: options.fresh,
         n: ++runs,
@@ -153,8 +145,8 @@ test("an answer counts one attempt when sent and one answer at its first visible
     thinking: false,
   });
   await started.done;
-  assert.deepEqual(h.answered, [1], "hidden reasoning spends nothing");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 1, a: 1 });
+  assert.deepEqual(h.answered, [0], "hidden reasoning spends nothing");
+  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
   assert.deepEqual(h.last(), {
     s: "done",
     chip: "explain",
@@ -167,7 +159,7 @@ test("an answer counts one attempt when sent and one answer at its first visible
   assert.equal(h.start(), undefined);
   assert.equal(h.loads(), 1);
   assert.equal(h.last().s, "done");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 1, a: 1 });
+  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
 });
 
 test("a fresh request skips the cache; a typed question is never cached", async () => {
@@ -240,7 +232,7 @@ test("Stop after text keeps the partial answer for retry; unmount stays silent",
     model: undefined,
     n: 1,
   });
-  assert.deepEqual(h.answered, [1], "the text reached the reader");
+  assert.deepEqual(h.answered, [0], "the text reached the reader");
 
   const gone = stopped();
   const left = gone.start()!;
@@ -251,7 +243,7 @@ test("Stop after text keeps the partial answer for retry; unmount stays silent",
   assert.equal(gone.views.length, before, "no update after unmount");
 });
 
-test("An over-long answer is cut at the card's limit and saved as truncated", async () => {
+test("An over-long answer is cut at the card's limit without caching a truncated answer", async () => {
   const h = harness(async (signal, { onText }, send) => {
     send();
     onText("ا".repeat(MAX_TEXT));
@@ -267,7 +259,7 @@ test("An over-long answer is cut at the card's limit and saved as truncated", as
   assert.equal(
     readAnswer(h.storage, answerKey("JHN.1.1", "explain", PROMPT_VERSION))
       ?.truncated,
-    true,
+    undefined,
   );
   // A provider that stops for length is truncated too.
   const length = harness(async (_s, { onText }, send) => {
@@ -358,7 +350,7 @@ test("An empty answer is an error with a cooldown and spends no answer", async (
   });
   await h.start()!.done;
   assert.equal((h.last() as Extract<View, { s: "error" }>).problem, "empty");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 1 });
+  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
   assert.equal(h.guards.remaining(), 5000);
 });
 
@@ -377,69 +369,15 @@ test("Rate limits wait for the service's reset, bounded to 30-65 seconds", async
   }
 });
 
-test("Session guards outlive one panel: the shared quota, daily answers and attempts", async () => {
-  const clock = { now: 0 };
-  const guards = createGuards({
-    dailyCap: 1,
-    attemptCap: 2,
-    now: () => clock.now,
-  });
-  const quota = harness(
-    async (_s, _c, send) => {
-      send();
-      throw new AiError("quota");
-    },
-    { guards, clock },
+test("Local counters and previous quota errors cannot refuse a server cache hit", () => {
+  const guards = createGuards({ dailyCap: 1, attemptCap: 1 });
+  const storage = memory();
+  storage.setItem(
+    "nt-ai-usage-v1",
+    JSON.stringify({ date: DATE, n: 999, a: 999 }),
   );
-  await quota.start()!.done;
-  // A remounted panel (another harness) shares the guards and is refused.
-  const next = harness(async () => meta(), { guards, clock });
-  assert.equal(next.start(), undefined);
-  assert.equal((next.last() as Extract<View, { s: "error" }>).problem, "quota");
-  assert.equal(next.loads(), 0);
-
-  const fresh = createGuards({
-    dailyCap: 1,
-    attemptCap: 2,
-    now: () => clock.now,
-  });
-  const answers = harness(
-    async (_s, { onText }, send) => {
-      send();
-      onText("جواب");
-      return meta();
-    },
-    { guards: fresh, clock },
-  );
-  await answers.start("ask", { question: "سؤال؟" })!.done;
-  assert.equal(answers.start("ask", { question: "سؤال؟" }), undefined);
-  assert.equal(
-    (answers.last() as Extract<View, { s: "error" }>).problem,
-    "cap",
-  );
-
-  const attempts = createGuards({
-    dailyCap: 5,
-    attemptCap: 1,
-    now: () => clock.now,
-  });
-  const tries = harness(
-    async (_s, _c, send) => {
-      send();
-      throw new AiError("refused");
-    },
-    { guards: attempts, clock },
-  );
-  await tries.start()!.done;
-  assert.equal(
-    (tries.last() as Extract<View, { s: "error" }>).problem,
-    "refused",
-  );
-  assert.equal(tries.start(), undefined);
-  assert.equal(
-    (tries.last() as Extract<View, { s: "error" }>).problem,
-    "attempts",
-  );
+  guards.backOff("quota");
+  assert.equal(guards.refusal(storage, DATE), undefined);
 });
 
 test("The error report carries the request, a safe model name and a clipped answer", () => {

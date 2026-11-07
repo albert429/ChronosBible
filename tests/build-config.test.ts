@@ -33,12 +33,11 @@ test("Every reference configuration sets every VITE_ variable the build reads", 
       ...readdirSync(new URL("../scripts/build/", import.meta.url))
         .filter((name) => name.endsWith(".ts"))
         .map((name) => read(`scripts/build/${name}`)),
-      read("src/features/ai/config.ts"),
     ]
       .join("\n")
       .match(/VITE_[A-Z_]+/g),
   );
-  assert.ok(read_.size >= 8);
+  assert.ok(read_.size >= 4);
   for (const [name, config] of Object.entries(CONFIGS)) {
     assert.deepEqual(viteKeys(config.env), [...read_].sort(), name);
     assert.equal(config.outDir, name === "ai-stub" ? "dist-ai" : "dist");
@@ -51,8 +50,8 @@ test("production-audio matches what the Cloudflare production build sets", () =>
   for (const key of [...viteKeys(expected), "CI", "NODE_ENV"])
     assert.equal(actual[key], expected[key as keyof typeof expected], key);
   // Optional AI settings stay empty: production builds without AI.
-  assert.equal(actual.VITE_AI_PROVIDERS, "");
-  assert.equal(actual.VITE_OPENROUTER_API_KEY, "");
+  assert.equal(actual.VITE_AI_ENABLED, "false");
+  assert.equal(actual.VITE_OPENROUTER_API_KEY, undefined);
   // The explicit chapter policy, pinned here too: the reference build is what
   // production builds, and production advertises hosted chapters.
   assert.equal(actual.VITE_AUDIO_CHAPTERS_ENABLED, "true");
@@ -68,7 +67,7 @@ test("fixture-audio matches the variables npm run test:e2e exports", () => {
   const fixture = CONFIGS["fixture-audio"].env as Record<string, string>;
   for (const [key, value] of Object.entries(expected))
     assert.equal(fixture[key], value, key);
-  assert.equal(fixture.VITE_AI_PROVIDERS, "");
+  assert.equal(fixture.VITE_AI_ENABLED, "false");
 });
 
 test("The browser builds are the fixture-audio and ai-stub configurations", () => {
@@ -89,13 +88,11 @@ test("The browser builds are the fixture-audio and ai-stub configurations", () =
     buildEnvironment("ai-stub", system),
   );
   const ai = browserEnvironment("ai", { stubPort: 4432, source: {} });
-  assert.equal(ai.VITE_OPENROUTER_BASE_URL, "http://127.0.0.1:4432/api/v1");
-  assert.equal(
-    ai.VITE_OPENROUTER_API_KEY,
-    read("tests/browser/ai-stub.ts").match(/AI_KEY = "([^"]+)"/)?.[1],
-  );
+  assert.equal(ai.VITE_OPENROUTER_BASE_URL, undefined);
+  assert.equal(ai.VITE_OPENROUTER_API_KEY, undefined);
+  assert.equal(ai.VITE_AI_ENABLED, "true");
   for (const [name, value] of Object.entries(CONFIGS["fixture-audio"].env))
-    if (!name.startsWith("VITE_AI") && !name.startsWith("VITE_OPENROUTER"))
+    if (!name.startsWith("VITE_AI") && !name.startsWith("VITE_TURNSTILE"))
       assert.equal(ai[name], value, name);
   assert.throws(
     () => browserEnvironment("ai", { stubPort: undefined, source: {} }),
@@ -121,10 +118,10 @@ test("Playwright builds explicitly and never reuses a server on its ports", asyn
   assert.deepEqual(servers[1].env, { SSE_STUB_PORT: String(PW_PORT + 2) });
   assert.equal(
     servers[2].command,
-    `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/quality/static-server.mjs dist-ai --port ${PW_PORT + 1}`,
+    `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/worker/browser-server.mjs`,
   );
   // No build variables come from the config: the build sets them all.
-  assert.equal(servers[2].env, undefined);
+  assert.deepEqual(servers[2].env, { PW_PORT: String(PW_PORT) });
   const e2e: string = JSON.parse(read("package.json")).scripts["test:e2e"];
   assert.match(
     e2e,
@@ -147,7 +144,7 @@ test("Build environments drop inherited VITE_, fixture and credential variables"
     CLOUDFLARE_API_TOKEN: "secret",
   });
   assert.equal(env.PATH, "/bin");
-  assert.equal(env.VITE_OPENROUTER_API_KEY, "");
+  assert.equal(env.VITE_OPENROUTER_API_KEY, undefined);
   assert.equal(env.AUDIO_TEST_FIXTURES, undefined);
   for (const key of ["VITE_FUTURE_KEY", "NODE_OPTIONS", "CLOUDFLARE_API_TOKEN"])
     assert.equal(env[key], undefined);

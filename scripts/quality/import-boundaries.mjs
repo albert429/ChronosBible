@@ -35,6 +35,7 @@ export const FEATURE_EDGES = {
 
 /** Each domain area may import itself and these areas. */
 export const DOMAIN_EDGES = {
+  ai: [],
   scripture: [],
   reading: ["scripture"],
   profiles: ["scripture", "reading"],
@@ -43,10 +44,7 @@ export const DOMAIN_EDGES = {
 };
 
 /** Feature modules that build and tool code may import (plain, React-free). */
-export const TOOL_FEATURE_FILES = [
-  "features/ai/config.ts",
-  "features/offline/rules.ts",
-];
+export const TOOL_FEATURE_FILES = ["features/offline/rules.ts"];
 
 const posix = (value) => value.split(path.sep).join("/");
 
@@ -56,6 +54,7 @@ const posix = (value) => value.split(path.sep).join("/");
  */
 export function placeOf(relative) {
   const parts = posix(relative).split("/");
+  if (parts[0] === "worker") return { layer: "worker", area: "" };
   if (parts[0] !== "src") return undefined;
   if (parts.length === 2) return { layer: "root", area: "" };
   const [, layer, area] = parts;
@@ -74,6 +73,14 @@ const label = (place) =>
  * edge is allowed. `toFile` is the target path relative to src/.
  */
 export function violation(from, to, toFile) {
+  if (to.layer === "worker")
+    return !from || from.layer === "worker"
+      ? undefined
+      : "browser code cannot import worker implementation or secrets";
+  if (from?.layer === "worker")
+    return to.layer === "domain" || (to.layer === "shared" && to.area === "lib")
+      ? undefined
+      : "worker imports only worker, domain and shared/lib";
   if (to.layer === "app" && from?.layer !== "app" && from?.layer !== "root")
     return "nothing imports app/ except src/main.tsx";
   if (!from) {

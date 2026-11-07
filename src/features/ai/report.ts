@@ -1,5 +1,6 @@
-import { PROMPT_VERSION } from "./chips.ts";
-import { clip, modelLabel, wellFormed } from "./format.ts";
+import { PROMPT_VERSION } from "../../domain/ai/chips.ts";
+import { modelLabel } from "./format.ts";
+import { clip, wellFormed } from "../../domain/ai/text.ts";
 
 /**
  * «الإبلاغ عن خطأ»: a mailto link carrying the reference, the request, the

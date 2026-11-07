@@ -4,7 +4,7 @@
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
-export const CACHE_KEY = "nt-ai-cache-v1";
+export const CACHE_KEY = "nt-ai-cache-v2";
 export const USAGE_KEY = "nt-ai-usage-v1";
 /** Set when the reader turns the feature off on this device. */
 export const OFF_KEY = "nt-ai-off-v1";
@@ -26,13 +26,13 @@ export function browserStorage(): StorageLike | null {
   }
 }
 
-export const answerKey = (id: string, chip: string, version: number) =>
+export const answerKey = (id: string, chip: string, version: number | string) =>
   `${id}|${chip}|${version}`;
 
 const validEntry = (e: unknown): e is Entry =>
   Array.isArray(e) &&
   typeof e[0] === "string" &&
-  e[0].length <= 64 &&
+  e[0].length <= 128 &&
   typeof e[1] === "string" &&
   e[1].length <= MAX_ANSWER &&
   typeof e[2] === "string" &&
@@ -84,7 +84,7 @@ export function saveAnswer(
   storage: StorageLike | null,
   key: string,
   answer: CachedAnswer,
-  version: number,
+  version: number | string,
 ) {
   const entry: Entry = [
     key,
@@ -170,6 +170,7 @@ export function isTurnedOff(storage: StorageLike | null) {
 export function turnOff(storage: StorageLike | null) {
   try {
     storage?.removeItem(CACHE_KEY);
+    storage?.removeItem("nt-ai-cache-v1");
     storage?.removeItem(LEGACY_CONSENT_KEY);
   } catch {
     // Nothing to clear.

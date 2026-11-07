@@ -28,6 +28,8 @@ test("verify:all runs the checks CI runs, in CI's order, and validate keeps its 
     steps.map((step) => [step.command, ...step.args.slice(0, 3)].join(" ")),
     [
       "npm run validate",
+      "npm run test:worker",
+      "npm run layers",
       "python3 -I -m unittest",
       "python3 -m py_compile scripts/align-audio.py",
       "npm run test:e2e",
@@ -44,7 +46,7 @@ test("verify:all runs the checks CI runs, in CI's order, and validate keeps its 
 });
 
 test("Only validate gets the CI audio environment; the browser tests keep PW_PORT", () => {
-  const [validate, python, , browser] = verificationSteps(root, {
+  const [validate, , , python, , browser] = verificationSteps(root, {
     PATH: "/bin",
     PW_PORT: "4470",
   });
@@ -57,7 +59,7 @@ test("Only validate gets the CI audio environment; the browser tests keep PW_POR
 });
 
 test("py_compile covers every Python file under scripts/, including the package and tests", () => {
-  const compile = verificationSteps(root, {})[2];
+  const compile = verificationSteps(root, {})[4];
   const files = compile.args.slice(2);
   assert.deepEqual(
     files,

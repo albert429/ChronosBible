@@ -167,11 +167,11 @@ test("An unsafe audio host fails the build", async () => {
     await assert.rejects(audioDays(base), Error, base);
 });
 
-test("AI constants are off unless a provider is configured", async () => {
+test("AI constants are off unless the public UI flag is enabled", async () => {
   delete process.env.VITE_AUDIO_BASE_URL;
   const resolved = await makeConfig(env);
   assert.equal(resolved.define?.__AI_ENABLED__, "false");
-  assert.equal(resolved.define?.__AI_CONFIG__, "null");
+  assert.equal(resolved.define?.__AI_CONFIG__, undefined);
 });
 
 test("The audio host is inlined as __AUDIO_BASE_URL__", async () => {

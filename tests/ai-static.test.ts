@@ -26,15 +26,17 @@ test("Source never injects HTML", () => {
   );
 });
 
-test("Only the lazy run module (and its declaration) references the AI key config", () => {
+test("No browser module references provider configuration or server prompts", () => {
   assert.deepEqual(
     files
-      .filter((f) => f.text.includes("__AI_CONFIG__"))
+      .filter((f) =>
+        /__AI_CONFIG__|OPENROUTER_API_KEY|SYSTEM_PROMPT|gateway.ai.cloudflare.com/.test(
+          f.text,
+        ),
+      )
       .map((f) => f.name)
       .sort(),
-    ["features/ai/run.ts", "vite-env.d.ts"]
-      .filter((name) => files.some((f) => f.name === name))
-      .sort(),
+    [],
   );
 });
 

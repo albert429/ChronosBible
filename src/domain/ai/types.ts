@@ -1,6 +1,14 @@
 export type ChipId = "explain" | "words" | "background" | "ask";
 
 export type AiErrorKind =
+  | "invalid"
+  | "origin"
+  | "challenge"
+  | "disabled"
+  | "busy"
+  | "storage"
+  | "cap"
+  | "attempts"
   | "quota" // the shared daily allowance (or the key's credit) is used up
   | "rate" // too many requests per minute
   | "auth" // key revoked, disabled or invalid
@@ -34,30 +42,6 @@ export class AiError extends Error {
   }
 }
 
-/**
- * Settle like `promise`, but reject with AiError("aborted") as soon as `signal`
- * aborts. The underlying work (a chunk import, a shared JSON load) carries on.
- */
-export function abortable<T>(promise: Promise<T>, signal: AbortSignal) {
-  return new Promise<T>((resolve, reject) => {
-    const stop = () => reject(new AiError("aborted"));
-    if (signal.aborted) stop();
-    else signal.addEventListener("abort", stop, { once: true });
-    const done = () => signal.removeEventListener("abort", stop);
-    // Always handled, so a late rejection is never reported as unhandled.
-    promise.then(
-      (value) => (done(), resolve(value)),
-      (error: unknown) => (done(), reject(error)),
-    );
-  });
-}
-
-export type AiRequest = {
-  system: string;
-  prompt: string;
-  maxOutputTokens: number;
-};
-
 export type AiMeta = {
   provider: string;
   model: string;
@@ -66,17 +50,42 @@ export type AiMeta = {
 
 export type StreamCallbacks = {
   onText(text: string): void;
+  /** The API sends bounded snapshots, so sanitization may revise a prefix. */
+  onSnapshot?(text: string): void;
+  onQuota?(quota: AiStatus): void;
   /** The answering model, as soon as a chunk names it. */
   onMeta?(model: string): void;
   /** Keep-alives or hidden reasoning: the model is working but no text yet. */
   onActivity?(): void;
 };
 
-export type AiProvider = {
-  id: string;
-  stream(
-    request: AiRequest,
-    signal: AbortSignal,
-    callbacks: StreamCallbacks,
-  ): Promise<AiMeta>;
+export type AiStatus = {
+  available: boolean;
+  cacheRevision: string;
+  limits: { answers: number; attempts: number };
+  usage: { answers: number; attempts: number };
+  resets: { device: number; provider: number };
 };
+
+export type AnswerRequest = {
+  verseId: string;
+  chip: ChipId;
+  question?: string;
+  fresh?: boolean;
+  turnstileToken: string;
+};
+
+/** `delta.text` is the complete visible text so far (at most 6,000 chars). */
+export type AiEvent =
+  | {
+      event: "meta";
+      data: { model?: string; cached: boolean; requestId: string };
+    }
+  | { event: "activity"; data: Record<string, never> }
+  | { event: "delta"; data: { text: string } }
+  | { event: "quota"; data: AiStatus }
+  | { event: "done"; data: AiMeta }
+  | {
+      event: "error";
+      data: { kind: AiErrorKind; retryAt?: number; model?: string };
+    };

@@ -1,0 +1,6 @@
+# Copy to .dev.vars.dev for local Wrangler only. Never commit real secrets.
+# Deployment scripts reject local secret files, including this copied file.
+OPENROUTER_API_KEY=
+AI_GATEWAY_TOKEN=
+TURNSTILE_SECRET=
+AI_COOKIE_SECRET=

@@ -15,10 +15,14 @@ test("Cloudflare builds load audio from the contract's R2 origin", () => {
   assert.equal(AUDIO_BASE_URL, AUDIO_HOST_ORIGIN);
 });
 
-test("wrangler.json serves the dist assets only, with no Worker code", () => {
+test("wrangler.json routes only AI API requests through Worker code", () => {
   const config = json("wrangler.json");
-  assert.deepEqual(config.assets, { directory: "./dist" });
-  assert.equal(config.main, undefined);
+  assert.deepEqual(config.assets, {
+    directory: "./dist",
+    binding: "ASSETS",
+    run_worker_first: ["/api/ai/*"],
+  });
+  assert.equal(config.main, "worker/index.ts");
   assert.equal(
     config.build.command,
     "node scripts/cloudflare-app.mjs build production",

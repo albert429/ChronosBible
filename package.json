@@ -2,7 +2,7 @@
   "name": "nt-bible-reading",
   "version": "1.0.0",
   "private": true,
-  "description": "The Holy Bible / الكتاب المقدس: Arabic reading and listening in canonical or chronological order, with a 150-day youth plan.",
+  "description": "The Holy Bible / \u0627\u0644\u0643\u062a\u0627\u0628 \u0627\u0644\u0645\u0642\u062f\u0633: Arabic reading and listening in canonical or chronological order, with a 150-day youth plan.",
   "author": "Albert Alfred <albertalfred429@gmail.com>",
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -42,7 +42,13 @@
     "app:host:build": "node scripts/cloudflare-app.mjs build production",
     "app:host:build:dev": "node scripts/cloudflare-app.mjs build dev",
     "app:host:deploy:dev": "node scripts/cloudflare-app.mjs deploy dev",
-    "audio:coverage": "python3 scripts/audio/audit-verse-coverage.py"
+    "audio:coverage": "python3 scripts/audio/audit-verse-coverage.py",
+    "worker:typecheck": "tsc -p tsconfig.worker.json",
+    "worker:build": "node scripts/worker/bundle.mjs",
+    "worker:dev": "wrangler dev --env dev --port 8787",
+    "test:worker": "node --test tests/worker/*.test.mjs",
+    "app:host:disable": "node scripts/cloudflare-app.mjs disable production",
+    "app:host:disable:dev": "node scripts/cloudflare-app.mjs disable dev"
   },
   "dependencies": {
     "fflate": "^0.8.2",
@@ -52,21 +58,25 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/workers-types": "5.20261103.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.51.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "0.25.12",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "lighthouse": "^13.5.0",
+    "miniflare": "5.20261102.0-beta",
     "playwright": "^1.63.0",
     "prettier": "^3.9.9",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.71.2",
-    "vite": "^6.1.0"
+    "vite": "^6.1.0",
+    "wrangler": "4.156.2"
   },
   "engines": {
     "node": "22.x"

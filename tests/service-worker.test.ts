@@ -9,7 +9,11 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import type { Plugin } from "vite";
 import { serviceWorker } from "../scripts/build/service-worker.ts";
-import { DATA_CACHE, SAVE_HEADER } from "../src/features/offline/rules.ts";
+import {
+  DATA_CACHE,
+  SAVE_HEADER,
+  route,
+} from "../src/features/offline/rules.ts";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const ORIGIN = "https://chronosbible.com";
@@ -219,4 +223,20 @@ test("pages are this build's app; versioned data, gzip included, is kept on firs
   // The second answer came from the data cache: one network request.
   assert.deepEqual(worker.network, [key(words)]);
   assert.deepEqual([...worker.stores.get(DATA_CACHE)!.keys()], [key(words)]);
+});
+
+test("AI API navigations always bypass the offline worker", () => {
+  assert.equal(
+    route(
+      {
+        method: "GET",
+        mode: "navigate",
+        url: "https://app.test/api/ai/v1/status",
+        headers: new Headers(),
+      },
+      "https://app.test",
+      new Set(["/api/ai/v1/status"]),
+    ),
+    "network",
+  );
 });

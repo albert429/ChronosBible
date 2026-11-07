@@ -38,7 +38,7 @@ remain ignored.
 | `src/features/profiles/`                                              | Profile storage adapter (`bible-reader-state-v2`), `useProgress`, backup files, and the Join, Invite, Settings and restore dialogs (loaded on demand)                                                                                                                                                                                                                                                                                                   |
 | `src/features/audio/`                                                 | Player and controls, media element, Media Session, highlighting, playlist controller, playback position, availability flags                                                                                                                                                                                                                                                                                                                             |
 | `src/features/study/`                                                 | Lazy full-Bible study sheet: translations, Greek/Hebrew/Aramaic words, optional AI card                                                                                                                                                                                                                                                                                                                                                                 |
-| `src/features/ai/`                                                    | AI explanation pipeline: config, prompt, provider chain (`providers/openrouter.ts`), request and guard control, SSE parsing, cache, answer formatting                                                                                                                                                                                                                                                                                                   |
+| `src/features/ai/`                                                    | AI browser UI: same-origin API, Turnstile, local cache, Stop and safe answer rendering; server runtime lives in `worker/`                                                                                                                                                                                                                                                                                                                               |
 | `src/features/appearance/`, `src/features/offline/`                   | Text size, theme and diacritics; offline packs and their download queue (the menu's download button, the installed app's automatic download), update notice, service-worker registration, rules and the classic worker source (`sw.ts`)                                                                                                                                                                                                                 |
 | `src/shared/`                                                         | `ui/` (native-dialog `Sheet`, `Feedback`, `PassageReference`, `ReactIcon`, form styles), `hooks/`, `lib/` (pure helpers, app credits), `browser/` (`afterStartup`, `network`, the Scripture markup contract) and `styles/` (design tokens, base, global); component CSS sits beside its component                                                                                                                                                       |
 | `data/`                                                               | Canonical Scripture plan, extracted source table, `books.json` (66 books: USFM, OSIS, STEPBible codes with Arabic names)                                                                                                                                                                                                                                                                                                                                |
@@ -78,7 +78,7 @@ relative imports, including lazy `import()`):
   appearance; plan to streak; streak to profiles; appearance to audio.
 - Nothing imports `app/` except `src/main.tsx`.
 - Build and tool code (`scripts/`, `vite.config.ts`) imports only `src/domain`,
-  `src/data`, `src/shared/lib`, `src/features/ai/config.ts` and
+  `src/data`, `src/shared/lib` and
   `src/features/offline/rules.ts`. Modules that Node runs directly use relative
   imports with explicit `.ts` extensions and no alias loader.
 
@@ -179,7 +179,7 @@ Schedules use Cairo dates. Catch-up and advance reading do not move a reader's s
 
 The app requests Scripture data (`/bible`, `/readings`, `/chronology`, `/study`) with its folder's content version, `?v=<hash>` (`src/data/dataVersion.ts`). `vite.config.ts` hashes each generated folder's file names and bytes into `__DATA_VERSIONS__`, and both hosts serve these folders `immutable` for a year, so a returning reader makes no data requests at all while any regenerated folder gets new addresses. Audio manifests, `/`, `/index.html` and `/sw.js` keep revalidating. Without generated data (unit tests, a bare checkout) addresses carry no version.
 
-The app is installable and works offline (`src/features/offline/`). `public/manifest.json` and the icons in `public/icons/` (exported from `src/assets/favicon.svg` by `npm run icons:build`) describe the installed app. `vite.config.ts` builds `src/features/offline/sw.ts` on its own (`scripts/build/service-worker.ts`), after the app, as the classic script `/sw.js`, inlining the build's file list and data versions, so it never imports a chunk the page shares. The worker, registered from production builds once the page has settled (`src/features/offline/register.ts`, loaded through `afterStartup` so neither it nor the preload list joins the first screen's requests), precaches `/`, every hashed file, the manifest and icons per build; answers every navigation with that build's page; keeps every versioned data file it serves in `chronos-data-v1`; and leaves audio, AI, other sites and unversioned requests to the network (`src/features/offline/rules.ts`, unit-tested). Activating a build deletes older builds' caches and data files whose folder version changed. A new build installs in the background and waits: «تحديث جديد متاح — تحديث» switches to it and reloads. The menu's «القراءة دون اتصال وتثبيت التطبيق» (a lazy chunk) offers the browser's install prompt (with Add to Home Screen instructions on iOS), saves the whole text (plan days, every chapter, both chronologies: 1,895 files) or the study notes (every chapter's index, words and translations from `/study/v2/inventory.json`: 3,567 files, about 13 MB) six at a time into the same cache, resuming after an interruption and asking for persistent storage, and shows what the site stores. Playwright blocks service workers except in `tests/browser/offline.spec.ts`, since a worker hides requests from `page.route`.
+The app is installable and works offline (`src/features/offline/`). `public/manifest.json` and the icons in `public/icons/` (exported from `src/assets/favicon.svg` by `npm run icons:build`) describe the installed app. `vite.config.ts` builds `src/features/offline/sw.ts` on its own (`scripts/build/service-worker.ts`), after the app, as the classic script `/sw.js`, inlining the build's file list and data versions, so it never imports a chunk the page shares. The worker, registered from production builds once the page has settled (`src/features/offline/register.ts`, loaded through `afterStartup` so neither it nor the preload list joins the first screen's requests), precaches `/`, every hashed file, the manifest and icons per build; answers app navigations with that build's page (all `/api/ai/*` requests bypass it); keeps every versioned data file it serves in `chronos-data-v1`; and leaves audio, AI, other sites and unversioned requests to the network (`src/features/offline/rules.ts`, unit-tested). Activating a build deletes older builds' caches and data files whose folder version changed. A new build installs in the background and waits: «تحديث جديد متاح — تحديث» switches to it and reloads. The menu's «القراءة دون اتصال وتثبيت التطبيق» (a lazy chunk) offers the browser's install prompt (with Add to Home Screen instructions on iOS), saves the whole text (plan days, every chapter, both chronologies: 1,895 files) or the study notes (every chapter's index, words and translations from `/study/v2/inventory.json`: 3,567 files, about 13 MB) six at a time into the same cache, resuming after an interruption and asking for persistent storage, and shows what the site stores. Playwright blocks service workers except in `tests/browser/offline.spec.ts`, since a worker hides requests from `page.route`.
 
 Once a reading is shown and the page has settled (`src/shared/browser/afterStartup.ts`: load, two seconds, then idle), its data paths are remembered (`bible-reader-preload-v1`, `src/features/reader/preload.ts`). On the next launch an inline script in `index.html` starts fetching them with the page, adding the build's versions; its source is `src/features/reader/earlyReading.ts`, which `scripts/build/inline-startup.ts` bundles into that `<script>` (an external module would run only after the page is parsed), so the text downloads alongside the app's code instead of after it; a `?mode=`/`?day=` link fetches what it names, a fresh reader Genesis 1, and an older reader without the key nothing. The responses wait in `window.__earlyData` (`src/data/earlyResponses.ts`), and the JSON client (`src/data/jsonClient.ts`) uses each for the first load of its address: WebKit does not hand a `<link rel=preload as=fetch>` response to a later `fetch()`, which would request the text twice. A wrong guess costs one small request. Because the text can now arrive before its fonts, a linked or resumed verse is placed again once they settle, unless the reader has tapped, scrolled with a wheel or pressed a key since. Scroll position alone cannot tell: WebKit has no scroll anchoring, so the swap's shorter page clamps the scroll on its own.
 
@@ -201,108 +201,11 @@ Closed sheets keep only their native dialog shell mounted. Their content mounts 
 
 ## AI explanations (optional)
 
-Off by default. With `VITE_AI_PROVIDERS` unset, the build contains no AI code or text. When it is set, the study sheet gets a last collapsed card, «اسأل الذكاء الاصطناعي». The reader chooses «اشرح الآية», «معاني الكلمات» or «الخلفية والسياق», or types a question (3–200 characters). A free model on [OpenRouter](https://openrouter.ai/) then streams a short Arabic answer straight to the browser. There is no backend, and nothing is generated in advance.
-
-### Configuration
-
-| Variable                   | Meaning                                                                                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_AI_PROVIDERS`        | `openrouter` enables the card; empty disables it                                                                                                           |
-| `VITE_OPENROUTER_API_KEY`  | The key. It is compiled into public JavaScript                                                                                                             |
-| `VITE_OPENROUTER_MODELS`   | Up to two `:free` models, comma-separated. Default: `google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free`. `openrouter/free` is always appended last |
-| `VITE_AI_DAILY_CAP`        | Answers per device per Cairo day, 1–100 (default 10). Requests, including failed ones, are capped at twice this                                            |
-| `VITE_OPENROUTER_BASE_URL` | Optional `https://` endpoint with OpenRouter's API, for a future proxy                                                                                     |
-
-`vite.config.ts` validates these through `src/features/ai/config.ts` and inlines the result as build constants. An invalid value fails the build, and the app never reads `import.meta.env`. Only zero-priced `:free` models are accepted. `VITE_AI_ALLOW_LOCAL=1` exists only so the browser tests can reach the local stub over `http://127.0.0.1`; never set it in Vercel.
-
-For local testing, put the values in `.env.development.local`. `npm run dev` reads that file, Git ignores it, and `npm run build` does not read it. Never commit a `.env*` file other than `.env.example`.
-
-### Loading
-
-`features/study/StudyPanel.tsx` imports the card only when `__AI_ENABLED__` is true; otherwise Rollup drops it. The `AiPanel-*` chunk (interface, chip labels, cache, formatting) loads when the card first opens. The `run-*` chunk (prompt, streaming, the provider and the key) loads on the first request that the on-device cache cannot answer. That request also loads the canonical translation range and, for «معاني الكلمات» and typed questions, the word range and shared lexicon shards, through the same caches as the study sections. Study context is optional: a failed resource does not prevent a request using the remaining material. «إيقاف» takes effect at once, even while these are still loading, and a daily attempt counts only once the request is actually sent. The main `index-*` chunk is the same either way.
-
-### What is sent
-
-Each request is one POST to `/chat/completions`. It carries:
-
-- a fixed system prompt;
-- the reference and section heading;
-- the verse and up to three verses either side, in Van Dyck without diacritics;
-- the verse in كتاب الحياة and the KJV;
-- up to ten original-word groups with their glosses (Greek key words, or Hebrew/Aramaic rows containing a noun, verb or adjective, with their affixes), for «معاني الكلمات» and typed questions, plus available Greek lexicon definitions (references removed) for «معاني الكلمات» only; TBESH definitions are excluded from the data;
-- the task, or the reader's question.
-
-It never carries the reader's name, plan day, dates or progress. The headers are the key, `HTTP-Referer` (the site origin), `X-OpenRouter-Title: Bible150` and `X-OpenRouter-App-Visibility: hidden`, and the request sends no cookies.
-
-OpenRouter sees the reader's IP address. Free-model providers may keep prompts and train on them. Readers accept a one-time notice before their first request.
-
-### Limits and on-device data
-
-- **The free allowance belongs to the OpenRouter account, so every reader shares it.** It is 20 requests a minute and 50 a day, rising to 1,000 a day after a one-time purchase of at least $10. It resets at 00:00 UTC. A group that taps the card together, for example during a meeting, can hit the per-minute limit. Those readers see «الخدمة مشغولة الآن» and can retry after 30 seconds to about a minute (OpenRouter's reset time, bounded in case the phone's clock is wrong). When the daily allowance runs out, everyone sees «انتهت حصة الخدمة المشتركة اليوم».
-- **The key is public and cannot be restricted to this site.** Anyone who copies it can use up the shared allowance until the key is rotated. Only a server could prevent this. The checklist below keeps spending at $0 and the models free.
-- **Each device has its own daily caps:** 10 answers and 20 requests by default. Chip answers are cached on the device (`nt-ai-cache-v1`, at most 60 answers); typed questions are not cached. Usage is stored in `nt-ai-usage-v1`. The feature is on by default; its notes, data-sharing details and remaining count sit behind the card's «التفاصيل والإعدادات» link. «إيقاف الميزة ومسح بياناتها» there removes the cache and sets `nt-ai-off-v1` until the reader taps «تشغيل الميزة». None of these keys are part of progress backups. If the browser blocks storage, counts and the off switch last until the page reloads, so the caps still apply.
-- **Errors use fixed Arabic messages.** Server error text is never shown.
-
-When the prompt, chips or models change, bump `PROMPT_VERSION` in `src/features/ai/chips.ts` so cached answers are dropped. When what is sent, or who receives it, changes, update the details text in `src/features/ai/AiPanel.tsx` and the About page.
-
-### Owner checklist
-
-1. **Create a dedicated OpenRouter account** for the app: no BYOK, auto top-up off, no saved card. Never put a management key in the app.
-2. **Set the privacy settings.** Allow free endpoints that may train on inputs; otherwise the free models are filtered out. Keep prompt publishing and OpenRouter's own input logging off.
-3. **Create a key named `bible150-web`:**
-   - a credit limit of **$0**. If $0 also blocks free models, use $0.01 with a daily reset;
-   - an expiry about 12 months out, with a reminder two weeks before;
-   - a guardrail that allows only the configured models and `openrouter/free`.
-4. **Check the key from a terminal**, never in a chat or a commit. Use the app's exact request body:
-
-   ```sh
-   read -rs KEY   # paste the key; it is not echoed or saved in history
-   curl -sSN https://openrouter.ai/api/v1/chat/completions \
-     -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-     -H "HTTP-Referer: https://chronosbible.com/" -H "X-OpenRouter-Title: ChronosBible" \
-     -H "X-OpenRouter-App-Visibility: hidden" \
-     -d '{"models":["google/gemma-4-31b-it:free","google/gemma-4-26b-a4b-it:free","openrouter/free"],"messages":[{"role":"user","content":"اشرح يوحنا 3:16 في جملتين."}],"stream":true,"max_tokens":2000,"temperature":0.3,"reasoning":{"exclude":true}}'
-   curl -sS https://openrouter.ai/api/v1/key -H "Authorization: Bearer $KEY"
-   ```
-
-   Keep all three attribution headers on every manual request: the first request with the site's `HTTP-Referer` creates the app's OpenRouter entry, and its visibility is set then. The stream should name a `"model"` in each chunk. Also confirm that:
-   - `"models":["openrouter/free"]` on its own answers;
-   - a paid model returns 402;
-   - a free model outside the guardrail returns 403.
-
-   The `/key` response shows the limit and `free_model_daily_requests`.
-
-5. **Optionally buy $10 of credit once**, which raises the daily allowance to 1,000, then remove the card.
-6. **Try the feature locally.** With the key in `.env.development.local`, run `npm run dev` and try about ten verses with each chip and a few questions. Ask church leadership to review sample answers, and run `npm run ai:models`. It reads the same variables as the build, from the production env files, then the development ones; values that exist only in Vercel can be passed in the shell, e.g. `VITE_OPENROUTER_MODELS=a:free,b:free npm run ai:models`. It never needs or sends the key.
-7. **Turn it on in Vercel.** In Project → Settings → Environment Variables, set `VITE_AI_PROVIDERS=openrouter` and `VITE_OPENROUTER_API_KEY` for **Production only**, then redeploy. The variables are read at build time.
-8. **Test on a real phone.** The next day, check `/api/v1/key` again to confirm the key is still active.
-9. **Every week,** review the activity page and run `npm run ai:models`. Free models are renamed and retired.
-
-**Rotate the key:** create a new key, update the Vercel variable, redeploy, then delete the old key.
-
-**Kill switch:** remove `VITE_AI_PROVIDERS` in Vercel and redeploy. The card disappears.
-
-**Cloudflare:** production never enables AI. The dev Worker (dev.chronosbible.com) can, through its Workers Builds build variables; see [AI on the dev Worker](#ai-on-the-dev-worker).
-
-### Tests
-
-`tests/ai-*.test.ts` cover:
-
-- the configuration rules;
-- SSE parsing;
-- the provider's requests and errors;
-- the fallback chain and its timeouts;
-- the prompt;
-- answer formatting;
-- the cache, including the session fallback when storage is blocked;
-- the request path in `run.ts` and the request control in `request.ts` and `guards.ts` (which study files load, accounting, cooldowns, Stop);
-- static rules: no `import.meta.env`, no HTML injection, and the key confined to `run.ts`.
-
-The `ai-chromium` Playwright project builds `dist-ai/` with a dummy key (`scripts/build/browser-build.mjs ai`, the `ai-stub` reference configuration against the stub's port) and serves it on port 4174. It runs `tests/browser/ai.spec.ts` against `scripts/quality/sse-stub.mjs`, a scriptable local stand-in for the streaming API on port 4175. No test reaches OpenRouter, and CI needs no secrets.
+The Arabic AI card is optional and disabled by default. Cloudflare Workers now owns credentials, canonical context, prompts, streaming, SQLite quota accounting and seven-day shared preset caching. Only `VITE_AI_ENABLED` and the public `VITE_TURNSTILE_SITE_KEY` enter browser builds. See [AI Worker architecture, testing and staged release](ai-worker.md). Production remains gated until dev acceptance; Vercel always builds without AI.
 
 ## Static hosting
 
-On Vercel, import the repository, use the **Vite** preset, build with **`npm run build`**, and publish **`dist`**. `vercel.json` records these settings. Pushes to the connected production branch redeploy automatically. There are no `/api` routes or database environment variables; the optional AI explanations use only the build-time variables described above.
+On Vercel, import the repository, use the **Vite** preset, build with **`npm run build`**, and publish **`dist`**. `vercel.json` records these settings. Pushes to the connected production branch redeploy automatically. Vercel has no AI API endpoints and always builds with AI disabled.
 
 ### Cloudflare
 
@@ -356,36 +259,7 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 environment allowlist and supplies its public settings explicitly:
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the
 environment's chapter-audio policy. Do not add other private `VITE_*` values to Cloudflare build settings.
-AI is always disabled on the production Worker, whatever the shell sets. The
-**dev Worker only** may enable it; see [AI on the dev Worker](#ai-on-the-dev-worker).
-
-#### AI on the dev Worker
-
-To try the AI explanations on dev.chronosbible.com, set these **build
-variables** on the `chronosbible-dev` Worker in Workers Builds (Settings →
-Builds → Variables and secrets), then redeploy:
-
-| Variable                  | Notes                                                                |
-| ------------------------- | -------------------------------------------------------------------- |
-| `VITE_AI_PROVIDERS`       | `openrouter` turns AI on; empty or unset keeps it off                |
-| `VITE_OPENROUTER_API_KEY` | Add it as a **secret**. Use the dedicated key with a $0 credit limit |
-| `VITE_OPENROUTER_MODELS`  | Optional, up to two `:free` models                                   |
-| `VITE_AI_DAILY_CAP`       | Optional, 1-100                                                      |
-
-The build wrapper passes only these four values through, and only for `dev`
-when `VITE_AI_PROVIDERS` is set. It never passes `VITE_OPENROUTER_BASE_URL` or
-`VITE_AI_ALLOW_LOCAL`, which exist for tests. The asset audit then allows AI
-chunks and that exact key value; any other `sk-or-v1-...` string, private key
-or secret-looking environment value still fails the build. The build ends with
-`Cloudflare dev: assets verified; AI enabled (openrouter).` or `...; AI disabled.`
-Production keeps failing on AI chunks and on any key.
-
-Only free models are accepted (see [AI explanations](#ai-explanations-optional)), and the
-key must be a dedicated OpenRouter key with a $0 credit limit. It is compiled
-into the dev site's public JavaScript by design, so anyone can read it.
-
-**Kill switch:** remove `VITE_AI_PROVIDERS` from the dev Worker's build
-variables and redeploy. The next build contains no AI code.
+Production AI is controlled by an explicit release gate, initially closed. Dev can enable the public UI flag after runtime secrets, Gateway and Turnstile are provisioned. The asset audit rejects credentials in every environment; only the specifically named public Turnstile site key is exempt. Follow [the staged AI release and rollback instructions](ai-worker.md#staged-release-and-rollback).
 
 Before building, the wrapper scans both `public/` and any existing `dist/` for
 media binaries, symlinks, environment files, private-key files and credentials.

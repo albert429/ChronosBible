@@ -1,12 +1,7 @@
+import { cleanAnswer, clip, wellFormed } from "../src/domain/ai/text.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  cleanAnswer,
-  clip,
-  modelLabel,
-  parseAnswer,
-  wellFormed,
-} from "../src/features/ai/format.ts";
+import { modelLabel, parseAnswer } from "../src/features/ai/format.ts";
 
 const texts = (blocks: unknown) => JSON.stringify(blocks);
 

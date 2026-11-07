@@ -8,8 +8,8 @@ import {
   plainArabic,
   SYSTEM_PROMPT,
   type Material,
-} from "../src/features/ai/prompt.ts";
-import { cleanQuestion } from "../src/features/ai/chips.ts";
+} from "../worker/prompt.ts";
+import { cleanQuestion } from "../src/domain/ai/chips.ts";
 import type { Passage, Verse } from "../src/domain/scripture/types.ts";
 import type { GreekToken } from "../src/domain/study/types.ts";
 

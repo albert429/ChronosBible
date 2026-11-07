@@ -30,3 +30,7 @@ public/bible/
 public/chronology/
 assets/video/
 assets/reel*/
+
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

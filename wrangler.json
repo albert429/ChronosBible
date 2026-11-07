@@ -5,7 +5,9 @@
     "command": "node scripts/cloudflare-app.mjs build production"
   },
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/ai/*"]
   },
   "routes": [
     {
@@ -22,7 +24,9 @@
         "command": "node scripts/cloudflare-app.mjs build dev"
       },
       "assets": {
-        "directory": "./dist"
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "run_worker_first": ["/api/ai/*"]
       },
       "routes": [
         {
@@ -31,7 +35,45 @@
         }
       ],
       "workers_dev": false,
-      "preview_urls": false
+      "preview_urls": false,
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "AI",
+            "class_name": "AiCoordinator"
+          }
+        ]
+      },
+      "vars": {
+        "AI_ENABLED": "true",
+        "AI_ENVIRONMENT": "dev",
+        "AI_ORIGIN": "https://dev.chronosbible.com",
+        "AI_GATEWAY_ACCOUNT_ID": "97fcce5ae743571c933e6ebb99b8c93d",
+        "AI_GATEWAY_ID": "chronosbible-dev"
+      }
     }
+  },
+  "main": "worker/index.ts",
+  "compatibility_flags": ["enable_request_signal"],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "AI",
+        "class_name": "AiCoordinator"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "ai-v1",
+      "new_sqlite_classes": ["AiCoordinator"]
+    }
+  ],
+  "vars": {
+    "AI_ENABLED": "false",
+    "AI_ENVIRONMENT": "production",
+    "AI_ORIGIN": "https://chronosbible.com",
+    "AI_GATEWAY_ACCOUNT_ID": "97fcce5ae743571c933e6ebb99b8c93d",
+    "AI_GATEWAY_ID": "chronosbible-production"
   }
 }

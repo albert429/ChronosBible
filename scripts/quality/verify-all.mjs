@@ -43,6 +43,18 @@ export function verificationSteps(root = ROOT, environment = process.env) {
       env: { ...environment, ...CI_ENVIRONMENT },
     },
     {
+      name: "Worker integration",
+      command: "npm",
+      args: ["run", "test:worker"],
+      env: environment,
+    },
+    {
+      name: "Import layers",
+      command: "npm",
+      args: ["run", "layers"],
+      env: environment,
+    },
+    {
       name: "Python tests",
       command: "python3",
       args: ["-I", "-m", "unittest", "discover", "-s", "scripts/tests"],

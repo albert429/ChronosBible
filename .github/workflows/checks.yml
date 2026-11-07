@@ -22,6 +22,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run validate
+      - run: npm run test:worker
+      - run: npm run layers
       - run: python3 -I -m unittest discover -s scripts/tests
       - run: find scripts -name '*.py' -print0 | xargs -0 python3 -m py_compile
       - run: npx playwright install --with-deps chromium webkit

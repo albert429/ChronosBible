@@ -76,7 +76,10 @@ export function analyzeLayers(root) {
   const src = path.join(resolved, "src");
   const edges = new Map();
   const violations = [];
-  for (const file of walk(src)) {
+  const sources = [src, path.join(resolved, "worker")].filter((dir) =>
+    fs.existsSync(dir),
+  );
+  for (const file of sources.flatMap((dir) => [...walk(dir)])) {
     if (!SOURCE.test(file)) continue;
     const relative = path.relative(resolved, file).split(path.sep).join("/");
     const from = placeOf(relative);

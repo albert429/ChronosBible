@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 
 ChronosBible (formerly Bible150) is a static React/TypeScript Arabic Bible
-reader built with Vite, with no backend. `src/` is layered, and ESLint enforces
+reader built with Vite, with an optional Cloudflare AI Worker backend. `src/` is layered, and ESLint enforces
 the imports (`scripts/quality/import-boundaries.mjs`; `npm run layers` checks
 cycles):
 
@@ -103,7 +103,7 @@ both branches.
 Every push deploys. Cloudflare Workers Builds publishes `main` to
 chronosbible.com and `dev` to dev.chronosbible.com; Vercel publishes `main` to
 sfk-bible-reading.vercel.app plus branch previews. Both Workers serve static
-assets only (`wrangler.json`). `hosting/cloudflare-app/_headers` and
+assets directly, with `/api/ai/*` handled by `worker/` (`wrangler.json`). `hosting/cloudflare-app/_headers` and
 `_redirects` are copied into `dist/` for Cloudflare only, while Vercel reads
 `vercel.json`; keep caching and redirects in step.
 
@@ -112,8 +112,9 @@ reconfigures the project and uploads whatever is in `dist/`, including local
 media and `.env.local` values. Deploy only through `scripts/cloudflare-app.mjs`
 (`npm run app:host:build`, `app:host:deploy`, and their `:dev` variants), which
 refuses dirty checkouts, task branches, `.env*` files, and media in assets.
-Production always builds with AI off; the dev Worker enables it only through
-its Workers Builds variables.
+Production AI is guarded by an explicit release gate, initially closed until
+dev acceptance. Only the enabled flag and Turnstile site key are public;
+credentials belong in Worker runtime secrets. Follow `docs/ai-worker.md`.
 
 Recordings are immutable, content-hashed files in the R2 bucket
 `chronosbible-audio`, served at `https://audio.chronosbible.com`. A build

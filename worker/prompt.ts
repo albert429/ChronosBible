@@ -1,20 +1,21 @@
-import type { Passage, Verse } from "../../domain/scripture/types.ts";
+import type { Passage, Verse } from "../src/domain/scripture/types.ts";
 import type {
   GreekToken,
   LexEntry,
   VerseText,
   WordToken,
-} from "../../domain/study/types.ts";
+} from "../src/domain/study/types.ts";
 import {
   gloss,
   meaningGroups,
   originalWord,
   wordsTitle,
   span,
-} from "../../domain/study/words.ts";
-import type { AiRequest, ChipId } from "./types.ts";
+} from "../src/domain/study/words.ts";
+import type { ChipId } from "../src/domain/ai/types.ts";
+import type { AiRequest } from "./types.ts";
 
-import { QUESTION_MAX, cleanQuestion } from "./chips.ts";
+import { QUESTION_MAX, cleanQuestion } from "../src/domain/ai/chips.ts";
 
 export const MAX_OUTPUT_TOKENS = 2000;
 export const OFF_TOPIC = "هذا السؤال خارج موضوع الآية، جرّب سؤالًا عنها.";
