@@ -62,7 +62,7 @@ npm start                           # Preview the production build on port 4173
 
 ## Hosting and privacy
 
-React, TypeScript, and Vite build a static `dist/` directory. Vercel settings are checked into `vercel.json`; use the Vite preset and `npm run build`. The app requires no backend, database, or public API.
+React, TypeScript, and Vite build a static `dist/` directory. Vercel settings are checked into `vercel.json`; use the Vite preset and `npm run build`. Bible reading requires no backend. Optional AI runs only on Cloudflare Workers with SQLite Durable Objects, AI Gateway and Turnstile; Vercel builds omit AI. See [AI setup and staged release](docs/ai-worker.md).
 
 Progress and appearance preferences stay in the current browser. There is no automatic account sync or live group tracking. Backups contain the reader's name, start date, saved places, completion records and the dates readings were completed; keep them private. The app can be installed to a phone's home screen. After the first visit it opens without a connection, every reading opened is kept on the device, and «القراءة دون اتصال وتثبيت التطبيق» in the menu saves the whole Scripture text (about 3 MB to download) and, separately, the verse study notes for the whole Bible (about 13 MB). Audio recordings and AI explanations still need a connection.
 

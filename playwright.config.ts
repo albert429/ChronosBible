@@ -62,7 +62,8 @@ export default defineConfig({
     },
     {
       // Self-contained: it generates the data it bundles, then serves dist-ai/.
-      command: `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/quality/static-server.mjs dist-ai --port ${PW_PORT + 1}`,
+      command: `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/worker/browser-server.mjs`,
+      env: { PW_PORT: String(PW_PORT) },
       url: AI_URL,
       timeout: 180000,
       reuseExistingServer: false,

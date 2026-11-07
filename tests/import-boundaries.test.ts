@@ -235,7 +235,7 @@ const CASES: [string, string, boolean][] = [
     'import { ar } from "../../src/shared/lib/format.ts";',
     false,
   ],
-  ["vite.config.ts", 'import { x } from "./src/features/ai/config.ts";', false],
+  ["vite.config.ts", 'import { x } from "./src/domain/ai/chips.ts";', false],
   [
     "scripts/build/a.ts",
     'import { x } from "../../src/features/offline/rules.ts";',

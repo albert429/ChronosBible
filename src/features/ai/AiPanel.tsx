@@ -8,35 +8,38 @@ import {
   type FormEvent,
 } from "react";
 import { Info, RefreshCw } from "lucide-react";
-import {
-  browserStorage,
-  usage,
-  turnOff,
-  turnOn,
-  isTurnedOff,
-} from "./cache.ts";
+import { browserStorage, turnOff, turnOn, isTurnedOff } from "./cache.ts";
 import { modelLabel, parseAnswer } from "./format.ts";
-import { CHIPS, cleanQuestion, QUESTION_MAX, QUESTION_MIN } from "./chips.ts";
+import {
+  CHIPS,
+  cleanQuestion,
+  QUESTION_MAX,
+  QUESTION_MIN,
+} from "../../domain/ai/chips.ts";
 import { createGuards, RETRYABLE, type Problem } from "./guards.ts";
 import { reportMailto } from "./report.ts";
 import { startAnswer, type View } from "./request.ts";
-import type { ChipId } from "./types.ts";
+import type { AiStatus, ChipId } from "../../domain/ai/types.ts";
 import { APP_INFO } from "../../shared/lib/appInfo";
 import { ar, today } from "../../shared/lib/format";
 import type { Passage, Verse } from "../../domain/scripture/types";
 import AiAnswer from "./AiAnswer";
+import { aiStatus } from "../../data/ai/client.ts";
 import AiSpark from "./AiSpark";
 import { reveal } from "../../shared/ui/reveal";
 import "../../shared/ui/form.css";
 
 // Session-wide guards that protect the shared OpenRouter allowance; module
 // scope, so they hold across remounts of the panel.
-const guards = createGuards({
-  dailyCap: __AI_DAILY_CAP__,
-  attemptCap: __AI_ATTEMPT_CAP__,
-});
+const guards = createGuards();
 
 const MESSAGES: Record<Problem, string> = {
+  invalid: "تعذّر إرسال الطلب. حدّث التطبيق وحاول مرة أخرى.",
+  origin: "تعذّر التحقق من مصدر الطلب.",
+  challenge: "تعذّر التحقق. حاول مرة أخرى.",
+  disabled: "الخدمة غير متاحة حاليًا. يمكنك قراءة الإجابات المحفوظة.",
+  busy: "هناك إجابة قيد الإعداد. حاول بعد قليل.",
+  storage: "الخدمة مشغولة الآن. حاول بعد قليل.",
   quota: "انتهت حصة الخدمة المشتركة اليوم. حاول غدًا.",
   rate: "الخدمة مشغولة الآن. حاول بعد قليل.",
   server: "الخدمة مشغولة الآن. حاول بعد قليل.",
@@ -49,7 +52,7 @@ const MESSAGES: Record<Problem, string> = {
   refused: "تعذّر الرد على هذا السؤال.",
   aborted: "أُوقفت الإجابة.",
   stopped: "أُوقفت الإجابة.",
-  cap: `وصلت للحد اليومي للإجابات على هذا الجهاز (${ar(__AI_DAILY_CAP__)}). حاول غدًا.`,
+  cap: "وصلت للحد اليومي للإجابات على هذا الجهاز. حاول غدًا.",
   attempts: "تعذّرت محاولات كثيرة اليوم على هذا الجهاز. حاول غدًا.",
 };
 
@@ -68,7 +71,8 @@ export default function AiPanel({
   const [view, setView] = useState<View>({ s: "idle" });
   const [question, setQuestion] = useState("");
   const [asked, setAsked] = useState("");
-  const [used, setUsed] = useState(() => usage(storage, today()).n);
+  const [quota, setQuota] = useState<AiStatus>();
+  const challengeRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState("");
   const [, setTick] = useState(0);
   const controller = useRef<AbortController | null>(null);
@@ -88,6 +92,15 @@ export default function AiPanel({
   const reportLink = useRef<HTMLAnchorElement>(null);
   const turnOnButton = useRef<HTMLButtonElement>(null);
   const busy = view.s === "loading" || view.s === "streaming";
+
+  useEffect(() => {
+    if (!on) return;
+    const control = new AbortController();
+    void aiStatus(control.signal)
+      .then(setQuota)
+      .catch(() => {});
+    return () => control.abort();
+  }, [on]);
 
   // Closing the sheet, or another verse or day, ends a request in flight.
   useEffect(() => () => controller.current?.abort("unmount"), []);
@@ -145,7 +158,8 @@ export default function AiPanel({
       {
         chip,
         id,
-        material: { book: passage.book, passage, verse },
+        challengeElement: challengeRef.current ?? undefined,
+        cacheRevision: quota?.available ? quota.cacheRevision : undefined,
         question: text,
         fresh: options.fresh,
         n,
@@ -154,8 +168,8 @@ export default function AiPanel({
       {
         view: setView,
         status: setStatus,
-        answered(count) {
-          setUsed(count);
+        quota: setQuota,
+        answered() {
           requestAnimationFrame(() => {
             if (answerRef.current) reveal(answerRef.current);
           });
@@ -198,7 +212,14 @@ export default function AiPanel({
   // replace the answer with an error), or a disabled one during a cooldown.
   const blocked =
     busy || view.s === "idle" ? undefined : guards.refusal(storage, today());
-  const final = blocked !== undefined && blocked !== "rate";
+  const final =
+    (blocked !== undefined && blocked !== "rate") ||
+    !!(
+      quota &&
+      Date.now() < quota.resets.device &&
+      (quota.usage.answers >= quota.limits.answers ||
+        quota.usage.attempts >= quota.limits.attempts)
+    );
   const waiting = blocked === "rate";
 
   return (
@@ -341,6 +362,7 @@ export default function AiPanel({
             </div>
           )}
 
+          <div ref={challengeRef} className="ai-challenge" />
           <form className="ai-ask" onSubmit={submitQuestion}>
             <label htmlFor={`${id}-question`}>اكتب سؤالك عن هذه الآية</label>
             <div className="ai-ask-row">
@@ -382,14 +404,19 @@ export default function AiPanel({
             <p>
               يُرسَل نص الآية وسياقها إلى خدمة ذكاء اصطناعي خارجية، دون اسمك أو
               تقدّمك. المتبقي على هذا الجهاز اليوم:{" "}
-              {ar(Math.max(0, __AI_DAILY_CAP__ - used))} من{" "}
-              {ar(__AI_DAILY_CAP__)}.
+              {quota
+                ? `${ar(Math.max(0, quota.limits.answers - quota.usage.answers))} من ${ar(quota.limits.answers)}`
+                : "جارٍ التحقق من الخدمة"}
+              .
             </p>
             <p>
               تمرّ الآية وسياقها (وسؤالك إن كتبته) عبر خدمة{" "}
-              <bdi>OpenRouter</bdi>، التي ترى عنوان IP الخاص بك، ثم إلى مزوّد
-              النموذج (Google أو غيره)، الذي قد يحتفظ بالنص ويستخدمه لتحسين
-              نماذجه وقد يطّلع عليه مراجعون. الإجابات آلية وقد تحتوي أخطاء.
+              <bdi>Cloudflare</bdi> للتحقق من الطلب وحساب الحصة، ثم عبر{" "}
+              <bdi>OpenRouter</bdi> إلى مزوّد النموذج (Google أو غيره)، الذي قد
+              يحتفظ بالنص ويستخدمه لتحسين نماذجه وقد يطّلع عليه مراجعون. تُحفظ
+              الشروح الجاهزة المكتملة في Cloudflare لمدة سبعة أيام ليستخدمها
+              القراء الآخرون، دون الأسئلة المكتوبة. يُستخدم ملف تعريف ارتباط آمن
+              لمدة ٣٠ يومًا لحساب الحصة. الإجابات آلية وقد تحتوي أخطاء.
             </p>
             <button
               type="button"

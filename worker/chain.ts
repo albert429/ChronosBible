@@ -1,11 +1,10 @@
+import type { AiProvider, AiRequest } from "./types.ts";
 import {
   AiError,
   type AiErrorKind,
   type AiMeta,
-  type AiProvider,
-  type AiRequest,
   type StreamCallbacks,
-} from "./types.ts";
+} from "../src/domain/ai/types.ts";
 
 export const FIRST_TOKEN_MS = 25000;
 /** Keep-alives or hidden reasoning may extend the wait for text up to this. */
@@ -62,7 +61,7 @@ export async function runChain(
     let gotText = false;
     let model: string | undefined;
     const arm = (ms: number) => {
-      clearTimeout(timer);
+      if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(() => {
         timedOut = true;
         inner.abort("timeout");
@@ -92,11 +91,23 @@ export async function runChain(
       const extra = { model: base.model ?? model, retryAt: base.retryAt };
       if (signal.aborted) throw new AiError("aborted", after, extra);
       const final = new AiError(timedOut ? "timeout" : base.kind, after, extra);
-      if (after || final.kind === "aborted") throw final;
       if (final.kind === "auth") disabled.add(provider.id);
+      if (
+        after ||
+        [
+          "aborted",
+          "quota",
+          "rate",
+          "cap",
+          "attempts",
+          "storage",
+          "auth",
+        ].includes(final.kind)
+      )
+        throw final;
       errors.push(final);
     } finally {
-      clearTimeout(timer);
+      if (timer !== undefined) clearTimeout(timer);
       signal.removeEventListener("abort", forward);
     }
   }

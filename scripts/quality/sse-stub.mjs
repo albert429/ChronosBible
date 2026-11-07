@@ -145,7 +145,18 @@ const server = createServer(async (req, res) => {
       });
       return res.end();
     }
-    if (url.pathname === "/api/v1/chat/completions" && req.method === "POST")
+    if (url.pathname === "/turnstile/v0/siteverify")
+      return json(res, 200, {
+        success: true,
+        hostname: "127.0.0.1",
+        action: "ai_answer",
+        challenge_ts: new Date().toISOString(),
+      });
+    if (
+      (url.pathname === "/api/v1/chat/completions" ||
+        url.pathname.endsWith("/openrouter/chat/completions")) &&
+      req.method === "POST"
+    )
       return await complete(req, res);
     if (url.pathname === "/__stub/health") return json(res, 200, { ok: true });
     if (url.pathname === "/__stub/log") return json(res, 200, log);

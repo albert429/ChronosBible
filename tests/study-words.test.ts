@@ -7,7 +7,7 @@ import {
   wordGroups,
   wordsTitle,
 } from "../src/domain/study/words.ts";
-import { buildPrompt } from "../src/features/ai/prompt.ts";
+import { buildPrompt } from "../worker/prompt.ts";
 
 const hebrew: WordToken = ["בְּ", "be", "H9003", "HR", "in", 0, 1, "he"];
 const aramaic: WordToken = [

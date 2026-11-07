@@ -27,12 +27,8 @@ export const STUB_PORT = 4402;
 const ALL_VITE = {
   VITE_AUDIO_BASE_URL: "",
   VITE_AUDIO_CHAPTERS_ENABLED: "",
-  VITE_AI_PROVIDERS: "",
-  VITE_OPENROUTER_API_KEY: "",
-  VITE_OPENROUTER_MODELS: "",
-  VITE_OPENROUTER_BASE_URL: "",
-  VITE_AI_ALLOW_LOCAL: "",
-  VITE_AI_DAILY_CAP: "",
+  VITE_AI_ENABLED: "false",
+  VITE_TURNSTILE_SITE_KEY: "",
 };
 
 const FIXTURE_AUDIO = {
@@ -85,12 +81,8 @@ export function aiStubVariables(stubPort) {
     throw new Error(`invalid stub port ${stubPort}`);
   return {
     ...FIXTURE_AUDIO,
-    VITE_AI_PROVIDERS: "openrouter",
-    VITE_OPENROUTER_API_KEY: "sk-or-v1-playwright-dummy-key",
-    VITE_OPENROUTER_MODELS: "",
-    VITE_OPENROUTER_BASE_URL: `http://127.0.0.1:${stubPort}/api/v1`,
-    VITE_AI_ALLOW_LOCAL: "1",
-    VITE_AI_DAILY_CAP: "",
+    VITE_AI_ENABLED: "true",
+    VITE_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
   };
 }
 

@@ -45,6 +45,7 @@ export function route(
 ): Route {
   const url = new URL(request.url);
   if (
+    url.pathname.startsWith("/api/ai/") ||
     request.method !== "GET" ||
     url.origin !== origin ||
     request.headers.has(SAVE_HEADER)

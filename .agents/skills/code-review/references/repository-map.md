@@ -3,7 +3,7 @@
 Read sections relevant to the diff. Paths are repository-relative. This map
 describes the architecture after the refactor; inspect current source and tests
 for exact schemas, limits, and deliberate subsequent changes. The app is static
-React/TypeScript/Vite, Arabic-first, with no backend or path router.
+React/TypeScript/Vite, Arabic-first, with an optional Cloudflare AI Worker and no path router.
 
 ## Architecture and dependency direction
 

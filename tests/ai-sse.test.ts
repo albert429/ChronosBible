@@ -5,8 +5,8 @@ import {
   MAX_LINE,
   readChatStream,
   retryAtFrom,
-} from "../src/features/ai/sse.ts";
-import { AiError, type AiErrorKind } from "../src/features/ai/types.ts";
+} from "../worker/sse.ts";
+import { AiError, type AiErrorKind } from "../src/domain/ai/types.ts";
 
 const encoder = new TextEncoder();
 const classify = (code: unknown, message?: unknown, metadata?: unknown) =>

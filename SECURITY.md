@@ -8,7 +8,7 @@ In scope: cross-site scripting or HTML injection, leaked credentials, and anythi
 
 ## Good to know
 
-- Reading progress stays in the reader's browser. There are no accounts and no backend.
+- Reading progress stays in the reader's browser. There are no reader accounts. Optional AI uses a same-origin Cloudflare Worker with anonymous signed cookies, server-enforced quotas and shared preset caching; see [the AI runtime](docs/ai-worker.md).
 - Any `VITE_*` value is compiled into public JavaScript and is public by design.
 
 ## Supported versions

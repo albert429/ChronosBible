@@ -1,16 +1,15 @@
 import {
   answerKey,
   readAnswer,
-  recordAnswer,
-  recordAttempt,
   saveAnswer,
   type StorageLike,
 } from "./cache.ts";
-import { CHIPS, PROMPT_VERSION } from "./chips.ts";
-import { cleanAnswer, clip, MAX_TEXT } from "./format.ts";
+import { CHIPS, PROMPT_VERSION } from "../../domain/ai/chips.ts";
+import { cleanAnswer, clip, MAX_TEXT } from "../../domain/ai/text.ts";
 import type { Guards, Problem } from "./guards.ts";
 import type { AskInput } from "./run.ts";
-import { abortable, AiError, type ChipId } from "./types.ts";
+import { AiError, type ChipId, type AiStatus } from "../../domain/ai/types.ts";
+import { abortable } from "../../data/ai/abortable.ts";
 
 /** What the panel shows for the current request. */
 export type View =
@@ -50,13 +49,14 @@ export type AnswerInput = {
   chip: ChipId;
   /** The canonical verse (GEN.1.1). */
   id: string;
-  material: AskInput["material"];
+  challengeElement?: AskInput["challengeElement"];
   /** The reader's cleaned question («ask» only). */
   question: string;
   /** Skip the cached answer (retry, «إجابة أخرى», a typed question). */
   fresh?: boolean;
   /** The panel's run number, for error alerts. */
   n: number;
+  cacheRevision?: string;
 };
 
 export type AnswerDeps = {
@@ -75,6 +75,7 @@ export type AnswerEvents = {
   status(text: string): void;
   /** The first visible text: one answer spent today (`used` answers so far). */
   answered(used: number): void;
+  quota?(quota: AiStatus): void;
 };
 
 /**
@@ -84,11 +85,19 @@ export type AnswerEvents = {
  * shared static loads it started may finish for the study sections. `done`
  * never rejects.
  *
- * Accounting: an attempt is recorded only when the network request goes out
- * (`ask`'s onSend), an answer once its first visible text arrives.
+ * Accounting comes from server quota events. Local storage never authorizes
+ * a generation or blocks a shared-cache request.
  */
 export function startAnswer(
-  { chip, id, material, question, fresh, n }: AnswerInput,
+  {
+    chip,
+    id,
+    challengeElement,
+    question,
+    fresh,
+    n,
+    cacheRevision,
+  }: AnswerInput,
   {
     storage,
     guards,
@@ -99,7 +108,12 @@ export function startAnswer(
   }: AnswerDeps,
   events: AnswerEvents,
 ): { controller: AbortController; done: Promise<void> } | undefined {
-  const key = chip === "ask" ? null : answerKey(id, chip, PROMPT_VERSION);
+  const revision =
+    cacheRevision ??
+    (typeof __DATA_VERSIONS__ === "undefined"
+      ? String(PROMPT_VERSION)
+      : `${PROMPT_VERSION}:${__DATA_VERSIONS__.bible}:${__DATA_VERSIONS__.study}`);
+  const key = chip === "ask" ? null : answerKey(id, chip, revision);
   if (key && !fresh) {
     const cached = readAnswer(storage, key);
     if (cached) {
@@ -141,14 +155,14 @@ export function startAnswer(
       return;
     }
     guards.answered();
-    if (key)
+    if (key && !truncated)
       saveAnswer(
         storage,
         key,
         truncated
           ? { text: answer, model: model ?? "", truncated: true }
           : { text: answer, model: model ?? "" },
-        PROMPT_VERSION,
+        revision,
       );
     events.view({ s: "done", chip, text: answer, model, truncated });
     events.status(finished(chip));
@@ -159,7 +173,7 @@ export function startAnswer(
       // Neither the chunk nor the study files may delay «إيقاف».
       const { ask } = await abortable(load(), controller.signal);
       const meta = await ask(
-        { chip, id, material, question },
+        { chip, id, challengeElement, question, fresh },
         controller.signal,
         {
           onText(delta) {
@@ -167,9 +181,9 @@ export function startAnswer(
             const shown = cleanAnswer(raw);
             if (!shown) return;
             if (!counted) {
-              // The shared allowance is spent and the reader got something.
+              // Reveal the answer; server quota events supply the count.
               counted = true;
-              events.answered(recordAnswer(storage, date).n);
+              events.answered(0);
             }
             if (shown.length > MAX_TEXT) {
               truncated = true;
@@ -177,6 +191,17 @@ export function startAnswer(
               return;
             }
             frame ||= schedule(flush);
+          },
+          onSnapshot(text) {
+            raw = text;
+            if (!counted && text) {
+              counted = true;
+              events.answered(0);
+            }
+            frame ||= schedule(flush);
+          },
+          onQuota(quota) {
+            events.quota?.(quota);
           },
           onMeta(name) {
             model = name;
@@ -187,7 +212,6 @@ export function startAnswer(
             );
           },
         },
-        () => recordAttempt(storage, date),
       );
       model = meta.model || model;
       truncated ||= meta.finish === "length";

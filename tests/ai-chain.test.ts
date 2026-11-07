@@ -1,13 +1,13 @@
+import type { AiRequest } from "../worker/types.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { runChain } from "../src/features/ai/chain.ts";
+import { runChain } from "../worker/chain.ts";
 import {
   AiError,
   type AiErrorKind,
   type AiMeta,
-  type AiRequest,
   type StreamCallbacks,
-} from "../src/features/ai/types.ts";
+} from "../src/domain/ai/types.ts";
 
 const request: AiRequest = { system: "s", prompt: "p", maxOutputTokens: 10 };
 const sleep = (ms: number, signal?: AbortSignal) =>
@@ -61,7 +61,6 @@ test("Falls through to the next provider on failures before any text", async () 
     "timeout",
     "empty",
     "network",
-    "rate",
     "unavailable",
   ] as const) {
     const a = provider("a", async () => {

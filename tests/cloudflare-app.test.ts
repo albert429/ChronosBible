@@ -71,7 +71,8 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
   const source = {
     PATH: "/bin",
     VITE_OPENROUTER_API_KEY: "private-test-key",
-    VITE_AI_PROVIDERS: "openrouter",
+    VITE_AI_ENABLED: "true",
+    VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
     VITE_FUTURE_KEY: "private",
     AUDIO_TEST_FIXTURES: "1",
     NODE_OPTIONS: "unsafe",
@@ -83,8 +84,8 @@ test("Build settings strip inherited AI keys, public values and fixtures", () =>
     audioUrl("/audio/days/a.m4a", env.VITE_AUDIO_BASE_URL),
     "https://audio.chronosbible.com/audio/days/a.m4a",
   );
-  assert.equal(env.VITE_AI_PROVIDERS, "");
-  assert.equal(env.VITE_OPENROUTER_API_KEY, "");
+  assert.equal(env.VITE_AI_PROVIDERS, undefined);
+  assert.equal(env.VITE_OPENROUTER_API_KEY, undefined);
   for (const key of ["VITE_FUTURE_KEY", "AUDIO_TEST_FIXTURES", "NODE_OPTIONS"])
     assert.equal(env[key as keyof typeof env], undefined);
 });
@@ -123,7 +124,8 @@ const DUMMY_KEY = "sk-or-v1-0123456789abcdef0123456789abcdef";
 const OTHER_KEY = "sk-or-v1-fedcba9876543210fedcba9876543210";
 const AI_ENV = {
   PATH: "/bin",
-  VITE_AI_PROVIDERS: "openrouter",
+  VITE_AI_ENABLED: "true",
+  VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
   VITE_OPENROUTER_API_KEY: DUMMY_KEY,
   VITE_OPENROUTER_MODELS: "google/gemma-4-31b-it:free",
   VITE_AI_DAILY_CAP: "5",
@@ -135,11 +137,11 @@ test("Production ignores AI settings; dev without them stays off", () => {
   for (const [target, source] of [
     ["production", AI_ENV],
     ["dev", { PATH: "/bin" }],
-    ["dev", { ...AI_ENV, VITE_AI_PROVIDERS: " " }],
+    ["dev", { ...AI_ENV, VITE_AI_ENABLED: "false" }],
   ] as const) {
     const env = buildEnvironment(target, source);
-    assert.equal(env.VITE_AI_PROVIDERS, "");
-    assert.equal(env.VITE_OPENROUTER_API_KEY, "");
+    assert.equal(env.VITE_AI_PROVIDERS, undefined);
+    assert.equal(env.VITE_OPENROUTER_API_KEY, undefined);
     for (const key of [
       "VITE_OPENROUTER_MODELS",
       "VITE_AI_DAILY_CAP",
@@ -150,61 +152,32 @@ test("Production ignores AI settings; dev without them stays off", () => {
   }
 });
 
-test("Dev passes exactly four AI settings and never the test-only switches", () => {
+test("Dev passes only the enabled flag and public Turnstile site key", () => {
   const env = buildEnvironment("dev", AI_ENV);
-  assert.equal(env.VITE_AI_PROVIDERS, "openrouter");
-  assert.equal(env.VITE_OPENROUTER_API_KEY, DUMMY_KEY);
-  assert.equal(env.VITE_OPENROUTER_MODELS, "google/gemma-4-31b-it:free");
-  assert.equal(env.VITE_AI_DAILY_CAP, "5");
-  assert.equal(env.VITE_OPENROUTER_BASE_URL, undefined);
-  assert.equal(env.VITE_AI_ALLOW_LOCAL, undefined);
-  // Optional values that are not set stay unset.
-  const minimal = buildEnvironment("dev", {
-    VITE_AI_PROVIDERS: "openrouter",
-    VITE_OPENROUTER_API_KEY: DUMMY_KEY,
-  });
-  assert.equal(minimal.VITE_OPENROUTER_MODELS, undefined);
-  assert.equal(minimal.VITE_AI_DAILY_CAP, undefined);
+  assert.equal(env.VITE_AI_ENABLED, "true");
+  assert.equal(env.VITE_TURNSTILE_SITE_KEY, "public-turnstile-site-key");
+  for (const key of [
+    "VITE_OPENROUTER_API_KEY",
+    "VITE_OPENROUTER_MODELS",
+    "VITE_AI_DAILY_CAP",
+    "VITE_OPENROUTER_BASE_URL",
+    "VITE_AI_ALLOW_LOCAL",
+  ])
+    assert.equal(env[key], undefined);
 });
-
-test("Dev audit accepts only the configured key and AI only when enabled", () => {
+test("Every build rejects provider secrets; the site key exemption is by variable name", () => {
   const root = mkdtempSync(join(tmpdir(), "cloudflare-ai-assets-test-"));
-  const env = { VITE_OPENROUTER_API_KEY: DUMMY_KEY };
   try {
-    writeFileSync(join(root, "app.js"), `const k="${DUMMY_KEY}";`);
-    // Production and dev without AI reject the key, even the same value.
-    assert.throws(() => scanAssets(root, env), /credential/);
+    writeFileSync(join(root, "app.js"), DUMMY_KEY);
+    assert.throws(
+      () => scanAssets(root, { VITE_OPENROUTER_API_KEY: DUMMY_KEY }),
+      /credential/,
+    );
     assert.throws(() => scanAssets(root, {}), /credential/);
-    scanAssets(root, env, undefined, DUMMY_KEY);
-    // A different key, alone or beside the configured one, still fails.
-    writeFileSync(join(root, "app.js"), `"${DUMMY_KEY}","${OTHER_KEY}"`);
+    writeFileSync(join(root, "app.js"), "public-turnstile-site-key");
+    scanAssets(root, { VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key" });
     assert.throws(
-      () => scanAssets(root, env, undefined, DUMMY_KEY),
-      /credential/,
-    );
-    writeFileSync(join(root, "app.js"), `"${OTHER_KEY}"`);
-    assert.throws(
-      () => scanAssets(root, env, undefined, DUMMY_KEY),
-      /credential/,
-    );
-    // Other secret env values and private keys still fail in a dev AI build.
-    writeFileSync(join(root, "app.js"), `${DUMMY_KEY} other-secret-value-123`);
-    assert.throws(
-      () =>
-        scanAssets(
-          root,
-          { ...env, SOME_TOKEN: "other-secret-value-123" },
-          undefined,
-          DUMMY_KEY,
-        ),
-      /credential/,
-    );
-    writeFileSync(
-      join(root, "app.js"),
-      `${DUMMY_KEY}-----BEGIN PRIVATE KEY-----`,
-    );
-    assert.throws(
-      () => scanAssets(root, env, undefined, DUMMY_KEY),
+      () => scanAssets(root, { OTHER_SECRET: "public-turnstile-site-key" }),
       /credential/,
     );
   } finally {
@@ -274,7 +247,7 @@ test("Preflight binds environment to a clean branch, checkout root and CI commit
     const wrangler = readFileSync(join(f.root, "wrangler.json"), "utf8");
     for (const edit of [
       (c: Wrangler) => (c.main = "hosting/cloudflare-app/worker.js"),
-      (c: Wrangler) => (c.assets.binding = "ASSETS"),
+      (c: Wrangler) => (c.assets.binding = "UNTRUSTED"),
       (c: Wrangler) => (c.assets.run_worker_first = ["/audio/*"]),
     ]) {
       const config = JSON.parse(wrangler);
@@ -438,7 +411,11 @@ const buildCases = [
   {
     name: "production ignores AI env",
     target: "production",
-    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    ai: {
+      VITE_AI_ENABLED: "true",
+      VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
+      VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+    },
     expectAi: false,
     assets: {},
     fails: undefined,
@@ -446,7 +423,11 @@ const buildCases = [
   {
     name: "production rejects AI chunks",
     target: "production",
-    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    ai: {
+      VITE_AI_ENABLED: "true",
+      VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
+      VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+    },
     expectAi: false,
     assets: { "assets/AiPanel-abc.js": "chunk" },
     fails: /AI chunks are forbidden/,
@@ -454,7 +435,11 @@ const buildCases = [
   {
     name: "production rejects the key",
     target: "production",
-    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    ai: {
+      VITE_AI_ENABLED: "true",
+      VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
+      VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+    },
     expectAi: false,
     assets: { "assets/app.js": DUMMY_KEY },
     fails: /credential/,
@@ -479,7 +464,8 @@ const buildCases = [
     name: "dev with AI env passes the settings and the audit",
     target: "dev",
     ai: {
-      VITE_AI_PROVIDERS: "openrouter",
+      VITE_AI_ENABLED: "true",
+      VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
       VITE_OPENROUTER_API_KEY: DUMMY_KEY,
       VITE_OPENROUTER_MODELS: "google/gemma-4-31b-it:free",
       VITE_AI_DAILY_CAP: "5",
@@ -487,14 +473,18 @@ const buildCases = [
     expectAi: true,
     assets: {
       "assets/AiPanel-abc.js": "chunk",
-      "assets/run-abc.js": `fetch("x",{headers:{Authorization:"Bearer ${DUMMY_KEY}"}})`,
+      "assets/run-abc.js": `fetch("/api/ai/v1/answer")`,
     },
     fails: undefined,
   },
   {
     name: "dev with AI env rejects a different key",
     target: "dev",
-    ai: { VITE_AI_PROVIDERS: "openrouter", VITE_OPENROUTER_API_KEY: DUMMY_KEY },
+    ai: {
+      VITE_AI_ENABLED: "true",
+      VITE_TURNSTILE_SITE_KEY: "public-turnstile-site-key",
+      VITE_OPENROUTER_API_KEY: DUMMY_KEY,
+    },
     expectAi: true,
     assets: { "assets/run-abc.js": `"${DUMMY_KEY}","${OTHER_KEY}"` },
     fails: /credential/,
@@ -538,11 +528,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 const expectAi = ${JSON.stringify(expectAi)};
-assert.equal(
-  process.env.VITE_OPENROUTER_API_KEY,
-  expectAi ? ${JSON.stringify(DUMMY_KEY)} : "",
-);
-assert.equal(process.env.VITE_AI_PROVIDERS, expectAi ? "openrouter" : "");
+assert.equal(process.env.VITE_OPENROUTER_API_KEY, undefined);
+assert.equal(process.env.VITE_AI_ENABLED, expectAi ? "true" : "false");
 assert.equal(process.env.VITE_OPENROUTER_BASE_URL, undefined);
 assert.equal(process.env.VITE_AI_ALLOW_LOCAL, undefined);
 assert.equal(process.env.VITE_FUTURE_KEY, undefined);
@@ -602,7 +589,7 @@ for (const [name, body] of Object.entries(${JSON.stringify(assets)})) {
         result.stdout,
         expectAi
           ? new RegExp(
-              `Cloudflare ${target}: assets verified; AI enabled \\(openrouter\\)\\.`,
+              `Cloudflare ${target}: assets verified; AI enabled \\(same-origin Worker API\\)\\.`,
             )
           : new RegExp(`Cloudflare ${target}: assets verified; AI disabled\\.`),
       );

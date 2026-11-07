@@ -51,7 +51,12 @@ export default tseslint.config(
   {
     // The layering of src/ (see scripts/quality/import-boundaries.mjs). Build
     // and tool code is held to the same table from the other side.
-    files: ["src/**/*.{ts,tsx}", "scripts/**/*.{js,mjs,ts}", "vite.config.ts"],
+    files: [
+      "src/**/*.{ts,tsx}",
+      "worker/**/*.ts",
+      "scripts/**/*.{js,mjs,ts}",
+      "vite.config.ts",
+    ],
     plugins: { chronos: boundaries },
     rules: { "chronos/import-boundaries": "error" },
   },

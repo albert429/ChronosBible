@@ -71,23 +71,14 @@ export const AUDIO_BASE_URL = "https://audio.chronosbible.com";
 // which chapters are actually advertised.
 export const CHAPTER_AUDIO = Object.freeze({ production: true, dev: true });
 
-// AI explanations are allowed on the dev Worker only, and only when its build
-// variables set VITE_AI_PROVIDERS. Production never enables them.
-const AI_SETTINGS = [
-  "VITE_AI_PROVIDERS",
-  "VITE_OPENROUTER_API_KEY",
-  "VITE_OPENROUTER_MODELS",
-  "VITE_AI_DAILY_CAP",
-];
+// Flip production only in the reviewed release after dev acceptance.
+export const AI_RELEASE = Object.freeze({ production: false, dev: true });
+const AI_SETTINGS = ["VITE_AI_ENABLED", "VITE_TURNSTILE_SITE_KEY"];
 export function aiSettings(target, source = process.env) {
   deployment(target);
-  const providers = source.VITE_AI_PROVIDERS?.trim();
-  if (target !== "dev" || !providers) return undefined;
-  return {
-    providers,
-    // The app trims the key at build time, so that is the value it compiles in.
-    key: source.VITE_OPENROUTER_API_KEY?.trim() || undefined,
-  };
+  if (!AI_RELEASE[target] || source.VITE_AI_ENABLED !== "true")
+    return undefined;
+  return { siteKey: source.VITE_TURNSTILE_SITE_KEY?.trim() };
 }
 
 // Use an allowlist: Vite loads .env files AND shell VITE_* values. Neither may
@@ -114,7 +105,7 @@ export function buildEnvironment(target, source = process.env) {
           source[key],
         ]),
       )
-    : { VITE_AI_PROVIDERS: "", VITE_OPENROUTER_API_KEY: "" };
+    : { VITE_AI_ENABLED: "false", VITE_TURNSTILE_SITE_KEY: "" };
   return {
     ...env,
     CI: "true",
@@ -185,9 +176,8 @@ function studyWordsBody(body, match) {
 
 /**
  * @param {string} [redirects] the committed _redirects a shipped copy must equal
- * @param {string} [allowedKey] the one OpenRouter key a dev build may contain
  */
-export function scanAssets(root, env = process.env, redirects, allowedKey) {
+export function scanAssets(root, env = process.env, redirects) {
   const paths = files(root);
   if (paths.length > 10_000) fail("app assets exceed the 10,000-file budget");
   let bytes = 0;
@@ -196,7 +186,7 @@ export function scanAssets(root, env = process.env, redirects, allowedKey) {
       ([key, value]) =>
         /KEY|TOKEN|SECRET|PASSWORD/i.test(key) &&
         value?.length >= 12 &&
-        (!allowedKey || value.trim() !== allowedKey),
+        key !== "VITE_TURNSTILE_SITE_KEY",
     )
     .map(([, value]) => value);
   for (const file of paths) {
@@ -231,12 +221,11 @@ export function scanAssets(root, env = process.env, redirects, allowedKey) {
       fail("only generated JSON manifests may be shipped under audio/");
     const raw = readFileSync(file);
     const body = studyMatch ? studyWordsBody(raw, studyMatch) : raw;
-    // Remove the allowed key (exact match) before looking for any other.
     const text = body.toString("utf8");
-    const rest = allowedKey ? text.split(allowedKey).join("") : text;
+    const rest = text;
     if (
       secrets.some((value) => body.includes(value)) ||
-      /sk-or-v1-[a-zA-Z0-9]{16,}|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/.test(
+      /sk-or-v1-[a-zA-Z0-9_-]+|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/.test(
         rest,
       )
     )
@@ -309,7 +298,12 @@ export function preflight(
     fail(
       "remove local .env files; Cloudflare uses explicit public build settings",
     );
-  if (readdirSync(root).some((name) => /^\.dev\.vars(?:\.|$)/.test(name)))
+  if (
+    readdirSync(root).some(
+      (name) =>
+        /^\.dev\.vars(?:\.|$)/.test(name) && name !== ".dev.vars.example",
+    )
+  )
     fail("remove local .dev.vars files from this deployment checkout");
   const config = JSON.parse(readFileSync(join(root, "wrangler.json"), "utf8"));
   const effective = target === "dev" ? config.env?.dev : config;
@@ -318,19 +312,36 @@ export function preflight(
     JSON.stringify(effective.routes) !==
       JSON.stringify([{ pattern: selected.domain, custom_domain: true }]) ||
     JSON.stringify(effective.assets) !==
-      JSON.stringify({ directory: "./dist" }) ||
-    effective.main !== undefined ||
+      JSON.stringify({
+        directory: "./dist",
+        binding: "ASSETS",
+        run_worker_first: ["/api/ai/*"],
+      }) ||
+    (effective.main ?? config.main) !== "worker/index.ts" ||
+    config.compatibility_date !== "2026-10-01" ||
+    JSON.stringify(config.compatibility_flags) !==
+      JSON.stringify(["enable_request_signal"]) ||
+    JSON.stringify(effective.durable_objects) !==
+      JSON.stringify({
+        bindings: [{ name: "AI", class_name: "AiCoordinator" }],
+      }) ||
+    JSON.stringify(config.migrations) !==
+      JSON.stringify([
+        { tag: "ai-v1", new_sqlite_classes: ["AiCoordinator"] },
+      ]) ||
+    effective.vars?.AI_ENVIRONMENT !== target ||
+    effective.vars?.AI_ORIGIN !== `https://${selected.domain}` ||
+    !["true", "false"].includes(effective.vars?.AI_ENABLED) ||
+    (!AI_RELEASE[target] && effective.vars?.AI_ENABLED !== "false") ||
     effective.workers_dev !== false ||
     effective.preview_urls !== false ||
     effective.build?.command !==
-      `node scripts/cloudflare-app.mjs build ${target}` ||
-    config.main !== undefined
+      `node scripts/cloudflare-app.mjs build ${target}`
   )
     fail("unexpected Worker, routes, assets, or build configuration");
   const redirects = committedRedirects(root);
-  const allowedKey = aiSettings(target, env)?.key;
-  scanAssets(join(root, "public"), env, redirects, allowedKey);
-  scanAssets(join(root, "dist"), env, redirects, allowedKey);
+  scanAssets(join(root, "public"), env, redirects);
+  scanAssets(join(root, "dist"), env, redirects);
   return { ...selected, head };
 }
 
@@ -350,22 +361,19 @@ export function build(target) {
       join(ROOT, "hosting/cloudflare-app", name),
       join(ROOT, "dist", name),
     );
-  scanAssets(
-    join(ROOT, "dist"),
-    process.env,
-    committedRedirects(ROOT),
-    ai?.key,
-  );
+  scanAssets(join(ROOT, "dist"), process.env, committedRedirects(ROOT));
   if (
     !ai &&
     files(join(ROOT, "dist/assets")).some((file) =>
       /\/(?:AiPanel|run)-/.test(file),
     )
   )
-    fail("AI chunks are forbidden unless the dev build enables AI");
+    fail(
+      "AI chunks are forbidden unless the release gate and public build flag enable AI",
+    );
   console.log(
     `Cloudflare ${target}: assets verified; ${
-      ai ? `AI enabled (${ai.providers})` : "AI disabled"
+      ai ? "AI enabled (same-origin Worker API)" : "AI disabled"
     }.`,
   );
 }
@@ -381,7 +389,7 @@ export function deployArguments(target, root = ROOT) {
   ];
 }
 
-function deploy(target) {
+function deploy(target, disableOnly = false) {
   preflight(target);
   // A preinstalled CLI only: no npx download, project discovery or autoconfig.
   const cli =
@@ -391,11 +399,28 @@ function deploy(target) {
     fail(
       "install Wrangler separately or set CLOUDFLARE_APP_WRANGLER to its absolute executable path",
     );
-  execFileSync(cli, deployArguments(target), {
-    cwd: ROOT,
-    env: { ...gitEnvironment(), CI: "true", WRANGLER_SEND_METRICS: "false" },
-    stdio: "inherit",
-  });
+  if (disableOnly) {
+    const config = JSON.parse(
+      readFileSync(join(ROOT, "wrangler.json"), "utf8"),
+    );
+    const effective = target === "dev" ? config.env.dev : config;
+    if (
+      effective.vars.AI_ENABLED !== "false" ||
+      !existsSync(join(ROOT, "dist/index.html"))
+    )
+      fail(
+        "disable deployment requires AI_ENABLED=false and verified existing dist assets",
+      );
+  }
+  execFileSync(
+    cli,
+    [...deployArguments(target), ...(disableOnly ? ["--no-build"] : [])],
+    {
+      cwd: ROOT,
+      env: { ...gitEnvironment(), CI: "true", WRANGLER_SEND_METRICS: "false" },
+      stdio: "inherit",
+    },
+  );
 }
 
 /** @returns {number} the process exit code */
@@ -405,6 +430,7 @@ export function main(argv) {
     if (extra.length) fail("unexpected arguments");
     if (action === "build") build(target);
     else if (action === "deploy") deploy(target);
+    else if (action === "disable") deploy(target, true);
     else if (action === "preflight") preflight(target);
     else fail("use preflight, build, or deploy followed by production or dev");
     return 0;
