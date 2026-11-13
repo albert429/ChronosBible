@@ -24,6 +24,15 @@ shared references when contracts change rather than maintaining duplicate prompt
 Only `.agents/skills/` is versioned; local worktrees elsewhere in `.agents/`
 remain ignored.
 
+## Dependency security
+
+Install with `npm ci` and check both `npm audit` and `npm audit --omit=dev`
+when updating dependencies. The scoped `minimatch` override in `package.json`
+keeps TypeScript ESLint's parser on the patched 11.x release while upstream
+still requires affected 10.x versions ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)).
+Remove the override once TypeScript ESLint accepts a patched version itself;
+verify the linter and import-boundary checks whenever changing it.
+
 ## Structure
 
 | Path                                                                  | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                          |
