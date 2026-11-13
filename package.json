@@ -51,7 +51,7 @@
     "app:host:disable:dev": "node scripts/cloudflare-app.mjs disable dev"
   },
   "dependencies": {
-    "fflate": "^0.8.2",
+    "fflate": "^0.8.3",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -66,7 +66,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "esbuild": "0.25.12",
-    "eslint": "^10.12.0",
+    "eslint": "^10.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "lighthouse": "^13.5.0",
@@ -74,9 +74,14 @@
     "playwright": "^1.63.0",
     "prettier": "^3.9.9",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.71.2",
-    "vite": "^6.1.0",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^6.4.6",
     "wrangler": "4.156.2"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.8"
+    }
   },
   "engines": {
     "node": "22.x"
