@@ -65,7 +65,7 @@ build outputs. Run commands in the checkout actually containing the reviewed cod
 | ------------------------------------------ | -------------------------------------------------------------------------------------- |
 | Formatting or repository instructions      | `git diff --check`; focused `npx prettier --check <files>`                             |
 | TypeScript, imports, or feature boundaries | `npm run lint`, `npm run typecheck`, `npm run layers`; relevant Node tests             |
-| Focused Node regression                    | `node --experimental-strip-types --test tests/<name>.test.ts`                          |
+| Focused Node regression                    | `node --experimental-strip-types --test src/features/profiles/tests/progress.test.ts`  |
 | Python importers/audio/ownership           | `npm run test:python`                                                                  |
 | App/data/build behavior                    | `npm run build` (includes data generation); relevant generated-output tests            |
 | Broad cross-cutting change                 | `npm run validate`; `npm run verify:all` when full CI-equivalent coverage is warranted |

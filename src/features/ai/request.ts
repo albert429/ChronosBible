@@ -62,8 +62,6 @@ export type AnswerInput = {
 export type AnswerDeps = {
   storage: StorageLike | null;
   guards: Guards;
-  /** Today's date for the daily counts. */
-  date: string;
   /** The lazy request module; loaded on the first uncached request. */
   load?: () => Promise<Pick<typeof import("./run.ts"), "ask">>;
   frame?: (callback: () => void) => number;
@@ -73,8 +71,8 @@ export type AnswerDeps = {
 export type AnswerEvents = {
   view(next: View | ((view: View) => View)): void;
   status(text: string): void;
-  /** The first visible text: one answer spent today (`used` answers so far). */
-  answered(used: number): void;
+  /** Reveal the answer when its first visible text arrives. */
+  answered(): void;
   quota?(quota: AiStatus): void;
 };
 
@@ -101,7 +99,6 @@ export function startAnswer(
   {
     storage,
     guards,
-    date,
     load = () => import("./run.ts"),
     frame: schedule = (callback) => requestAnimationFrame(callback),
     cancelFrame = (handle) => cancelAnimationFrame(handle),
@@ -127,7 +124,7 @@ export function startAnswer(
       return;
     }
   }
-  const refused = guards.refusal(storage, date);
+  const refused = guards.refusal();
   if (refused) {
     events.view({ s: "error", chip, problem: refused, n });
     return;
@@ -138,7 +135,7 @@ export function startAnswer(
   events.status("جارٍ إعداد الإجابة…");
   let raw = "";
   let model: string | undefined;
-  let counted = false;
+  let revealed = false;
   let truncated = false;
   let frame = 0;
   const flush = () => {
@@ -156,14 +153,7 @@ export function startAnswer(
     }
     guards.answered();
     if (key && !truncated)
-      saveAnswer(
-        storage,
-        key,
-        truncated
-          ? { text: answer, model: model ?? "", truncated: true }
-          : { text: answer, model: model ?? "" },
-        revision,
-      );
+      saveAnswer(storage, key, { text: answer, model: model ?? "" }, revision);
     events.view({ s: "done", chip, text: answer, model, truncated });
     events.status(finished(chip));
   };
@@ -180,10 +170,9 @@ export function startAnswer(
             raw += delta;
             const shown = cleanAnswer(raw);
             if (!shown) return;
-            if (!counted) {
-              // Reveal the answer; server quota events supply the count.
-              counted = true;
-              events.answered(0);
+            if (!revealed) {
+              revealed = true;
+              events.answered();
             }
             if (shown.length > MAX_TEXT) {
               truncated = true;
@@ -194,9 +183,9 @@ export function startAnswer(
           },
           onSnapshot(text) {
             raw = text;
-            if (!counted && text) {
-              counted = true;
-              events.answered(0);
+            if (!revealed && text) {
+              revealed = true;
+              events.answered();
             }
             frame ||= schedule(flush);
           },

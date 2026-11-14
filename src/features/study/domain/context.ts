@@ -1,4 +1,4 @@
-import type { Passage, Verse } from "../../core/scripture/types.ts";
+import type { Passage, Verse } from "../../../core/scripture/types.ts";
 
 /**
  * The canonical verse to study and the passage it was read in, in any track

@@ -66,6 +66,68 @@ export default tseslint.config(
     files: ["src/core/**", "src/features/*/domain/**", "src/shared/lib/**"],
     ignores: ["**/tests/**"],
     rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          checkGlobalObject: true,
+          globals: [
+            "window",
+            "document",
+            "navigator",
+            "location",
+            "history",
+            "self",
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "caches",
+            "fetch",
+            "XMLHttpRequest",
+            "WebSocket",
+            "EventSource",
+            "Worker",
+            "SharedWorker",
+            "ServiceWorker",
+            "BroadcastChannel",
+            "setTimeout",
+            "setInterval",
+            "requestAnimationFrame",
+            "cancelAnimationFrame",
+            "requestIdleCallback",
+            "performance",
+            "matchMedia",
+            "MutationObserver",
+            "ResizeObserver",
+            "IntersectionObserver",
+            "Audio",
+            "AudioContext",
+            "Notification",
+          ].map((name) => ({
+            name,
+            message:
+              "Pure modules receive browser state and effects as inputs.",
+          })),
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message: "Pure modules receive the current date as an input.",
+        },
+        {
+          selector: "CallExpression[callee.name='Date']",
+          message: "Pure modules receive the current date as an input.",
+        },
+      ],
+      "no-restricted-properties": [
+        "error",
+        {
+          object: "Date",
+          property: "now",
+          message: "Pure modules receive the current time as an input.",
+        },
+      ],
       "no-restricted-imports": [
         "error",
         {

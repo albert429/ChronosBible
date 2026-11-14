@@ -1,4 +1,3 @@
-import type { StorageLike } from "./cache.ts";
 import type { AiErrorKind } from "./domain/types.ts";
 export type Problem = AiErrorKind | "stopped";
 export const RETRYABLE = new Set<Problem>([
@@ -15,18 +14,11 @@ export const RETRYABLE = new Set<Problem>([
 ]);
 export type Guards = ReturnType<typeof createGuards>;
 /** Only UX cooldowns. Every quota decision belongs to the server. */
-export function createGuards({
-  now = Date.now,
-}: { now?: () => number; dailyCap?: number; attemptCap?: number } = {}) {
+export function createGuards({ now = Date.now }: { now?: () => number } = {}) {
   let coolUntil = 0,
     failures = 0;
   return {
-    refusal(
-      _storage?: StorageLike | null,
-      _date?: string,
-    ): Problem | undefined {
-      void _storage;
-      void _date;
+    refusal(): "rate" | undefined {
       if (now() < coolUntil) return "rate";
     },
     backOff(kind: Problem, retryAt?: number) {

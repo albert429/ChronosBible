@@ -20,7 +20,7 @@ import {
   STUDY_WORDS_RAW_LIMIT,
 } from "../../scripts/data/build-study-canonical.js";
 import { readBibleChapters } from "../../scripts/data/build-bible.js";
-import { scanAssets } from "../../scripts/hosting/cloudflare-app.mjs";
+import { scanAssets } from "../../scripts/hosting/cloudflare-assets.mjs";
 import type {
   GreekToken,
   StudyWords,

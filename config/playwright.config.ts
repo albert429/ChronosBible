@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 import {
   AI_URL,
@@ -5,6 +6,8 @@ import {
   PW_PORT,
   STUB_URL,
 } from "../tests/browser/ai-stub.ts";
+
+const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 
 const chromium = {
   ...devices["Pixel 5"],
@@ -56,13 +59,13 @@ export default defineConfig({
   // so a stale build cannot answer for this one.
   webServer: [
     {
-      cwd: new URL("../", import.meta.url).pathname,
+      cwd: repositoryRoot,
       command: `node scripts/quality/static-server.mjs dist --port ${PW_PORT}`,
       url: APP_URL,
       reuseExistingServer: false,
     },
     {
-      cwd: new URL("../", import.meta.url).pathname,
+      cwd: repositoryRoot,
       command: "node scripts/quality/sse-stub.mjs",
       env: { SSE_STUB_PORT: String(PW_PORT + 2) },
       url: `${STUB_URL}/__stub/health`,
@@ -70,7 +73,7 @@ export default defineConfig({
     },
     {
       // Self-contained: it generates the data it bundles, then serves dist-ai/.
-      cwd: new URL("../", import.meta.url).pathname,
+      cwd: repositoryRoot,
       command: `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/worker/browser-server.mjs`,
       env: { PW_PORT: String(PW_PORT) },
       url: AI_URL,

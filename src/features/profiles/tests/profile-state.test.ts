@@ -8,14 +8,16 @@ import {
   addReader,
   freshState,
   newReader,
-  parseState,
-  serializeState,
-  validateReader,
   withActiveReader,
   withReaderPlaces,
   withReadingCompletion,
-  type ProgressState,
 } from "../domain/state.ts";
+import {
+  parseState,
+  serializeState,
+  validateReader,
+} from "../domain/serialization.ts";
+import { type ProgressState } from "../domain/types.ts";
 import { exportBackup, parseBackup } from "../domain/backup.ts";
 import { migrateLegacy } from "../domain/legacy.ts";
 
@@ -113,4 +115,44 @@ test("Transitions reject unknown readers and invalid readings without a new stat
       ),
     /القراءة غير صالحة/,
   );
+});
+
+// Stable text matters: the adapter compares serialized bytes before writing.
+test("Serialization keeps its field order and omits derived profile fields", () => {
+  const state = withReader();
+  const serialized = JSON.parse(serializeState(state));
+  assert.deepEqual(Object.keys(serialized), [
+    "version",
+    "activeId",
+    "profiles",
+    "guest",
+    "continuous",
+  ]);
+  assert.deepEqual(Object.keys(serialized.profiles[0]), [
+    "id",
+    "name",
+    "startDate",
+    "track",
+    "places",
+    "completion",
+  ]);
+  assert.equal("completed" in serialized.profiles[0], false);
+  assert.equal("readOn" in serialized.profiles[0], false);
+  const done = withReadingCompletion(
+    state,
+    "r1",
+    { mode: "plan", day: 12 },
+    true,
+    "2026-10-05",
+  ).state;
+  const parsed = parseState(serializeState(done));
+  assert.equal(
+    parsed.profiles[0].completed,
+    parsed.profiles[0].completion.plan,
+  );
+  assert.equal(
+    Object.keys(JSON.parse(serializeState(done)).profiles[0]).at(-1),
+    "readOn",
+  );
+  assert.equal(serializeState(parsed), serializeState(done));
 });

@@ -1,5 +1,5 @@
-import { today } from "../../shared/lib/format";
-import { type Reader, type ReaderProfile } from "./domain/state";
+import { today } from "../../shared/browser/clock";
+import { type Reader, type ReaderProfile } from "./domain/types";
 import { MAX_BACKUP_BYTES, exportBackup } from "./domain/backup";
 import { loadProgress } from "./storage";
 

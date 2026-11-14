@@ -11,22 +11,26 @@ import {
 } from "../../core/reading/places.ts";
 import {
   INVALID,
-  addReader,
-  newReader,
   parseState,
   serializeState,
   validateReader,
+} from "./domain/serialization.ts";
+import {
+  addReader,
+  newReader,
   withActiveReader,
   withReaderPlaces,
   withReadingCompletion,
+} from "./domain/state.ts";
+import {
   type BackupReader,
   type GuestState,
   type ProgressState,
   type ReaderProfile,
-} from "./domain/state.ts";
+} from "./domain/types.ts";
 import { parseBackup } from "./domain/backup.ts";
 import { migrateLegacy } from "./domain/legacy.ts";
-import { today } from "../../shared/lib/format.ts";
+import { today } from "../../shared/browser/clock.ts";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
 

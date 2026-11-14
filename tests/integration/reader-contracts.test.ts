@@ -18,8 +18,8 @@ import {
   isReadingComplete,
   readerCompletion,
   readerPlaces,
-  validChapterId,
 } from "../../src/features/profiles/domain/state.ts";
+import { validChapterId } from "../../src/features/profiles/domain/serialization.ts";
 import { exportBackup } from "../../src/features/profiles/domain/backup.ts";
 import {
   PROGRESS_KEY,

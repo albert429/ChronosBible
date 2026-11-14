@@ -3,15 +3,19 @@
 // in-memory storage and a manual clock.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { answerKey, readAnswer, saveAnswer, usage } from "../cache.ts";
+import { answerKey, readAnswer, saveAnswer } from "../cache.ts";
 import { PROMPT_VERSION } from "../domain/chips.ts";
 import { MAX_TEXT } from "../domain/text.ts";
 import { createGuards } from "../guards.ts";
 import { reportMailto } from "../report.ts";
 import { startAnswer, type AnswerDeps, type View } from "../request.ts";
-import { AiError, type AiMeta, type StreamCallbacks } from "../domain/types.ts";
+import {
+  AiError,
+  type AiMeta,
+  type AiStatus,
+  type StreamCallbacks,
+} from "../domain/types.ts";
 
-const DATE = "2026-11-01";
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 function memory() {
   const map = new Map<string, string>();
@@ -25,7 +29,6 @@ function memory() {
 type Script = (
   signal: AbortSignal,
   callbacks: StreamCallbacks,
-  send: () => void,
 ) => Promise<AiMeta>;
 
 /** One answer with fakes; `script` plays the provider's part. */
@@ -34,8 +37,6 @@ function harness(
   {
     clock = { now: 0 },
     guards = createGuards({
-      dailyCap: 2,
-      attemptCap: 5,
       now: () => clock.now,
     }),
     storage = memory(),
@@ -49,7 +50,8 @@ function harness(
 ) {
   const views: View[] = [];
   const statuses: string[] = [];
-  const answered: number[] = [];
+  const quotas: AiStatus[] = [];
+  const answered: true[] = [];
   let loads = 0;
   let runs = 0;
   let current: View = { s: "idle" };
@@ -57,16 +59,15 @@ function harness(
   const deps: AnswerDeps = {
     storage,
     guards,
-    date: DATE,
     load:
       load ??
       (async () => {
         loads += 1;
         return {
           // As run.ts does: an already-stopped request sends nothing.
-          ask: async (_input, signal, callbacks, onSend) => {
+          ask: async (_input, signal, callbacks) => {
             if (signal.aborted) throw new AiError("aborted");
-            return script(signal, callbacks, () => onSend?.());
+            return script(signal, callbacks);
           },
         };
       }),
@@ -92,13 +93,15 @@ function harness(
           views.push(current);
         },
         status: (text) => statuses.push(text),
-        answered: (n) => answered.push(n),
+        quota: (quota) => quotas.push(quota),
+        answered: () => answered.push(true),
       },
     );
   return {
     start,
     views,
     statuses,
+    quotas,
     answered,
     storage,
     guards,
@@ -115,9 +118,8 @@ const meta = (finish: "stop" | "length" = "stop"): AiMeta => ({
   finish,
 });
 
-test("an answer counts one attempt when sent and one answer at its first visible text, then is cached", async () => {
-  const h = harness(async (_signal, { onText, onMeta }, send) => {
-    send();
+test("an answer is revealed once at its first visible text, then is cached", async () => {
+  const h = harness(async (_signal, { onText, onMeta }) => {
     onText("<think>hidden</think>");
     onMeta?.("google/gemma");
     onText("الكلمة ");
@@ -132,8 +134,7 @@ test("an answer counts one attempt when sent and one answer at its first visible
     thinking: false,
   });
   await started.done;
-  assert.deepEqual(h.answered, [0], "hidden reasoning spends nothing");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
+  assert.deepEqual(h.answered, [true], "only visible text reveals the answer");
   assert.deepEqual(h.last(), {
     s: "done",
     chip: "explain",
@@ -142,16 +143,50 @@ test("an answer counts one attempt when sent and one answer at its first visible
     truncated: false,
   });
   assert.equal(h.statuses.at(-1), "اكتملت الإجابة: اشرح الآية");
-  // The same chip again is served from the cache: no request, no counts.
+  // The same chip again is served from the cache: no request.
   assert.equal(h.start(), undefined);
   assert.equal(h.loads(), 1);
   assert.equal(h.last().s, "done");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
+});
+
+test("cached answers remain available during a request cooldown", () => {
+  const h = harness(async () => {
+    throw new Error("must not load");
+  });
+  saveAnswer(
+    h.storage,
+    answerKey("JHN.1.1", "explain", PROMPT_VERSION),
+    { text: "محفوظ", model: "m" },
+    PROMPT_VERSION,
+  );
+  h.guards.backOff("rate");
+  assert.equal(h.start(), undefined);
+  assert.equal(h.loads(), 0);
+  assert.equal(h.last().s, "done");
+});
+
+test("server snapshots reveal once and forward authoritative quota", async () => {
+  const quota: AiStatus = {
+    available: true,
+    cacheRevision: "revision",
+    limits: { answers: 10, attempts: 20 },
+    usage: { answers: 3, attempts: 4 },
+    resets: { device: 1000, provider: 2000 },
+  };
+  const h = harness(async (_s, callbacks) => {
+    callbacks.onQuota?.(quota);
+    callbacks.onSnapshot?.("أول");
+    callbacks.onSnapshot?.("النص الكامل");
+    return meta();
+  });
+  await h.start()!.done;
+  assert.deepEqual(h.answered, [true]);
+  assert.deepEqual(h.quotas, [quota]);
+  assert.equal((h.last() as Extract<View, { s: "done" }>).text, "النص الكامل");
 });
 
 test("a fresh request skips the cache; a typed question is never cached", async () => {
-  const h = harness(async (_s, { onText }, send) => {
-    send();
+  const h = harness(async (_s, { onText }) => {
     onText("جواب");
     return meta();
   });
@@ -170,16 +205,25 @@ test("a fresh request skips the cache; a typed question is never cached", async 
   await h.start("ask", { question: "من هو الكلمة؟" })!.done;
   assert.equal(h.statuses.at(-1), "اكتملت الإجابة عن سؤالك");
   assert.equal(h.loads(), 2);
+  assert.equal(
+    readAnswer(h.storage, answerKey("JHN.1.1", "ask", PROMPT_VERSION)),
+    undefined,
+    "typed questions are never persisted",
+  );
 });
 
-test("Stop is immediate while the request module or study files load, and spends nothing", async () => {
+test("Stop is immediate while the request module loads", async () => {
   let release!: () => void;
+  let sent = false;
   const h = harness(async () => meta(), {
     load: () =>
       new Promise((resolve) => {
         release = () =>
           resolve({
-            ask: async (_i, _s, _c, onSend) => (onSend?.(), meta()),
+            ask: async () => {
+              sent = true;
+              return meta();
+            },
           });
       }),
   });
@@ -190,15 +234,14 @@ test("Stop is immediate while the request module or study files load, and spends
   assert.equal(h.statuses.at(-1), "أُوقفت الإجابة.");
   release();
   await tick();
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
+  assert.equal(sent, false, "a cancelled lazy load never starts a request");
   // A stop is not a failure: no cooldown follows.
   assert.equal(h.guards.remaining(), 0);
 });
 
 test("Stop after text keeps the partial answer for retry; unmount stays silent", async () => {
   const stopped = () =>
-    harness(async (signal, { onText }, send) => {
-      send();
+    harness(async (signal, { onText }) => {
       onText("بداية الجواب");
       return new Promise((_resolve, reject) =>
         signal.addEventListener("abort", () =>
@@ -219,7 +262,7 @@ test("Stop after text keeps the partial answer for retry; unmount stays silent",
     model: undefined,
     n: 1,
   });
-  assert.deepEqual(h.answered, [0], "the text reached the reader");
+  assert.deepEqual(h.answered, [true], "the text reached the reader");
 
   const gone = stopped();
   const left = gone.start()!;
@@ -231,8 +274,7 @@ test("Stop after text keeps the partial answer for retry; unmount stays silent",
 });
 
 test("An over-long answer is cut at the card's limit without caching a truncated answer", async () => {
-  const h = harness(async (signal, { onText }, send) => {
-    send();
+  const h = harness(async (signal, { onText }) => {
     onText("ا".repeat(MAX_TEXT));
     onText("ب".repeat(10));
     assert.equal(signal.reason, "truncated");
@@ -249,8 +291,7 @@ test("An over-long answer is cut at the card's limit without caching a truncated
     undefined,
   );
   // A provider that stops for length is truncated too.
-  const length = harness(async (_s, { onText }, send) => {
-    send();
+  const length = harness(async (_s, { onText }) => {
     onText("نص");
     return meta("length");
   });
@@ -260,8 +301,7 @@ test("An over-long answer is cut at the card's limit without caching a truncated
 
 test("Streaming text is shown once per frame", async () => {
   let resolve!: (meta: AiMeta) => void;
-  const h = harness((_s, { onText }, send) => {
-    send();
+  const h = harness((_s, { onText }) => {
     onText("أ");
     onText("ب");
     return new Promise((r) => (resolve = r));
@@ -282,8 +322,7 @@ test("Streaming text is shown once per frame", async () => {
 });
 
 test("A failure with partial text keeps it and sets no cooldown", async () => {
-  const h = harness(async (_s, { onText }, send) => {
-    send();
+  const h = harness(async (_s, { onText }) => {
     onText("نصف");
     throw new AiError("server", true, { model: "x/y" });
   });
@@ -303,8 +342,7 @@ test("Failures without text cool down, escalate and reset after an answer", asyn
   const clock = { now: 1_000_000 };
   let fail = true;
   const h = harness(
-    async (_s, { onText }, send) => {
-      send();
+    async (_s, { onText }) => {
       if (fail) throw new AiError("network");
       onText("تم");
       return meta();
@@ -329,15 +367,13 @@ test("Failures without text cool down, escalate and reset after an answer", asyn
   assert.equal(h.guards.remaining(), 5000, "an answer resets the escalation");
 });
 
-test("An empty answer is an error with a cooldown and spends no answer", async () => {
-  const h = harness(async (_s, { onText }, send) => {
-    send();
+test("An empty answer is an error with a cooldown", async () => {
+  const h = harness(async (_s, { onText }) => {
     onText("<think>only reasoning");
     return meta();
   });
   await h.start()!.done;
   assert.equal((h.last() as Extract<View, { s: "error" }>).problem, "empty");
-  assert.deepEqual(usage(h.storage, DATE), { date: DATE, n: 0, a: 0 });
   assert.equal(h.guards.remaining(), 5000);
 });
 
@@ -347,8 +383,7 @@ test("Rate limits wait for the service's reset, bounded to 30-65 seconds", async
     [40000, 40000],
     [600000, 65000],
   ] as const) {
-    const h = harness(async (_s, _c, send) => {
-      send();
+    const h = harness(async () => {
       throw new AiError("rate", false, { retryAt });
     });
     await h.start()!.done;
@@ -356,15 +391,15 @@ test("Rate limits wait for the service's reset, bounded to 30-65 seconds", async
   }
 });
 
-test("Local counters and previous quota errors cannot refuse a server cache hit", () => {
-  const guards = createGuards({ dailyCap: 1, attemptCap: 1 });
-  const storage = memory();
-  storage.setItem(
-    "nt-ai-usage-v1",
-    JSON.stringify({ date: DATE, n: 999, a: 999 }),
-  );
-  guards.backOff("quota");
-  assert.equal(guards.refusal(storage, DATE), undefined);
+test("A previous server quota error does not block a later request", async () => {
+  const h = harness(async (_s, { onText }) => {
+    onText("جواب");
+    return meta();
+  });
+  h.guards.backOff("quota");
+  assert.equal(h.guards.refusal(), undefined);
+  await h.start()!.done;
+  assert.equal(h.last().s, "done");
 });
 
 test("The error report carries the request, a safe model name and a clipped answer", () => {

@@ -26,7 +26,7 @@ import {
 } from "../features/chronology/data/client";
 import { useResource } from "../shared/hooks/useResource";
 import { useToday } from "../shared/hooks/useToday";
-import { today } from "../shared/lib/format";
+import { today } from "../shared/browser/clock";
 import {
   chooseTrack,
   createChoiceGuard,

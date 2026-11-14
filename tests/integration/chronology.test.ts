@@ -2,16 +2,18 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { prepareChronology } from "../../scripts/data/build-chronology.js";
 import {
-  TARGET_WORDS,
   auditOccurrences,
   correctedOccurrences,
-  groupSegment,
-  prepareChronology,
-  readingTitle,
   sourceOccurrences,
+} from "../../scripts/data/chronology/source.js";
+import {
+  TARGET_WORDS,
+  groupSegment,
   verseSequence,
-} from "../../scripts/data/build-chronology.js";
+} from "../../scripts/data/chronology/grouping.js";
+import { readingTitle } from "../../scripts/data/chronology/readings.js";
 import { readBibleChapters } from "../../scripts/data/build-bible.js";
 import type { BibleChapter } from "../../src/core/reading/types.ts";
 import { catalog as books } from "../../src/core/scripture/catalog.ts";

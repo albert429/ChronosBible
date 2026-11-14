@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { AUDIO_BASE_URL } from "../../scripts/hosting/cloudflare-app.mjs";
+import { AUDIO_BASE_URL } from "../../scripts/hosting/cloudflare-policy.mjs";
 import {
   AUDIO_HOST_ORIGIN,
   AUDIO_MEDIA_PREFIXES,

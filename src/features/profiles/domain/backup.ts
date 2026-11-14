@@ -11,10 +11,8 @@ import {
   parseCompletion,
   record,
   validateReader,
-  type BackupReader,
-  type Reader,
-  type ReaderProfile,
-} from "./state.ts";
+} from "./serialization.ts";
+import { type BackupReader, type Reader, type ReaderProfile } from "./types.ts";
 
 export const MAX_BACKUP_BYTES = 262144;
 

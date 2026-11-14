@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from "react";
 import type { ReadingLocation } from "../../core/reading/types";
+import { emptyCompletion } from "./domain/serialization";
 import {
-  emptyCompletion,
   type GuestState,
   type ReadOn,
   type ReaderProfile,
   type TrackCompletion,
-} from "./domain/state";
+} from "./domain/types";
 import {
   PROGRESS_KEY,
   STATE_KEY,

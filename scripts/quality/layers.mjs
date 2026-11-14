@@ -24,7 +24,7 @@ function* walk(directory) {
   }
 }
 
-/** The unit an edge is drawn between: a feature, a domain area, a layer. */
+/** Graph units preserve physical ownership and domain/data roles for cycles. */
 function unitOf(relative) {
   const place = placeOf(relative);
   if (!place) return undefined;

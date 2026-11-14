@@ -12,12 +12,10 @@ export async function ask(
   input: AskInput,
   signal: AbortSignal,
   callbacks: StreamCallbacks,
-  onSend?: () => void,
 ) {
   if (!input.challengeElement) throw new AiError("challenge");
   const token = await challenge(input.challengeElement, signal);
   signal.throwIfAborted();
-  onSend?.();
   return answer(
     {
       verseId: input.id,

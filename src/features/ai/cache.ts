@@ -1,11 +1,10 @@
-// On-device AI data: cached answers, daily usage and the off switch. Every
+// On-device AI data: cached answers and the off switch. Every
 // access is guarded (private mode, quota errors, tampered values) and these
 // keys are separate from reading progress and never part of backups.
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export const CACHE_KEY = "nt-ai-cache-v2";
-export const USAGE_KEY = "nt-ai-usage-v1";
 /** Set when the reader turns the feature off on this device. */
 export const OFF_KEY = "nt-ai-off-v1";
 /** Left by builds that asked for consent first; cleared with the other data. */
@@ -15,7 +14,6 @@ export const MAX_TOTAL_CHARS = 200_000;
 const MAX_ANSWER = 6000;
 
 export type CachedAnswer = { text: string; model: string; truncated?: true };
-export type Usage = { date: string; n: number; a: number };
 type Entry = [key: string, text: string, model: string, truncated?: 1];
 
 export function browserStorage(): StorageLike | null {
@@ -104,57 +102,10 @@ export function saveAnswer(
   writeEntries(storage, entries);
 }
 
-// When storage is missing or refuses writes, counts and the off switch still
-// hold for this page session. Keyed by storage object, so each is separate.
+// When storage refuses writes, the off switch still holds for this session.
 const NO_STORAGE = {};
-const sessionUsage = new WeakMap<object, Usage>();
 const sessionOff = new WeakSet<object>();
 const slot = (storage: StorageLike | null) => storage ?? NO_STORAGE;
-
-function storedUsage(storage: StorageLike | null, date: string): Usage {
-  try {
-    const data = JSON.parse(storage?.getItem(USAGE_KEY) ?? "null");
-    if (
-      data?.date === date &&
-      Number.isInteger(data.n) &&
-      Number.isInteger(data.a) &&
-      data.n >= 0 &&
-      data.a >= 0
-    )
-      return { date, n: data.n, a: data.a };
-  } catch {
-    // fall through
-  }
-  return { date, n: 0, a: 0 };
-}
-
-/** Today's answers (n) and requests (a) on this device; another date is 0. */
-export function usage(storage: StorageLike | null, date: string): Usage {
-  const stored = storedUsage(storage, date);
-  const session = sessionUsage.get(slot(storage));
-  if (session?.date !== date) return stored;
-  return {
-    date,
-    n: Math.max(stored.n, session.n),
-    a: Math.max(stored.a, session.a),
-  };
-}
-
-function bump(storage: StorageLike | null, date: string, field: "n" | "a") {
-  const next = usage(storage, date);
-  next[field] += 1;
-  sessionUsage.set(slot(storage), { ...next });
-  try {
-    storage?.setItem(USAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Not persisted; the session count still applies until the page reloads.
-  }
-  return next;
-}
-export const recordAttempt = (storage: StorageLike | null, date: string) =>
-  bump(storage, date, "a");
-export const recordAnswer = (storage: StorageLike | null, date: string) =>
-  bump(storage, date, "n");
 
 export function isTurnedOff(storage: StorageLike | null) {
   if (sessionOff.has(slot(storage))) return true;
@@ -165,8 +116,7 @@ export function isTurnedOff(storage: StorageLike | null) {
   }
 }
 
-/** Turn the feature off and delete cached answers. Usage counts stay (they
- * hold no content), so turning it back on does not reset the daily caps. */
+/** Turn the feature off and delete cached answers and legacy consent. */
 export function turnOff(storage: StorageLike | null) {
   try {
     storage?.removeItem(CACHE_KEY);

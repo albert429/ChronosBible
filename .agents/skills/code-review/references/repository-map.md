@@ -11,11 +11,14 @@ Start with `AGENTS.md`, `docs/development.md`,
 `scripts/quality/import-boundaries.mjs`, and `vite.config.ts`.
 
 - `src/core/` and feature `domain/` owns pure scripture, reading, profiles, audio, and study contracts.
-  No React, browser APIs, storage, network, wall clock, or build globals. Its
+  No React, browser effects, storage, network, wall clock, or build globals.
+  Deterministic date, URL, encoding, and hashing operations remain allowed. Its
   allowed dependencies are domain areas and pure `src/shared/lib/` helpers.
 - feature `data/` and `src/shared/network/` owns network clients and imports only domain/data. Shared UI,
   hooks, browser adapters, styles, and pure helpers live in `src/shared/`, which
-  never imports data, features, or app. `shared/lib` imports only itself.
+  never imports features (including their domain/data modules) or app. Other
+  shared areas cannot import shared/network; shared/network imports only core
+  contracts and shared/network. `shared/lib` imports only itself.
 - `src/features/` owns reader, navigation, plan, profiles, audio, study, ai,
   appearance, offline, and streak. Consult `FEATURE_EDGES`/`DOMAIN_EDGES` in the
   boundary rule for allowed edges rather than expanding an allowlist to silence

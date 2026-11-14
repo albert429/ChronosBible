@@ -56,7 +56,12 @@ ChronosBible uses feature ownership with a shared pure foundation:
 
 The boundary table in `scripts/quality/import-boundaries.mjs` is enforced by
 ESLint and `npm run layers`. Its graph separates pure domain, data and UI roles
-inside each feature and excludes tests. Cross-feature UI edges are explicit.
+inside each feature and excludes tests. Physical ownership is checked before
+roles, so shared modules cannot import feature contracts or clients. Pure core,
+feature domain and shared/lib modules receive browser state and the current
+time as inputs; ESLint rejects browser effects and wall-clock reads there.
+Deterministic date, URL, text encoding and hashing operations remain allowed.
+Cross-feature UI edges are explicit.
 Navigation owns the toolbar and sheet coordination; Bible, chronology and plan
 own their picker panels. Preserve lazy imports and use direct module imports
 without barrels. Node-executed imports use explicit `.ts` extensions.
@@ -68,7 +73,7 @@ explicit lazy entry points (`features/study/load.ts`, `features/streak/lazy.ts`,
 `features/ai/run.ts`, the navigation panels, `features/offline/OfflinePanel`,
 the profile dialogs, `AudioPlayer`, `features/reader/preload.ts`,
 `features/offline/register.ts` and the `fflate` fallback in
-`data/study/decodeWords.ts`); `__AI_ENABLED__` removes the AI card from builds
+`features/study/data/decodeWords.ts`); `__AI_ENABLED__` removes the AI card from builds
 that disable it.
 
 ### Python tools
@@ -138,6 +143,10 @@ Visual and performance scripts expect a running `npm start`. `BASELINE_URL` opti
 
 ## State and privacy
 
+`src/features/profiles/domain/types.ts` owns the profile contracts,
+`serialization.ts` validates and serializes stored state and backups, and
+`state.ts` owns transitions and selectors.
+
 `bible-reader-state-v2` stores independent places and explicit completion for the guest and each named reader across Bible, youth plan, Old Testament chronology and New Testament chronology. It migrates `nt-reading-progress-v1` and `bible-reader-location-v1`; new backups use version 2 and version 1 youth-plan backups remain importable as separate profiles. `bible-reader-audio-position-v1` retains listening positions by immutable media path. `bible-reader-scroll-v1` keeps the top visible verse of the 50 most recent readings, outside backups. `word-font`, `word-theme` (`auto`, `light` or `dark`) and `word-diacritics` preserve appearance settings; without `word-theme`, a legacy `word-dark` of `true` means dark and anything else means auto, which follows the device's light or dark setting live. `index.html` applies the theme before first paint. Clearing site data or moving browsers/domains requires restoring a saved backup.
 
 Beside `completion`, each reader (and the guest) has an optional `readOn` map: `track|entry` (`plan|12`, `bible|GEN:1`, `chrono:OT|<id>`) to the Cairo date the reading was marked done. Undoing a reading removes its date. Only still-completed readings with valid dates are kept, invalid entries are dropped rather than rejected, and the field is written only when non-empty. Backups carry it and import accepts it; older backups and v1 data import without it. Readings completed before dates were recorded have none, so streaks start with the next reading.
@@ -152,7 +161,7 @@ Each mode pages through its own places (`src/core/reading/adjacent.ts`): the too
 
 Opening the app, Back/Forward, changing reader and returning to a mode resume at the top visible verse that place was left at; moving on to another place starts at its top. The position is measured only when leaving a place or hiding the page (a binary search over the verses), never while scrolling, and `history.scrollRestoration` is manual.
 
-`src/features/chronology/data/` loads reference-only reading definitions and slices canonical chapter text through the shared chapter cache (the reading shapes and catalog helpers are in `src/core/reading/`). The reviewed output contains 412 Old Testament and 141 New Testament readings; source order, repetitions, the documented 1 Timothy 6:22 exception, and nearest natural chapter/section breaks are described in [chronology.md](chronology.md). `scripts/data/build-chronology.js` runs through the data build; keep that guide authoritative for regeneration and audit details.
+`src/features/chronology/data/` loads reference-only reading definitions and slices canonical chapter text through the shared chapter cache (the reading shapes and catalog helpers are in `src/core/reading/`). The reviewed output contains 412 Old Testament and 141 New Testament readings; source order, repetitions, the documented 1 Timothy 6:22 exception, and nearest natural chapter/section breaks are described in [chronology.md](chronology.md). `scripts/data/build-chronology.js` orchestrates the data build; its `chronology/source.js`, `grouping.js`, and `readings.js` modules own source auditing, natural-break grouping, and reading assembly. Keep that guide authoritative for regeneration and audit details.
 
 Schedules use Cairo dates. Catch-up and advance reading do not move a reader's start date. Daily JSON is cached in memory during the browser session, with concurrent requests deduplicated; failed requests can be retried.
 

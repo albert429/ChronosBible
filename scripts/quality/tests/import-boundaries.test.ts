@@ -25,7 +25,12 @@ async function boundaryMessages(file: string, code: string) {
     .filter(
       (message) =>
         message.ruleId === "chronos/import-boundaries" ||
-        message.ruleId === "no-restricted-imports",
+        [
+          "no-restricted-imports",
+          "no-restricted-globals",
+          "no-restricted-syntax",
+          "no-restricted-properties",
+        ].includes(message.ruleId ?? ""),
     )
     .map((message) => message.message);
 }
@@ -146,6 +151,33 @@ const CASES: [string, string, boolean][] = [
     'import { x } from "../../../shared/network/jsonClient.ts";',
     false,
   ],
+  // Ownership remains visible even when domain/data roles are classified.
+  [
+    "src/shared/network/a.ts",
+    'import { x } from "../../features/ai/data/client.ts";',
+    true,
+  ],
+  [
+    "src/shared/network/a.ts",
+    'import { x } from "../../features/profiles/domain/state.ts";',
+    true,
+  ],
+  [
+    "src/shared/ui/a.tsx",
+    'import { x } from "../../features/profiles/domain/state.ts";',
+    true,
+  ],
+  [
+    "src/shared/ui/a.tsx",
+    'import { x } from "../../features/ai/data/client.ts";',
+    true,
+  ],
+  [
+    "src/shared/network/a.ts",
+    'import { x } from "../../core/scripture/types.ts";',
+    false,
+  ],
+  ["src/shared/network/a.ts", 'import { x } from "./jsonClient.ts";', false],
   // Shared never imports features, app or data, and shared/lib stays pure.
   [
     "src/shared/ui/a.tsx",
@@ -358,6 +390,90 @@ test("The layer check finds a cycle between features and a forbidden edge", () =
     assert.ok(
       violations.some((entry) => /domain is pure/.test(entry)),
       violations.join("\n"),
+    );
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test("Pure modules reject browser effects and wall-clock reads", async () => {
+  for (const file of [
+    "src/core/reading/a.ts",
+    "src/features/profiles/domain/a.ts",
+    "src/shared/lib/a.ts",
+  ]) {
+    for (const code of [
+      "export const x = window.location;",
+      "export const x = document.title;",
+      "export const x = localStorage.getItem('x');",
+      "export const x = navigator.onLine;",
+      "export const x = fetch('/data.json');",
+      "export const x = globalThis.fetch('/data.json');",
+      "export const x = globalThis['localStorage'];",
+      "export const x = indexedDB.open('x');",
+      "export const x = setTimeout(() => {}, 1);",
+      "export const x = Date.now();",
+      "export const x = new Date();",
+      "export const x = Date();",
+    ])
+      assert.ok(
+        (await boundaryMessages(file, code)).length,
+        `${file}: ${code}`,
+      );
+    for (const code of [
+      "export const x = new Date('2026-01-01').toISOString();",
+      "export const x = Date.parse('2026-01-01');",
+      "export const x = new URLSearchParams('day=1');",
+      "export const x = new TextEncoder().encode('text');",
+      "export const x = crypto.subtle.digest('SHA-256', new Uint8Array());",
+      "export const x = (fetch: () => string) => fetch();",
+    ])
+      assert.deepEqual(
+        await boundaryMessages(file, code),
+        [],
+        `${file}: ${code}`,
+      );
+  }
+  assert.deepEqual(
+    await boundaryMessages(
+      "src/shared/browser/a.ts",
+      "export const x = () => localStorage.getItem('x');",
+    ),
+    [],
+  );
+});
+
+test("The layer graph retains role-level cycles and rejects shared feature bypasses", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "layers roles "));
+  try {
+    const write = (file: string, text: string) => {
+      const path = join(fixture, "src", file);
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, text);
+    };
+    write(
+      "shared/network/a.ts",
+      'import { x } from "../../features/ai/data/client.ts";',
+    );
+    write(
+      "shared/ui/a.ts",
+      'import { x } from "../../features/profiles/domain/state.ts";',
+    );
+    write("features/profiles/domain/state.ts", "export const x = 1;");
+    write(
+      "features/ai/data/client.ts",
+      'import { x } from "../domain/types.ts";',
+    );
+    write(
+      "features/ai/domain/types.ts",
+      'import { x } from "../data/client.ts";',
+    );
+    const { cycles, violations } = analyzeLayers(fixture);
+    assert.deepEqual(cycles, [["features/ai/data", "features/ai/domain"]]);
+    assert.equal(
+      violations.filter((entry) => /shared never imports features/.test(entry))
+        .length,
+      2,
     );
   } finally {
     rmSync(fixture, { recursive: true, force: true });

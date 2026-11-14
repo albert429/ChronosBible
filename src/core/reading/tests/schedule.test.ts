@@ -12,7 +12,7 @@ import {
   pageFor,
   scheduledDay,
 } from "../schedule.ts";
-import { today } from "../../../shared/lib/format.ts";
+import { today } from "../../../shared/browser/clock.ts";
 
 test("Day numbers count from the start date, inclusive", () => {
   assert.equal(dayIndex("2026-10-01", "2026-10-01"), 1);

@@ -4,12 +4,14 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 import {
   CONFIGS,
   STUB_PORT,
@@ -17,7 +19,7 @@ import {
   buildEnvironment,
 } from "../../scripts/build/build-config.mjs";
 import { browserEnvironment } from "../../scripts/build/browser-build.mjs";
-import { buildEnvironment as productionEnvironment } from "../../scripts/hosting/cloudflare-app.mjs";
+import { buildEnvironment as productionEnvironment } from "../../scripts/hosting/cloudflare-policy.mjs";
 
 const read = (path: string) =>
   readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
@@ -163,6 +165,29 @@ test("A reference build refuses local env files and local audio media", () => {
     mkdirSync(join(root, "public/audio/days"), { recursive: true });
     writeFileSync(join(root, "public/audio/days/1.m4a"), "x");
     assert.throws(() => assertClean(root), /local media/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Playwright server working directories decode checkout paths", async () => {
+  const root = mkdtempSync(join(tmpdir(), "playwright checkout ü # "));
+  try {
+    mkdirSync(join(root, "config"));
+    const source = read("config/playwright.config.ts")
+      .replace(
+        '"@playwright/test"',
+        JSON.stringify(import.meta.resolve("@playwright/test")),
+      )
+      .replace(
+        '"../tests/browser/ai-stub.ts"',
+        JSON.stringify(new URL("../browser/ai-stub.ts", import.meta.url).href),
+      );
+    const configPath = join(root, "config/playwright.config.ts");
+    writeFileSync(configPath, source);
+    const { default: config } = await import(pathToFileURL(configPath).href);
+    for (const server of config.webServer)
+      assert.equal(server.cwd, realpathSync(root) + sep);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validDate } from "../domain/state.ts";
+import { validDate } from "../domain/serialization.ts";
 import { exportBackup } from "../domain/backup.ts";
 import {
   createReader,

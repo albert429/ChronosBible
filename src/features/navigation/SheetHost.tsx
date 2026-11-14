@@ -8,7 +8,7 @@ import type {
 } from "../../core/reading/types";
 import type { ReadingTrack } from "../../core/reading/identity";
 import type { ChronologyCatalog } from "../../core/reading/chronology";
-import type { TrackCompletion } from "../profiles/domain/state";
+import type { TrackCompletion } from "../profiles/domain/types";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
 import { shareApp } from "./share";

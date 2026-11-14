@@ -46,7 +46,7 @@ const FIXTURE_AUDIO = {
 export const CONFIGS = {
   "production-audio": {
     description:
-      "Production: hosted audio, chapters enabled, AI off (hosting/cloudflare-app.mjs buildEnvironment).",
+      "Production: hosted audio, chapters enabled, AI off (hosting/cloudflare-policy.mjs buildEnvironment).",
     outDir: "dist",
     env: {
       ...ALL_VITE,

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { today } from "../lib/format";
+import { today } from "../browser/clock";
 
 const listeners = new Set<() => void>();
 let date = today();

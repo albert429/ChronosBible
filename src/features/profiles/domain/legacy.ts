@@ -13,12 +13,11 @@ import type {
 import {
   MAX_READERS,
   emptyCompletion,
-  freshState,
   validId,
   validateReader,
-  type ProgressState,
-  type Reader,
-} from "./state.ts";
+} from "./serialization.ts";
+import { freshState } from "./state.ts";
+import { type ProgressState, type Reader } from "./types.ts";
 
 /** The last mode and place in each mode on this device; never plan progress. */
 export type ReaderPreferences = {

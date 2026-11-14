@@ -23,7 +23,12 @@ ChronosBible uses feature ownership with a shared pure foundation:
 
 The boundary table in `scripts/quality/import-boundaries.mjs` is enforced by
 ESLint and `npm run layers`. Its graph separates pure domain, data and UI roles
-inside each feature and excludes tests. Cross-feature UI edges are explicit.
+inside each feature and excludes tests. Physical ownership is checked before
+roles, so shared modules cannot import feature contracts or clients. Pure core,
+feature domain and shared/lib modules receive browser state and the current
+time as inputs; ESLint rejects browser effects and wall-clock reads there.
+Deterministic date, URL, text encoding and hashing operations remain allowed.
+Cross-feature UI edges are explicit.
 Navigation owns the toolbar and sheet coordination; Bible, chronology and plan
 own their picker panels. Preserve lazy imports and use direct module imports
 without barrels. Node-executed imports use explicit `.ts` extensions.
@@ -56,8 +61,8 @@ Use Node.js 22 and `npm ci` for locked dependencies.
   recursive `py_compile` and the browser tests; honors `PW_PORT`.
 - `npm run test:e2e`: build audio fixtures and run Playwright workflows.
 - `npm run test:python`: test Python utilities.
-- One unit test: `node --experimental-strip-types --test tests/<name>.test.ts`
-  (`--test-name-pattern` filters).
+- One unit test: `node --experimental-strip-types --test src/features/profiles/tests/progress.test.ts`
+  (use the owner’s `tests/` path; `--test-name-pattern` filters).
 - One browser spec: export `AUDIO_TEST_FIXTURES=1`,
   `VITE_AUDIO_BASE_URL=https://audio.example.test` and
   `VITE_AUDIO_CHAPTERS_ENABLED=true`, build with

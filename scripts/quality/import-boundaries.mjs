@@ -51,13 +51,24 @@ export function placeOf(relative) {
   if (parts[0] !== "src") return undefined;
   if (parts.length === 2) return { layer: "root", area: "" };
   const [, layer, area, role] = parts;
-  if (layer === "core") return { layer: "domain", area, unit: `core/${area}` };
+  if (layer === "core")
+    return { owner: layer, layer: "domain", area, unit: `core/${area}` };
   if (layer === "features" && (role === "domain" || role === "data"))
-    return { layer: role, area, unit: `features/${area}/${role}` };
+    return {
+      owner: layer,
+      layer: role,
+      area,
+      unit: `features/${area}/${role}`,
+    };
   if (layer === "shared" && area === "network")
-    return { layer: "data", area: "network", unit: "shared/network" };
+    return {
+      owner: layer,
+      layer: "data",
+      area: "network",
+      unit: "shared/network",
+    };
   if (layer === "app" || layer === "assets") return { layer, area: "" };
-  return { layer, area };
+  return { owner: layer, layer, area };
 }
 
 const label = (place) =>
@@ -86,6 +97,12 @@ export function violation(from, to, toFile) {
     if (TOOL_FEATURE_FILES.includes(toFile)) return undefined;
     return `build and tool code may import only core, feature domain/data, shared/network, shared/lib and ${TOOL_FEATURE_FILES.join(", ")}`;
   }
+  // Ownership restrictions apply before roles: shared transport is still
+  // shared, and feature contracts still belong to their feature.
+  if (from.owner === "shared" && to.owner === "features")
+    return "shared never imports features (including domain and data)";
+  if (from.owner === "core" && to.owner === "features")
+    return "domain is pure: core imports only core and shared/lib";
   if (from.layer === "domain") {
     if (to.layer === "shared" && to.area === "lib") return undefined;
     if (to.layer !== "domain")

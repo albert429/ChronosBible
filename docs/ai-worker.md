@@ -1,6 +1,6 @@
 # Cloudflare AI runtime
 
-AI is optional. The reader stays a static application; only `/api/ai/*` runs Worker code. Vercel disables the AI feature. Production's release gate is closed in `scripts/hosting/cloudflare-app.mjs` and `wrangler.json` until dev acceptance is recorded.
+AI is optional. The reader stays a static application; only `/api/ai/*` runs Worker code. Vercel disables the AI feature. Production's release gate is closed in `scripts/hosting/cloudflare-policy.mjs` and `wrangler.json` until dev acceptance is recorded.
 
 ## Architecture and public contract
 

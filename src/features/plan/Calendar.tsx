@@ -8,7 +8,7 @@ import {
   dateFor,
   dayStatus,
 } from "../../core/reading/schedule";
-import type { Reader } from "../profiles/domain/state";
+import type { Reader } from "../profiles/domain/types";
 import { planIndex } from "./data/client";
 import { useResource } from "../../shared/hooks/useResource";
 import { Loading, LoadError } from "../../shared/ui/Feedback";

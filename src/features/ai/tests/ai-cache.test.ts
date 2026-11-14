@@ -9,11 +9,7 @@ import {
   turnOn,
   MAX_ENTRIES,
   readAnswer,
-  recordAnswer,
-  recordAttempt,
   saveAnswer,
-  usage,
-  USAGE_KEY,
 } from "../cache.ts";
 
 function memory(initial: Record<string, string> = {}) {
@@ -97,11 +93,6 @@ test("Malformed, tampered, blocked or full storage never throws", () => {
   saveAnswer(full, "k|explain|1", { text: "t", model: "m" }, 1);
   assert.equal(readAnswer(null, "k"), undefined);
   saveAnswer(null, "k", { text: "t", model: "m" }, 1);
-  assert.deepEqual(usage(null, "2026-10-10"), {
-    date: "2026-10-10",
-    n: 0,
-    a: 0,
-  });
   assert.equal(isTurnedOff(null), false);
   const throwing = {
     getItem() {
@@ -118,27 +109,6 @@ test("Malformed, tampered, blocked or full storage never throws", () => {
   assert.equal(isTurnedOff(throwing), false);
   turnOff(throwing);
   turnOn(throwing);
-  assert.deepEqual(recordAttempt(throwing, "2026-10-10"), {
-    date: "2026-10-10",
-    n: 0,
-    a: 1,
-  });
-});
-
-test("Usage counts answers and attempts per Cairo date and resets on a new date", () => {
-  const s = memory();
-  recordAttempt(s, "2026-10-10");
-  recordAttempt(s, "2026-10-10");
-  recordAnswer(s, "2026-10-10");
-  assert.deepEqual(usage(s, "2026-10-10"), { date: "2026-10-10", n: 1, a: 2 });
-  assert.deepEqual(usage(s, "2026-10-11"), { date: "2026-10-11", n: 0, a: 0 });
-  assert.deepEqual(
-    usage(
-      memory({ [USAGE_KEY]: '{"date":"2026-10-10","n":-5,"a":1}' }),
-      "2026-10-10",
-    ),
-    { date: "2026-10-10", n: 0, a: 0 },
-  );
 });
 
 test("The feature starts on; turning it off removes answers but never progress", () => {
@@ -153,13 +123,11 @@ test("The feature starts on; turning it off removes answers but never progress",
     { text: "a", model: "m" },
     1,
   );
-  recordAnswer(s, "2026-10-10");
   turnOff(s);
   assert.equal(s.map.get(OFF_KEY), "1");
   assert.equal(isTurnedOff(s), true);
   assert.equal(s.map.has(CACHE_KEY), false);
   assert.equal(s.map.has("nt-ai-consent-v1"), false);
-  assert.equal(s.map.has(USAGE_KEY), true);
   assert.equal(s.map.get("nt-reading-progress-v1"), "{}");
   assert.equal(s.touched.has("nt-reading-progress-v1"), false);
   turnOn(s);
@@ -167,8 +135,7 @@ test("The feature starts on; turning it off removes answers but never progress",
   assert.equal(s.map.has(OFF_KEY), false);
 });
 
-test("Without working storage, counts and the off switch still hold for the session", () => {
-  const date = "2026-10-12";
+test("Without working storage, the off switch still holds for the session", () => {
   const full = {
     getItem: () => null,
     setItem: () => {
@@ -177,15 +144,6 @@ test("Without working storage, counts and the off switch still hold for the sess
     removeItem: () => {},
   };
   for (const storage of [null, full]) {
-    recordAttempt(storage, date);
-    recordAnswer(storage, date);
-    assert.deepEqual(recordAnswer(storage, date), { date, n: 2, a: 1 });
-    assert.deepEqual(usage(storage, date), { date, n: 2, a: 1 });
-    assert.deepEqual(usage(storage, "2026-10-13"), {
-      date: "2026-10-13",
-      n: 0,
-      a: 0,
-    });
     assert.equal(isTurnedOff(storage), false);
     turnOff(storage);
     assert.equal(isTurnedOff(storage), true);
@@ -194,7 +152,6 @@ test("Without working storage, counts and the off switch still hold for the sess
   }
   // Each storage is separate; a working one keeps the switch only in storage,
   // so turning it back on elsewhere (another tab) takes effect.
-  assert.deepEqual(usage(memory(), date), { date, n: 0, a: 0 });
   const s = memory();
   turnOff(s);
   s.map.delete(OFF_KEY);
