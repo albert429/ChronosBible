@@ -41,7 +41,8 @@ export const payload = (path, data) => [
 ];
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
-const isLink = (path) => existsSync(path) && lstatSync(path).isSymbolicLink();
+const isLink = (path) =>
+  lstatSync(path, { throwIfNoEntry: false })?.isSymbolicLink() ?? false;
 // existsSync follows links, so a dangling link would look absent.
 const present = (path) => {
   try {

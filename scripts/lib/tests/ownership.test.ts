@@ -162,6 +162,27 @@ test("Symlinked output, parents, files and inventories are refused", (t) => {
   assert.equal(existsSync(join(elsewhere, "missing.json")), false);
 });
 
+test("Dangling output links are refused before creating anything outside", (t) => {
+  for (const location of ["base", "parent", "file"] as const) {
+    const f = scratch(t);
+    const missing = join(f.root, "missing target");
+    if (location !== "base") mkdirSync(f.base);
+    const link =
+      location === "base"
+        ? f.base
+        : join(f.base, location === "parent" ? "a" : "1.json");
+    symlinkSync(missing, link);
+    const path = location === "parent" ? "a/1.json" : "1.json";
+    assert.throws(() => f.publish([[path, "x"]]), /symlink/, location);
+    assert.equal(existsSync(missing), false, location);
+    assert.equal(
+      existsSync(f.inventory),
+      false,
+      "no inventory is written after refusal",
+    );
+  }
+});
+
 test("An inventory inside the output folder counts as one of its files", (t) => {
   const f = scratch(t);
   const result = f.publish([["1.json", "one"]], {

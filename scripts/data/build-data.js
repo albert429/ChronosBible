@@ -5,7 +5,7 @@ import { buildBible } from "./build-bible.js";
 import { buildAudioIndex } from "./build-audio-index.js";
 import { buildChronology } from "./build-chronology.js";
 import { buildReadings } from "./build-readings.js";
-import { buildStudy } from "./build-study.js";
+import { buildStudy, buildStudyLicense } from "./build-study.js";
 
 const out = (name) => join(ROOT, "app/public", name);
 // Inventories of what each builder last wrote into a shipped folder; kept
@@ -19,6 +19,7 @@ for (const summary of [
     inventory: inventory("chronology"),
   }),
   buildStudy({ out: out("study") }),
+  buildStudyLicense({ out: out("licenses"), inventory: inventory("licenses") }),
   buildAudioIndex({ out: out("audio"), inventory: inventory("audio") }),
 ])
   console.log(summary);
