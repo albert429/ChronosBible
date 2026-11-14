@@ -71,15 +71,18 @@ build outputs. Run commands in the checkout actually containing the reviewed cod
 | Broad cross-cutting change                 | `npm run validate`; `npm run verify:all` when full CI-equivalent coverage is warranted    |
 | Browser behavior                           | Focused Playwright specs in the affected projects; see the setup below                    |
 
-For a focused browser run, export `AUDIO_TEST_FIXTURES=1`,
+For a focused app browser run, export `AUDIO_TEST_FIXTURES=1`,
 `VITE_AUDIO_BASE_URL=https://audio.example.test`, and
 `VITE_AUDIO_CHAPTERS_ENABLED=true`; run
 `node scripts/build/browser-build.mjs app`, then
-`npx playwright test --config config/playwright.config.ts tests/browser/<name>.spec.ts --project=chromium`.
-Use `mobile-webkit` for WebKit behavior and `ai-chromium` for `ai.spec.ts`.
-`npm run test:e2e` builds fixtures and runs the full browser suite. Set `PW_PORT`
-to an unused port in concurrent worktrees; reserve its next two ports too. Let
-Playwright start its configured servers; it rejects occupied ports.
+`npm run test:browser:app -- tests/browser/<name>.spec.ts --project=chromium`.
+Use `mobile-webkit` for WebKit behavior. The app config starts only the static
+server. For AI coverage, keep that app fixture build for the bundle assertions
+and run `npm run test:browser:ai`; its config builds the AI fixtures and starts
+only the Worker and mock provider. `npm run test:e2e` builds fixtures and runs
+all three projects with the aggregate config. Set `PW_PORT` to an unused port
+in concurrent worktrees; AI coverage also needs the next two ports. Let
+Playwright start its configured servers; it rejects occupied selected ports.
 
 Preserve the workspace while verifying:
 

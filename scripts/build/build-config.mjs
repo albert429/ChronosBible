@@ -21,9 +21,6 @@ import { join } from "node:path";
 import { ROOT, isMain } from "../lib/paths.js";
 import { GENERATED_FOLDERS } from "../quality/snapshot.mjs";
 
-/** The port the AI stub listens on in the reference build (PW_PORT 4400 + 2). */
-export const STUB_PORT = 4402;
-
 const ALL_VITE = {
   VITE_AUDIO_BASE_URL: "",
   VITE_AUDIO_CHAPTERS_ENABLED: "",
@@ -66,19 +63,12 @@ export const CONFIGS = {
       "ai-chromium project: fixture audio plus the AI card against the local SSE stub.",
     outDir: "dist-ai",
     prepare: "fixture-audio",
-    env: aiStubVariables(STUB_PORT),
+    env: aiStubVariables(),
   },
 };
 
-/**
- * The AI card's build variables: fixture audio plus a dummy key against the
- * local SSE stub (scripts/quality/sse-stub.mjs) listening on `stubPort`.
- * @param {number} stubPort
- * @returns {Record<string, string>}
- */
-export function aiStubVariables(stubPort) {
-  if (!Number.isInteger(stubPort) || stubPort <= 0 || stubPort > 65535)
-    throw new Error(`invalid stub port ${stubPort}`);
+/** Public settings for the AI fixture build; mock services are runtime-only. */
+export function aiStubVariables() {
   return {
     ...FIXTURE_AUDIO,
     VITE_AI_ENABLED: "true",

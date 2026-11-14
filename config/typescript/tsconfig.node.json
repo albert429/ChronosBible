@@ -20,7 +20,7 @@
   },
   "include": [
     "../../app/vite.config.ts",
-    "../playwright.config.ts",
+    "../playwright*.ts",
     "../../scripts/**/*.ts",
     "../../app/src/vite-env.d.ts",
     "../../app/src/**/tests/**/*.ts",

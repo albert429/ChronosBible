@@ -79,8 +79,11 @@ Use Node.js 22 and `npm ci` for locked dependencies.
   `VITE_AUDIO_BASE_URL=https://audio.example.test` and
   `VITE_AUDIO_CHAPTERS_ENABLED=true`, build with
   `node scripts/build/browser-build.mjs app` (what `test:e2e` runs), then
-  `npx playwright test --config config/playwright.config.ts tests/browser/<name>.spec.ts --project=chromium`
-  (projects: `chromium`, `mobile-webkit`, `ai-chromium`).
+  `npm run test:browser:app -- tests/browser/<name>.spec.ts --project=chromium`
+  (or `mobile-webkit`). For AI only, keep that app build for the
+  bundle assertions and run `npm run test:browser:ai`; it builds the AI fixtures
+  and starts only the AI Worker and mock provider. The default
+  `test:browser` and `test:e2e` commands keep all three projects.
 
 Install browser binaries with `npx playwright install chromium webkit`.
 Use `PW_PORT=4400 npm run test:e2e` in concurrent worktrees; the next two ports
