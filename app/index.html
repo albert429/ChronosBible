@@ -11,24 +11,7 @@
       name="description"
       content="الكتاب المقدس: قراءة واستماع، بالترتيب المعتاد أو الزمني."
     />
-    <script>
-      // The saved theme before first paint (see app/src/features/appearance/appearance.ts).
-      try {
-        var theme =
-          localStorage.getItem("word-theme") ||
-          (localStorage.getItem("word-dark") === "true" ? "dark" : "auto");
-        if (
-          theme === "dark" ||
-          (theme === "auto" &&
-            matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
-          document.documentElement.dataset.theme = "dark";
-          document.querySelector('meta[name="theme-color"]').content =
-            "#181e1a";
-        }
-      } catch {}
-    </script>
-    <!-- The reading the app will open, fetched with the page: app/src/features/reader/earlyReading.ts, inlined by scripts/build/inline-startup.ts. -->
+    <!-- Theme and reading startup run synchronously before the app loads; bundled by scripts/build/inline-startup.ts. -->
     <script>
       __EARLY_READING__;
     </script>

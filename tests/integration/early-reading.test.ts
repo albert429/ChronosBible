@@ -87,10 +87,20 @@ function runPage(
   search: string,
   items: Record<string, string> | "blocked" = {},
   answer: (href: string) => Promise<Response> = async () => Response.json({}),
+  dark = false,
 ) {
   const fetched: string[] = [];
+  const dataset: Record<string, string> = {};
+  let color = "#f7f5ef";
   const page = vm.createContext({
     URLSearchParams,
+    document: {
+      documentElement: { dataset },
+      querySelector: () => ({
+        setAttribute: (_: string, value: string) => (color = value),
+      }),
+    },
+    matchMedia: () => ({ matches: dark }),
     location: { search },
     get localStorage() {
       if (items === "blocked") throw new Error("SecurityError");
@@ -104,6 +114,7 @@ function runPage(
   vm.runInContext(code, page);
   return {
     fetched,
+    theme: [dataset.theme, color],
     early: (page as { __earlyData?: Record<string, Promise<unknown>> })
       .__earlyData,
   };
@@ -118,15 +129,37 @@ test("the build inlines one classic script that starts the fetches with the page
     },
   );
   assert.doesNotMatch(code, /\bimport\b|\bexport\b/);
-  // Only the handoff, the versioned addresses and the storage keys: the
+  // Only theme, the handoff, versioned addresses and storage keys: the
   // rest of the app (and of the modules it reads) stays out.
   assert.ok(code.length < 2048, `${code.length} bytes`);
   assert.deepEqual(modules.map((file) => file.slice(ROOT.length)).sort(), [
+    "app/src/features/appearance/theme.ts",
     "app/src/features/profiles/storage.ts",
     "app/src/features/reader/earlyReading.ts",
     "app/src/shared/network/dataVersion.ts",
     "app/src/shared/network/earlyResponses.ts",
   ]);
+
+  // The actual classic script applies runtime preference semantics before any
+  // module loads, including invalid choices, legacy defaults and blocked storage.
+  for (const [items, dark, expected] of [
+    [{}, false, "light"],
+    [{}, true, "dark"],
+    [{ "word-theme": "light", "word-dark": "true" }, true, "light"],
+    [{ "word-theme": "dark" }, false, "dark"],
+    [{ "word-theme": "auto", "word-dark": "true" }, false, "light"],
+    [{ "word-dark": "true" }, false, "dark"],
+    [{ "word-dark": "false" }, true, "dark"],
+    [{ "word-theme": "invalid", "word-dark": "true" }, false, "dark"],
+    [{ "word-theme": "invalid" }, true, "dark"],
+    ["blocked", true, "dark"],
+    ["blocked", false, "light"],
+  ] as const) {
+    assert.deepEqual(runPage(code, "", items, undefined, dark).theme, [
+      expected,
+      expected === "dark" ? "#181e1a" : "#f7f5ef",
+    ]);
+  }
 
   let page = runPage(code, "?mode=chronological&testament=OT&reading=gen-1-1");
   // Versioned like the app's own requests; readings has no version here.

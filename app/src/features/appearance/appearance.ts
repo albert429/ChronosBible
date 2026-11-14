@@ -1,11 +1,10 @@
 import { useSyncExternalStore } from "react";
+import { applyTheme, readStored, storedTheme, type Theme } from "./theme.ts";
 
 export const FONT_MIN = 22;
 export const FONT_MAX = 38;
 const FONT_DEFAULT = 28;
 
-/** «تلقائي» follows the device's light or dark setting. */
-export type Theme = "auto" | "light" | "dark";
 type Snapshot = {
   font: number;
   theme: Theme;
@@ -16,18 +15,6 @@ type Snapshot = {
 
 const listeners = new Set<() => void>();
 let snapshot: Snapshot | undefined;
-const systemDark = () =>
-  typeof matchMedia === "function" &&
-  matchMedia("(prefers-color-scheme: dark)").matches;
-
-function readStored(key: string, fallback: string) {
-  try {
-    return localStorage.getItem(key) || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function saveStored(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
@@ -36,24 +23,10 @@ function saveStored(key: string, value: string) {
   }
 }
 
-/**
- * `word-theme` holds the choice. Before it existed only `word-dark` did, and
- * it was written for everyone: "true" was always a choice, "false" usually
- * just the old default, so it now means auto. index.html reads the same keys.
- */
-function storedTheme(): Theme {
-  const theme = readStored("word-theme", "");
-  if (theme === "auto" || theme === "light" || theme === "dark") return theme;
-  return readStored("word-dark", "false") === "true" ? "dark" : "auto";
-}
-
-function apply({ font, dark }: Snapshot) {
-  const root = document.documentElement;
-  root.dataset.theme = dark ? "dark" : "light";
-  root.style.setProperty("--verse-size", `${font}px`);
-  document
-    .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#181e1a" : "#f7f5ef");
+function apply({ font, theme }: Snapshot) {
+  const dark = applyTheme(theme);
+  document.documentElement.style.setProperty("--verse-size", `${font}px`);
+  return dark;
 }
 function get() {
   if (!snapshot) {
@@ -67,10 +40,10 @@ function get() {
         ),
       ),
       theme,
-      dark: theme === "auto" ? systemDark() : theme === "dark",
+      dark: false,
       diacritics: readStored("word-diacritics", "true") !== "false",
     };
-    apply(snapshot);
+    snapshot.dark = apply(snapshot);
     if (typeof matchMedia === "function")
       matchMedia("(prefers-color-scheme: dark)").addEventListener(
         "change",
@@ -83,9 +56,8 @@ function get() {
 }
 function update(patch: Partial<Omit<Snapshot, "dark">>) {
   const next = { ...get(), ...patch };
-  next.dark = next.theme === "auto" ? systemDark() : next.theme === "dark";
+  next.dark = apply(next);
   snapshot = next;
-  apply(next);
   listeners.forEach((listener) => listener());
 }
 function subscribe(listener: () => void) {

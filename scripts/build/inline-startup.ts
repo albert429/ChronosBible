@@ -1,4 +1,4 @@
-// The page's inline startup code: the early-reading source, bundled into the
+// The page's inline startup code: theme and early reading, bundled into the
 // <script> in index.html's <head>, where it runs before the app's code loads.
 import { resolve } from "node:path";
 import { build, type Plugin, type Rollup } from "vite";
@@ -18,6 +18,7 @@ export async function bundleEarlyReading(
   versions: Record<string, string>,
 ) {
   const source = resolve(root, EARLY_READING_SOURCE);
+  const theme = resolve(root, "src/features/appearance/theme.ts");
   const output = (await build({
     configFile: false,
     root,
@@ -30,7 +31,7 @@ export async function bundleEarlyReading(
         resolveId: (id) => (id === ENTRY ? id : undefined),
         load: (id) =>
           id === ENTRY
-            ? `import { startEarlyReading } from ${JSON.stringify(source)};\nstartEarlyReading();`
+            ? `import { applyTheme } from ${JSON.stringify(theme)};\nimport { startEarlyReading } from ${JSON.stringify(source)};\napplyTheme();\nstartEarlyReading();`
             : undefined,
       },
     ],

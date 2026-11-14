@@ -277,6 +277,30 @@ test.describe("appearance", () => {
     await expectAccessible(page, { wcag: true });
   });
 
+  test("blocked appearance storage follows the device and accepts a session choice", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        get() {
+          throw new DOMException("Storage blocked", "SecurityError");
+        },
+      });
+    });
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await ready(page);
+    expect(await theme(page)).toEqual(["dark", "#181e1a"]);
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect.poll(() => theme(page)).toEqual(["light", "#f7f5ef"]);
+    const sheet = await openAppearance(page);
+    await sheet.getByRole("button", { name: "الوضع الليلي" }).click();
+    expect(await theme(page)).toEqual(["dark", "#181e1a"]);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.emulateMedia({ colorScheme: "light" });
+    expect(await theme(page)).toEqual(["dark", "#181e1a"]);
+  });
+
   test("verse numbers, headings and titles grow with large text", async ({
     page,
   }) => {
