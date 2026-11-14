@@ -19,6 +19,8 @@
     "build": "tsc -b app/tsconfig.json && vite build --config app/vite.config.ts",
     "start": "vite preview --config app/vite.config.ts --host 0.0.0.0",
     "test": "node scripts/quality/unit-tests.mjs",
+    "test:browser:app": "playwright test --config config/playwright.app.config.ts",
+    "test:browser:ai": "playwright test --config config/playwright.ai.config.ts",
     "test:browser": "playwright test --config config/playwright.config.ts",
     "test:e2e": "export AUDIO_TEST_FIXTURES=1 VITE_AUDIO_BASE_URL=https://audio.example.test VITE_AUDIO_CHAPTERS_ENABLED=true && node scripts/build/browser-build.mjs app && playwright test --config config/playwright.config.ts",
     "test:visual": "node scripts/quality/capture-preview.mjs",

@@ -14,7 +14,6 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import {
   CONFIGS,
-  STUB_PORT,
   assertClean,
   buildEnvironment,
 } from "../../scripts/build/build-config.mjs";
@@ -84,22 +83,18 @@ test("The browser builds are the fixture-audio and ai-stub configurations", () =
     browserEnvironment("app", { source: inherited }),
     buildEnvironment("fixture-audio", system),
   );
-  // The reference ai-stub build is the browser AI build on PW_PORT 4400.
+  // AI build settings do not depend on the runtime mock-service ports.
   assert.deepEqual(
-    browserEnvironment("ai", { stubPort: STUB_PORT, source: inherited }),
+    browserEnvironment("ai", { source: inherited }),
     buildEnvironment("ai-stub", system),
   );
-  const ai = browserEnvironment("ai", { stubPort: 4432, source: {} });
+  const ai = browserEnvironment("ai", { source: {} });
   assert.equal(ai.VITE_OPENROUTER_BASE_URL, undefined);
   assert.equal(ai.VITE_OPENROUTER_API_KEY, undefined);
   assert.equal(ai.VITE_AI_ENABLED, "true");
   for (const [name, value] of Object.entries(CONFIGS["fixture-audio"].env))
     if (!name.startsWith("VITE_AI") && !name.startsWith("VITE_TURNSTILE"))
       assert.equal(ai[name], value, name);
-  assert.throws(
-    () => browserEnvironment("ai", { stubPort: undefined, source: {} }),
-    /stub port/,
-  );
   assert.throws(() => browserEnvironment("other", { source: {} }), /app/);
 });
 
@@ -120,7 +115,7 @@ test("Playwright builds explicitly and never reuses a server on its ports", asyn
   assert.deepEqual(servers[1].env, { SSE_STUB_PORT: String(PW_PORT + 2) });
   assert.equal(
     servers[2].command,
-    `node scripts/build/browser-build.mjs ai --stub-port ${PW_PORT + 2} && node scripts/worker/browser-server.mjs`,
+    `node scripts/build/browser-build.mjs ai && node scripts/worker/browser-server.mjs`,
   );
   // No build variables come from the config: the build sets them all.
   assert.deepEqual(servers[2].env, { PW_PORT: String(PW_PORT) });
@@ -133,6 +128,30 @@ test("Playwright builds explicitly and never reuses a server on its ports", asyn
     config.projects?.map((project) => project.name),
     ["chromium", "mobile-webkit", "ai-chromium"],
   );
+});
+
+test("Focused browser configs start only the selected infrastructure", async () => {
+  const { default: all } = await import("../../config/playwright.config.ts");
+  const { default: app } =
+    await import("../../config/playwright.app.config.ts");
+  const { default: ai } = await import("../../config/playwright.ai.config.ts");
+  assert.deepEqual(
+    app.projects?.map(({ name }) => name),
+    ["chromium", "mobile-webkit"],
+  );
+  assert.deepEqual(
+    ai.projects?.map(({ name }) => name),
+    ["ai-chromium"],
+  );
+  assert.deepEqual(app.webServer, (all.webServer as unknown[]).slice(0, 1));
+  assert.deepEqual(ai.webServer, (all.webServer as unknown[]).slice(1));
+  assert.deepEqual(
+    [...(app.projects ?? []), ...(ai.projects ?? [])],
+    all.projects,
+  );
+  for (const config of [app, ai])
+    for (const server of config.webServer as { reuseExistingServer: boolean }[])
+      assert.equal(server.reuseExistingServer, false);
 });
 
 test("Build environments drop inherited VITE_, fixture and credential variables", () => {
@@ -174,7 +193,7 @@ test("Playwright server working directories decode checkout paths", async () => 
   const root = mkdtempSync(join(tmpdir(), "playwright checkout ü # "));
   try {
     mkdirSync(join(root, "config"));
-    const source = read("config/playwright.config.ts")
+    const source = read("config/playwright.shared.ts")
       .replace(
         '"@playwright/test"',
         JSON.stringify(import.meta.resolve("@playwright/test")),
@@ -185,7 +204,8 @@ test("Playwright server working directories decode checkout paths", async () => 
       );
     const configPath = join(root, "config/playwright.config.ts");
     writeFileSync(configPath, source);
-    const { default: config } = await import(pathToFileURL(configPath).href);
+    const { browserConfig } = await import(pathToFileURL(configPath).href);
+    const config = browserConfig("all");
     for (const server of config.webServer)
       assert.equal(server.cwd, realpathSync(root) + sep);
   } finally {
