@@ -43,7 +43,8 @@ test("Switching between duplicate names preserves separate progress", () => {
   assert.deepEqual(b.completion.plan, []);
   selectReader(s, null);
   assert.equal(currentReader(s), null);
-  selectReader(s, a.id);
+  const saved = loadProgress(s).profiles.find((p) => p.id === a.id);
+  assert.equal(selectReader(s, a.id), saved);
   assert.deepEqual(current(s).completion.plan, [9]);
   assert.equal(loadProgress(s).profiles.length, 2);
 });
@@ -112,4 +113,32 @@ test("Blocked storage reports failed saving instead of pretending success", () =
     /لم يتم الحفظ/,
   );
   assert.deepEqual(current(s).completion.plan, []);
+});
+
+test("Creating a reader allocates its ID after validation and loading, before saving", (t) => {
+  const uuid = t.mock.method(crypto, "randomUUID");
+  const s = memoryStorage();
+  assert.throws(() => createReader(s, "", "2026-10-01"));
+  assert.equal(uuid.mock.callCount(), 0);
+  const blocked = {
+    getItem() {
+      throw Error("SecurityError");
+    },
+    setItem: s.setItem,
+  };
+  assert.throws(() => createReader(blocked, "Test", "2026-10-01"));
+  assert.equal(uuid.mock.callCount(), 0);
+  const full = {
+    getItem: s.getItem,
+    setItem() {
+      throw Error("QuotaExceededError");
+    },
+  };
+  assert.throws(() => createReader(full, "Test", "2026-10-01"), /لم يتم الحفظ/);
+  assert.equal(uuid.mock.callCount(), 1);
+  assert.equal(s.getItem(STATE_KEY), null);
+  const reader = createReader(s, "Test", "2026-10-01");
+  assert.equal(uuid.mock.callCount(), 2);
+  assert.equal(reader.id, uuid.mock.calls[1].result);
+  assert.deepEqual(reader, current(s));
 });

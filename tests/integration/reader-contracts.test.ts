@@ -182,7 +182,14 @@ test("a write that does not read back is not treated as saved", () => {
   const s = legacy();
   const lossy = { getItem: s.getItem, setItem: () => {} };
   assert.equal(migrateProgress(lossy).migrated, false);
-  assert.throws(() => selectReader(lossy, null), /لم يتم الحفظ/);
+  for (const change of [
+    () => selectReader(lossy, null),
+    () => createReader(lossy, "جديد", "2026-10-01"),
+    () =>
+      setReadingCompletion(lossy, "reader-a", { mode: "plan", day: 7 }, true),
+    () => importBackup(lossy, exportBackup(loadProgress(s).profiles[0])),
+  ])
+    assert.throws(change, /لم يتم الحفظ/);
 });
 
 test("corrupt v2 storage is reported and never overwritten", () => {
