@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { SAVE_HEADER } from "../../app/src/features/offline/rules.ts";
 import {
   closeSheet,
   menuButton,
@@ -154,6 +155,21 @@ test("the menu's download button saves everything in the background and stops on
 }) => {
   await page.goto("/");
   await ready(page);
+  // Keep downloads pending through the layout checks, until the second tap
+  // aborts them. Other reader/pack requests still use the real network.
+  await page.evaluate((saveHeader) => {
+    const fetch = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      if (!new Headers(init?.headers).has(saveHeader))
+        return fetch(input, init);
+      return new Promise<Response>((_resolve, reject) => {
+        const signal = init?.signal;
+        const abort = () => reject(signal?.reason);
+        if (signal?.aborted) abort();
+        else signal?.addEventListener("abort", abort, { once: true });
+      });
+    };
+  }, SAVE_HEADER);
   await menuButton(page).click();
   const menu = menuDialog(page);
   const download = menu.getByRole("button", {
