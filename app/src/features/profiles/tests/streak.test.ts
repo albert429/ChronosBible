@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { memoryStorage } from "../../../../../tests/fixtures/memoryStorage.ts";
 import { test } from "node:test";
 import { exportBackup } from "../domain/backup.ts";
 import {
@@ -145,17 +146,8 @@ test("The best streak survives a break; future dates are ignored", () => {
   );
 });
 
-function storage() {
-  const values = new Map<string, string>();
-  return {
-    values,
-    getItem: (k: string) => values.get(k) ?? null,
-    setItem: (k: string, v: string) => void values.set(k, v),
-  };
-}
-
 test("Completing a reading records its date per track; undoing forgets it", () => {
-  const s = storage();
+  const s = memoryStorage();
   const r = createReader(s, "قارئ", "2026-10-01");
   const day = (n: number) => ({ mode: "plan" as const, day: n });
   const chapter = { mode: "bible" as const, book: "GEN", chapter: 1 };
@@ -171,7 +163,7 @@ test("Completing a reading records its date per track; undoing forgets it", () =
   setReadingCompletion(s, r.id, chapter, false);
   // Nothing left: the field is dropped, not stored empty.
   assert.equal("readOn" in currentReader(s)!, false);
-  assert.doesNotMatch(s.values.get(STATE_KEY)!, /readOn/);
+  assert.doesNotMatch(s.getItem(STATE_KEY)!, /readOn/);
   // The guest too.
   setReadingCompletion(s, "", day(5), true, "2026-10-20");
   assert.deepEqual(loadProgress(s).guest.readOn, { "plan|5": "2026-10-20" });
@@ -181,10 +173,10 @@ test("Completing a reading records its date per track; undoing forgets it", () =
 });
 
 test("Stored and backed-up dates keep only completed readings with valid dates", () => {
-  const s = storage();
+  const s = memoryStorage();
   const r = createReader(s, "قارئ", "2026-10-01");
   setReadingCompletion(s, r.id, { mode: "plan", day: 2 }, true, "2026-10-19");
-  const state = JSON.parse(s.values.get(STATE_KEY)!);
+  const state = JSON.parse(s.getItem(STATE_KEY)!);
   state.profiles[0].readOn = {
     "plan|2": "2026-10-19",
     "plan|9": "2026-10-19", // not completed
@@ -198,7 +190,7 @@ test("Stored and backed-up dates keep only completed readings with valid dates",
 
   const text = exportBackup(currentReader(s)!);
   assert.deepEqual(JSON.parse(text).reader.readOn, { "plan|2": "2026-10-19" });
-  const other = storage();
+  const other = memoryStorage();
   const restored = importBackup(other, text);
   assert.deepEqual(restored.readOn, { "plan|2": "2026-10-19" });
   // Backups without dates, and unknown reader keys, behave as before.

@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { memoryStorage } from "../../../../../tests/fixtures/memoryStorage.ts";
 import { validDate } from "../domain/serialization.ts";
 import { exportBackup } from "../domain/backup.ts";
 import {
@@ -12,20 +13,14 @@ import {
   PROGRESS_KEY,
   STATE_KEY,
 } from "../storage.ts";
-function storage() {
-  const values = new Map<string, string>();
-  return {
-    getItem: (k: string) => values.get(k) ?? null,
-    setItem: (k: string, v: string) => void values.set(k, v),
-  };
-}
-function current(s: ReturnType<typeof storage>) {
+
+function current(s: ReturnType<typeof memoryStorage>) {
   const reader = currentReader(s);
   assert.ok(reader);
   return reader;
 }
 test("Local progress survives reopening, is idempotent, supports reading ahead and undo", () => {
-  const s = storage();
+  const s = memoryStorage();
   const r = createReader(s, "ألبرت", "2026-10-01");
   setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
   setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
@@ -39,7 +34,7 @@ test("Local progress survives reopening, is idempotent, supports reading ahead a
   );
 });
 test("Switching between duplicate names preserves separate progress", () => {
-  const s = storage();
+  const s = memoryStorage();
   const a = createReader(s, "قارئ", "2026-09-01");
   setReadingCompletion(s, a.id, { mode: "plan", day: 9 }, true);
   const b = createReader(s, "قارئ", "2026-10-01");
@@ -52,7 +47,7 @@ test("Switching between duplicate names preserves separate progress", () => {
   assert.equal(loadProgress(s).profiles.length, 2);
 });
 test("Backup can move to another browser and never overwrites an existing profile", () => {
-  const first = storage();
+  const first = memoryStorage();
   let r = createReader(first, "ميخائيل", "2026-10-01");
   r = setReadingCompletion(
     first,
@@ -61,7 +56,7 @@ test("Backup can move to another browser and never overwrites an existing profil
     true,
   ) as typeof r;
   const text = exportBackup(r);
-  const second = storage();
+  const second = memoryStorage();
   const existing = createReader(second, "قارئ آخر", "2026-09-01");
   setReadingCompletion(second, existing.id, { mode: "plan", day: 2 }, true);
   const restored = importBackup(second, text);
@@ -72,7 +67,7 @@ test("Backup can move to another browser and never overwrites an existing profil
   assert.deepEqual(current(second).completed, [2]);
 });
 test("Bad dates, malformed backups, and corrupt stored data do not replace progress", () => {
-  const s = storage();
+  const s = memoryStorage();
   createReader(s, "Test", "2026-10-01");
   const before = s.getItem(STATE_KEY);
   for (const text of [
@@ -96,14 +91,14 @@ test("Bad dates, malformed backups, and corrupt stored data do not replace progr
   assert.throws(() => createReader(s, "New", "2026-10-01"));
   assert.equal(s.getItem(STATE_KEY), "corrupt");
   // Corrupt legacy progress is never migrated over, nor changed.
-  const legacy = storage();
+  const legacy = memoryStorage();
   legacy.setItem(PROGRESS_KEY, "corrupt");
   assert.throws(() => createReader(legacy, "New", "2026-10-01"));
   assert.equal(legacy.getItem(PROGRESS_KEY), "corrupt");
   assert.equal(legacy.getItem(STATE_KEY), null);
 });
 test("Blocked storage reports failed saving instead of pretending success", () => {
-  const s = storage();
+  const s = memoryStorage();
   const r = createReader(s, "Test", "2026-10-01");
   const blocked = {
     getItem: s.getItem,

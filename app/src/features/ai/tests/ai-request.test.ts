@@ -3,6 +3,7 @@
 // in-memory storage and a manual clock.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { memoryStorage } from "../../../../../tests/fixtures/memoryStorage.ts";
 import { answerKey, readAnswer, saveAnswer } from "../cache.ts";
 import { PROMPT_VERSION } from "../domain/chips.ts";
 import { MAX_TEXT } from "../domain/text.ts";
@@ -17,14 +18,6 @@ import {
 } from "../domain/types.ts";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve));
-function memory() {
-  const map = new Map<string, string>();
-  return {
-    getItem: (k: string) => map.get(k) ?? null,
-    setItem: (k: string, v: string) => void map.set(k, v),
-    removeItem: (k: string) => void map.delete(k),
-  };
-}
 
 type Script = (
   signal: AbortSignal,
@@ -39,12 +32,12 @@ function harness(
     guards = createGuards({
       now: () => clock.now,
     }),
-    storage = memory(),
+    storage = memoryStorage(),
     load,
   }: {
     clock?: { now: number };
     guards?: ReturnType<typeof createGuards>;
-    storage?: ReturnType<typeof memory>;
+    storage?: ReturnType<typeof memoryStorage>;
     load?: AnswerDeps["load"];
   } = {},
 ) {
