@@ -1,9 +1,10 @@
 // Publish verse study under app/public/study/ (CC BY-SA / CC BY data): one
 // canonical set for every book, chapter and verse (build-study-canonical.js).
-import { lstatSync, rmSync } from "node:fs";
+import { lstatSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { buildCanonicalStudy } from "./build-study-canonical.js";
 import { ROOT } from "../lib/paths.js";
+import { payload, publishOwned } from "../lib/ownership.js";
 
 /** Writes the study files into `out`; returns the summary line. */
 export function buildStudy({ out, root = ROOT }) {
@@ -30,4 +31,21 @@ export function buildStudy({ out, root = ROOT }) {
   for (const path of retired) rmSync(path);
   const canonical = buildCanonicalStudy({ out, root });
   return `Canonical study: ${JSON.stringify(canonical)}.`;
+}
+
+/** Publish the source attribution verbatim alongside the generated study data. */
+export function buildStudyLicense({ out, inventory, root = ROOT }) {
+  const result = publishOwned({
+    base: out,
+    inventory,
+    payloads: [
+      payload(
+        "study-data.txt",
+        readFileSync(join(root, "data/study/LICENSE.md")),
+      ),
+    ],
+    safePath: (path) => path === "study-data.txt",
+    label: "study licence",
+  });
+  return `Study licence: ${result.bytes} bytes.`;
 }

@@ -4,11 +4,11 @@ import { test } from "node:test";
 
 test("Published study attribution matches the source licence notice", () => {
   const read = (path: string) =>
-    readFileSync(new URL("../../" + path, import.meta.url), "utf8");
+    readFileSync(new URL("../../" + path, import.meta.url));
 
-  assert.equal(
+  assert.deepEqual(
     read("app/public/licenses/study-data.txt"),
     read("data/study/LICENSE.md"),
-    "Copy data/study/LICENSE.md to app/public/licenses/study-data.txt when study attribution changes",
+    "Run the data builder to publish data/study/LICENSE.md verbatim to app/public/licenses/study-data.txt",
   );
 });
