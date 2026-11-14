@@ -121,8 +121,9 @@ them in an `inventory.json` and remove only unmodified files they wrote earlier
 
 The static-data builders validate everything before writing, then publish
 through `scripts/lib/ownership.js`: each folder (`app/public/readings`,
-`app/public/bible`, `app/public/chronology`, `app/public/study`, and the audio manifest
-names under `app/public/audio`) has an inventory of the files the builder wrote. A
+`app/public/bible`, `app/public/chronology`, `app/public/study`, the study attribution
+notice under `app/public/licenses`, and the audio manifest names under
+`app/public/audio`) has an inventory of the files the builder wrote. A
 rebuild removes only inventory-listed files that are no longer generated and
 are unmodified, and refuses unsafe paths, symlinks and modified owned files;
 unknown files and recordings are never touched. `app/public/study/v2/inventory.json`
@@ -131,39 +132,71 @@ ships with the app; the other inventories are local state in
 builders overwrite their current files and remove nothing). The 450 retired
 per-day study files are removed as regular files only. The Python generator of
 `data/audio/readings/` keeps a tracked `inventory.json` the same way
-(`chronos_tools.ownership`).
+(`chronos_tools.ownership`). The study builder also publishes `data/study/LICENSE.md`
+verbatim to `app/public/licenses/study-data.txt`, owning only that filename; other
+licence notices remain untouched. An independent integration check compares the
+published notice with the source.
 
 ## Commands
 
-| Command                             | Purpose                                                                                  |
-| ----------------------------------- | ---------------------------------------------------------------------------------------- |
-| `npm run dev`                       | Development server, port 5173; generates static data first                               |
-| `npm run build`                     | Generate static data, type-check the app, and build `dist/`                              |
-| `npm start`                         | Preview `dist/`, port 4173                                                               |
-| `npm test`                          | Progress, dates, loading, and exact static-data fidelity                                 |
-| `npm run test:e2e`                  | Explicit fixture build, then Chromium and WebKit workflows, layout and axe               |
-| `npm run test:browser`              | Playwright against the current `dist/` without rebuilding (set the same env as test:e2e) |
-| `npm run ai:models`                 | Check that the configured AI models still exist and are free                             |
-| `npm run format` / `format:check`   | Apply / verify repository formatting                                                     |
-| `npm run lint`                      | ESLint (TypeScript, React hooks) over the whole repository                               |
-| `npm run typecheck`                 | Type-check the app, configs, browser specs and scripts                                   |
-| `npm run snapshot -- capture <dir>` | Record hashes of generated and shipped data and sizes of `dist/assets/`                  |
-| `npm run snapshot -- compare <dir>` | Fail on any data change or initial JS/CSS growth over 0.5KB                              |
-| `npm run layers`                    | Print the import graph of `app/src/`; fail on a cycle or a layering violation            |
-| `npm run verify:all`                | `validate` (CI environment), Python tests, `py_compile` and the browser tests            |
-| `npm run audio:host:prepare`        | Stage recordings in `artifacts/r2-audio` and write the R2 upload batches                 |
-| `npm run audio:host:upload`         | Put each batch into the R2 bucket `chronosbible-audio` with wrangler                     |
-| `npm run app:host:deploy`           | Build, then deploy the app to Cloudflare Workers with wrangler                           |
-| `npm run validate`                  | Formatting, lint, type-check, unit/data checks, and build                                |
-| `npm run test:python`               | Python tests (standard library only; CI also runs `py_compile` over `scripts/`)          |
-| `npm run test:visual`               | Save preview screenshots under `artifacts/`                                              |
-| `npm run audit:performance`         | Save repeatable mobile Lighthouse reports under `artifacts/`                             |
+| Command                             | Purpose                                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `npm run dev`                       | Development server, port 5173; generates static data first                                      |
+| `npm run build`                     | Generate static data, type-check the app, and build `dist/`                                     |
+| `npm start`                         | Preview `dist/`, port 4173                                                                      |
+| `npm test`                          | Progress, dates, loading, and exact static-data fidelity                                        |
+| `npm run test:e2e`                  | Explicit fixture build, then Chromium and WebKit workflows, layout and axe                      |
+| `npm run test:browser`              | Playwright against the current `dist/` without rebuilding (set the same env as test:e2e)        |
+| `npm run ai:models`                 | Check that the configured AI models still exist and are free                                    |
+| `npm run format` / `format:check`   | Apply / verify repository formatting                                                            |
+| `npm run lint`                      | ESLint (TypeScript, React hooks) over the whole repository                                      |
+| `npm run typecheck`                 | Type-check the app, configs, browser specs and scripts                                          |
+| `npm run snapshot -- capture <dir>` | Record hashes of generated and shipped data and sizes of `dist/assets/`                         |
+| `npm run snapshot -- compare <dir>` | Fail on any data change or initial JS/CSS growth over 0.5KB                                     |
+| `npm run layers`                    | Print the import graph of `app/src/`; fail on a cycle or a layering violation                   |
+| `npm run verify:all`                | `validate` (CI environment), Worker tests, layers, Python tests, `py_compile` and browser tests |
+| `npm run audio:host:prepare`        | Stage recordings in `artifacts/r2-audio` and write the R2 upload batches                        |
+| `npm run audio:host:upload`         | Put each batch into the R2 bucket `chronosbible-audio` with wrangler                            |
+| `npm run app:host:deploy`           | Build, then deploy the app to Cloudflare Workers with wrangler                                  |
+| `npm run validate`                  | Formatting, lint, type-check, unit/data checks, and build                                       |
+| `npm run test:python`               | Python tests (standard library only; CI also runs `py_compile` over `scripts/`)                 |
+| `npm run test:visual`               | Save preview screenshots under `artifacts/`                                                     |
+| `npm run audit:performance`         | Save repeatable mobile Lighthouse reports under `artifacts/`                                    |
 
 `tsconfig.json` only references `app/tsconfig.json` (`app/src/`), `config/typescript/tsconfig.node.json` (`app/vite.config.ts`, `config/playwright.config.ts`, colocated unit tests, integration tests and `tests/browser/`, strict) `config/typescript/tsconfig.scripts.json` (`scripts/` and `hosting/` JavaScript, checked but not strict), and `app/worker/tsconfig.json` (Worker runtime). `build` checks only the app, so tests and scripts cannot block a deploy.
 
 `npm install` sets `core.hooksPath` to `.githooks/`. `pre-commit` runs Prettier and ESLint on the staged files, then `npm run typecheck`; `pre-push` runs `npm test`. Skip them in an emergency with `--no-verify`.
 
-`npm run test:e2e` builds the `fixture-audio` configuration explicitly (`node scripts/build/browser-build.mjs app`: `AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test`, `VITE_AUDIO_CHAPTERS_ENABLED=true` and every other `VITE_*` value set, so neither the shell nor `.env` files leak in), then runs Playwright with the fixture variables; without them the audio specs fail on a fresh clone. Playwright serves `dist/` with `scripts/quality/static-server.mjs`, which answers as production does (stored `.json.gz` study words as `application/gzip` bytes without `Content-Encoding`, unlike `vite preview`). The separate AI test build (`dist-ai/`, see below) is self-contained: `browser-build.mjs ai` regenerates the data it bundles before building. Playwright never reuses a server: if port 4173, 4174 or 4175 (or `PW_PORT` and the next two) is already taken, the run fails, so stop a stale `npm start` or preview first. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser. The Bible audio specs (`tests/browser/bible-audio.spec.ts`) run only in the fixture build: they serve accelerated copies of the committed chapter manifests with synthetic WAV media and abort, then fail on, any request that leaves 127.0.0.1.
+`npm run test:e2e` builds the `fixture-audio` configuration explicitly (`node scripts/build/browser-build.mjs app`: `AUDIO_TEST_FIXTURES=1`, `VITE_AUDIO_BASE_URL=https://audio.example.test`, `VITE_AUDIO_CHAPTERS_ENABLED=true` and every other `VITE_*` value set, so neither the shell nor `.env` files leak in), then runs Playwright with the fixture variables; the audio specs require both the fixture build and variables. Playwright serves `dist/` with `scripts/quality/static-server.mjs`, which answers as production does (stored `.json.gz` study words as `application/gzip` bytes without `Content-Encoding`, unlike `vite preview`). The separate AI test build (`dist-ai/`, see below) is self-contained: `browser-build.mjs ai` regenerates the data it bundles before building. Playwright never reuses a server: if port 4173, 4174 or 4175 (or `PW_PORT` and the next two) is already taken, the run fails, so stop a stale `npm start` or preview first. Install their browsers with `npx playwright install chromium webkit` (`--with-deps` on Linux). `CHROMIUM_PATH` optionally selects an existing Chromium executable; WebKit uses its own installed browser. The Bible audio specs (`tests/browser/bible-audio.spec.ts`) run only in the fixture build: they serve accelerated copies of the committed chapter manifests with synthetic WAV media and abort, then fail on, any request that leaves 127.0.0.1.
+
+For a focused app spec, build the fixtures once and start only its static server:
+
+```sh
+export AUDIO_TEST_FIXTURES=1
+export VITE_AUDIO_BASE_URL=https://audio.example.test
+export VITE_AUDIO_CHAPTERS_ENABLED=true
+node scripts/build/browser-build.mjs app
+npm run test:browser:app -- tests/browser/offline.spec.ts --project=chromium
+```
+
+`test:browser:app` supports Chromium and mobile WebKit without building or starting
+AI services. `npm run test:browser:ai` builds AI fixtures and starts only its Worker
+and SSE stub. First make the app fixture build above: the AI suite also inspects
+`dist/assets` to verify that disabled builds exclude AI and credentials. The
+aggregate `test:browser` and `test:e2e` commands still cover all three projects. `PW_PORT` moves the ports;
+focused runs reject occupied ports for the servers they actually start.
+
+Python selectors run one owner or one repository-relative test file:
+
+```sh
+npm run test:python -- audio
+npm run test:python -- scripts/audio/tests/test_audio_text.py
+npm run test:python -- --help
+```
+
+Omitting the selector runs every colocated Python suite. Unknown selectors,
+unsupported arguments, and selections with no test cases fail rather than falling
+back to the full suite. Test failures keep a nonzero exit status.
 
 Visual and performance scripts expect a running `npm start`. `BASELINE_URL` optionally adds a baseline site. Compare builds using the same server, throttling, and environment. Reports and traces are ignored by Git.
 
@@ -250,20 +283,13 @@ For a local check, use `node scripts/hosting/cloudflare-app.mjs preflight produc
 (or `dev`); `npm run app:host:build` and `npm run app:host:build:dev` build and audit
 without uploading.
 
-Provision Wrangler separately without changing the app lockfile, for example:
-
-```sh
-CF_CLI_DIR="$(mktemp -d)"
-npm install --prefix "$CF_CLI_DIR" --no-save --package-lock=false --ignore-scripts wrangler@4.149.0
-export CLOUDFLARE_APP_WRANGLER="$CF_CLI_DIR/node_modules/.bin/wrangler"
-```
-
-The wrapper
-uses `node_modules/.bin/wrangler`, or the absolute executable path provided in
-`CLOUDFLARE_APP_WRANGLER`. It never installs a CLI. Every deploy supplies an absolute
-`--config` path and an explicit `--env` (empty for production, `dev` for development),
-so Wrangler cannot discover another project or generate hosting configuration.
-Do not replace these commands with a bare `wrangler deploy`.
+Wrangler is pinned in the repository manifest and lockfile and installed by
+`npm ci`. The guarded CLI uses `node_modules/.bin/wrangler` by default; it never
+installs a CLI during deployment. An explicitly managed external CLI can be
+selected with an absolute `CLOUDFLARE_APP_WRANGLER` path. Every deploy supplies an
+absolute `--config` path and an explicit `--env` (empty for production, `dev` for
+development), so Wrangler cannot discover another project or generate hosting
+configuration. Do not replace these commands with a bare `wrangler deploy`.
 
 The safe build rejects local `.env*` files except the committed `.env.example`,
 and rejects `.dev.vars*` files, even when Git ignores them. Vite's configuration
@@ -271,8 +297,8 @@ calls `loadEnv(mode, process.cwd(), "VITE_")`: production builds normally read
 `.env`, `.env.local`, `.env.production` and `.env.production.local`, and shell
 `VITE_*` values take priority. Therefore the Cloudflare build also uses a small
 environment allowlist and supplies its public settings explicitly:
-`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, AI disabled, no API key, and the
-environment's chapter-audio policy. Do not add other private `VITE_*` values to Cloudflare build settings.
+`VITE_AUDIO_BASE_URL=https://audio.chronosbible.com`, the environment's public AI
+flag and Turnstile site key, and its chapter-audio policy. AI credentials remain Worker runtime secrets and are never build inputs. Do not add other private `VITE_*` values to Cloudflare build settings.
 Production AI is controlled by an explicit release gate, initially closed. Dev can enable the public UI flag after runtime secrets, Gateway and Turnstile are provisioned. The asset audit rejects credentials in every environment; only the specifically named public Turnstile site key is exempt. Follow [the staged AI release and rollback instructions](ai-worker.md#staged-release-and-rollback).
 
 Before building, the wrapper scans both `app/public/` and any existing `dist/` for
@@ -298,23 +324,23 @@ Base** tab; leave **Disable builds** on the **Production** tab off. If
 "Workers Builds: chronosbible" check: the wrapper refuses to deploy production
 from `dev`, so nothing ships, but the check stays red.
 
-Use this **build command** for both Workers to provision the pinned CLI outside
-the checkout without changing its dependencies or lockfile:
+Use this **build command** for both Workers to install the locked dependencies,
+including Wrangler:
 
 ```sh
-npm install --prefix /tmp/chronos-cli --no-save --package-lock=false wrangler@4.149.0
+npm ci --ignore-scripts
 ```
 
 For `chronosbible`, use this **deploy command**:
 
 ```sh
-CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy
+npm run app:host:deploy
 ```
 
 For `chronosbible-dev`, use this **deploy command**:
 
 ```sh
-CLOUDFLARE_APP_WRANGLER=/tmp/chronos-cli/node_modules/.bin/wrangler npm run app:host:deploy:dev
+npm run app:host:deploy:dev
 ```
 
 Wrangler runs the selected environment's safe app build before uploading.
@@ -324,10 +350,13 @@ See [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds
 for dependency installation and build-variable settings. Connecting these builds
 and assigning the custom domains is a one-time Cloudflare account setup step.
 
-The app is assets-only: no Worker code runs, and `wrangler.json` has neither
-`main` nor an asset binding. `_headers` and `_redirects` exist only in the
-Cloudflare build; `_headers` makes `/assets/*` immutable, and `_redirects` sends
-old `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*` URLs to the
+`wrangler.json` names `app/worker/index.ts` as the Worker entrypoint and binds
+static assets as `ASSETS`. Only `/api/ai/*` runs Worker code first; the reader and
+other static files are served directly. The optional AI API uses the `AI` binding
+to the environment's SQLite Durable Object. Vercel serves static files with AI
+disabled. `_headers` and `_redirects` exist only in the Cloudflare build;
+`_headers` makes `/assets/*` and versioned Scripture folders (including `/study/*`)
+immutable, and `_redirects` sends old `/audio/days/*`, `/audio/chapters/assets/*` and `/audio/clips/*` URLs to the
 same paths on `https://audio.chronosbible.com` with a `301` (`vercel.json` does
 the same on Vercel). The safe build refuses a `_redirects` that differs from
 the committed file. Workers URLs and preview URLs are off.
