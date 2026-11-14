@@ -120,10 +120,10 @@ export function migrateLegacy(
   return {
     version: 2,
     activeId,
-    profiles: profiles.map((r) => ({
-      ...r,
-      ...placesFromPreferences(preferences, r.id),
-      completion: emptyCompletion(r.completed),
+    profiles: profiles.map(({ completed, ...reader }) => ({
+      ...reader,
+      ...placesFromPreferences(preferences, reader.id),
+      completion: emptyCompletion(completed),
     })),
     guest: {
       ...placesFromPreferences(preferences, ""),

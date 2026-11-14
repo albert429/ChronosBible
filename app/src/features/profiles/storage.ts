@@ -102,14 +102,15 @@ function persist(storage: StorageLike, state: ProgressState) {
     throw Error(UNSAVED);
   }
 }
-const update = (
+/** Return a transition's value only after its state is confirmed saved. */
+function update<T>(
   storage: StorageLike,
-  change: (state: ProgressState) => ProgressState,
-) => {
-  const next = change(loadProgress(storage));
-  persist(storage, next);
-  return next;
-};
+  change: (state: ProgressState) => { state: ProgressState; value: T },
+): T {
+  const result = change(loadProgress(storage));
+  persist(storage, result.state);
+  return result.value;
+}
 
 /**
  * Commit a pending v1 migration. Safe to repeat: v1 keys are never changed,
@@ -137,17 +138,14 @@ function addProfile(
   storage: StorageLike,
   body: BackupReader | ((state: ProgressState) => BackupReader),
 ): ReaderProfile {
-  let created: ReaderProfile | undefined;
-  update(storage, (s) => {
-    const added = addReader(
+  return update(storage, (s) => {
+    const { state, reader } = addReader(
       s,
       crypto.randomUUID(),
       typeof body === "function" ? body(s) : body,
     );
-    created = added.reader;
-    return added.state;
+    return { state, value: reader };
   });
-  return created!;
 }
 /**
  * A new active reader. They keep the current reading choice and Bible and
@@ -174,22 +172,22 @@ export function setReadingCompletion(
   completed: boolean,
   date = today(),
 ): ReaderProfile | GuestState {
-  let updated: ReaderProfile | GuestState | undefined;
-  update(storage, (s) => {
-    const result = withReadingCompletion(s, id, location, completed, date);
-    updated = result.updated;
-    return result.state;
+  return update(storage, (s) => {
+    const { state, updated } = withReadingCompletion(
+      s,
+      id,
+      location,
+      completed,
+      date,
+    );
+    return { state, value: updated };
   });
-  return updated!;
 }
 export function selectReader(storage: StorageLike, id: string | null) {
-  let selected: ReaderProfile | null = null;
-  update(storage, (s) => {
-    const result = withActiveReader(s, id);
-    selected = result.selected;
-    return result.state;
+  return update(storage, (s) => {
+    const { state, selected } = withActiveReader(s, id);
+    return { state, value: selected };
   });
-  return selected;
 }
 /**
  * Save a reader's places ("" is the guest) and, optionally, continuous play.
@@ -203,7 +201,10 @@ export function saveReaderPlaces(
 ) {
   const parsed = parseReaderPlaces(places);
   if (!parsed) throw Error(INVALID);
-  update(storage, (s) => withReaderPlaces(s, id, parsed, continuous));
+  update(storage, (s) => ({
+    state: withReaderPlaces(s, id, parsed, continuous),
+    value: undefined,
+  }));
 }
 /**
  * Import a v1 (youth plan days only) or v2 backup as a separate new reader,

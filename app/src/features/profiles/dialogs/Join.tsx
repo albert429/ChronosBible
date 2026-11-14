@@ -42,7 +42,7 @@ export default function Join({
             </option>
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id}>
-                {profile.name} · {daysLabel(profile.completed.length)} ·{" "}
+                {profile.name} · {daysLabel(profile.completion.plan.length)} ·{" "}
                 {profile.startDate}
               </option>
             ))}

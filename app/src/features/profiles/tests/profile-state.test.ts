@@ -83,7 +83,7 @@ test("Serialized states and backups parse back to the same data", () => {
     "2026-10-05",
   ).state;
   assert.deepEqual(parseState(serializeState(state)), state);
-  const { id: _id, completed: _completed, ...body } = state.profiles[0];
+  const { id: _id, ...body } = state.profiles[0];
   assert.deepEqual(parseBackup(exportBackup(state.profiles[0])), body);
   assert.deepEqual(parseState(serializeState(migrateLegacy(null, null))), {
     ...freshState(),
@@ -118,7 +118,7 @@ test("Transitions reject unknown readers and invalid readings without a new stat
 });
 
 // Stable text matters: the adapter compares serialized bytes before writing.
-test("Serialization keeps its field order and omits derived profile fields", () => {
+test("Serialization keeps its field order and profiles use only track completion", () => {
   const state = withReader();
   const serialized = JSON.parse(serializeState(state));
   assert.deepEqual(Object.keys(serialized), [
@@ -146,10 +146,8 @@ test("Serialization keeps its field order and omits derived profile fields", () 
     "2026-10-05",
   ).state;
   const parsed = parseState(serializeState(done));
-  assert.equal(
-    parsed.profiles[0].completed,
-    parsed.profiles[0].completion.plan,
-  );
+  assert.equal("completed" in parsed.profiles[0], false);
+  assert.deepEqual(parsed.profiles[0].completion.plan, [12]);
   assert.equal(
     Object.keys(JSON.parse(serializeState(done)).profiles[0]).at(-1),
     "readOn",

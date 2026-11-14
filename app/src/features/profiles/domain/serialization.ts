@@ -12,7 +12,6 @@ import type {
   ProgressState,
   ReadOn,
   Reader,
-  ReaderProfile,
   TrackCompletion,
 } from "./types.ts";
 
@@ -151,11 +150,6 @@ export function parseBackupReader(value: unknown): BackupReader {
     parseReadOn(value.readOn, completion),
   );
 }
-const profile = (id: string, body: BackupReader): ReaderProfile => ({
-  id,
-  ...body,
-  completed: body.completion.plan,
-});
 /** A stored v2 state, strictly validated; throws on anything unexpected. */
 export function parseState(raw: string): ProgressState {
   const data: unknown = JSON.parse(raw);
@@ -169,7 +163,7 @@ export function parseState(raw: string): ProgressState {
     throw Error();
   const profiles = data.profiles.map((p: unknown) => {
     if (!record(p) || !validId(p.id)) throw Error();
-    return profile(p.id, parseBackupReader(p));
+    return { id: p.id, ...parseBackupReader(p) };
   });
   if (new Set(profiles.map((p) => p.id)).size !== profiles.length)
     throw Error();
