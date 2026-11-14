@@ -1,5 +1,5 @@
 import type { StorageLike } from "./cache.ts";
-import type { AiErrorKind } from "../../domain/ai/types.ts";
+import type { AiErrorKind } from "./domain/types.ts";
 export type Problem = AiErrorKind | "stopped";
 export const RETRYABLE = new Set<Problem>([
   "rate",

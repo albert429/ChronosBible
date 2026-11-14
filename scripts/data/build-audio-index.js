@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   readingTranscript,
   validManifest,
-} from "../../src/domain/audio/manifest.ts";
+} from "../../src/features/audio/domain/manifest.ts";
 import { readBibleChapters } from "./build-bible.js";
 import { ROOT } from "../lib/paths.js";
 import { AUDIO_MANIFEST_PATH } from "../lib/audio-manifests.js";

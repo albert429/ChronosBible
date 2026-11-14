@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Copy, Share2 } from "lucide-react";
-import { catalog } from "../../domain/scripture/catalog";
-import { readingSearch } from "../../domain/reading/location";
+import { catalog } from "../../core/scripture/catalog";
+import { readingSearch } from "../../core/reading/location";
 
 export type VerseActionsProps = {
   /** The book's Arabic name, as passages carry it. */

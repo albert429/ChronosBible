@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
-// Inlined by vite.config.ts from VITE_AUDIO_BASE_URL (see src/domain/audio/url.ts).
+// Inlined by vite.config.ts from VITE_AUDIO_BASE_URL (see src/features/audio/domain/url.ts).
 declare const __AUDIO_BASE_URL__: string;
 declare const __AUDIO_DAYS__: number[];
-/** One "1"/"0" per canonical chapter (src/domain/audio/availability.ts). */
+/** One "1"/"0" per canonical chapter (src/features/audio/domain/availability.ts). */
 declare const __AUDIO_CHAPTERS__: string;
 
 // Only public AI settings are inlined. Credentials never enter browser builds.

@@ -2,7 +2,7 @@
 # Workers static assets already answer "public, max-age=0, must-revalidate",
 # which is what /, /index.html, /sw.js and /audio/<day>.json need. The
 # fingerprinted bundle, and the Scripture data the app always requests with
-# its folder's content version (?v=, src/data/dataVersion.ts), never change.
+# its folder's content version (?v=, src/shared/network/dataVersion.ts), never change.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 /bible/*

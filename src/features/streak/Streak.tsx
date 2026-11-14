@@ -7,7 +7,7 @@ import {
   STREAK_MILESTONES,
   streakStats,
   type StreakStats,
-} from "../../domain/profiles/streak";
+} from "../profiles/domain/streak";
 import "./Streak.css";
 
 /** «يوم واحد»، «يومان متتاليان»، «٣ أيام متتالية»، «١٢ يومًا متتاليًا». */

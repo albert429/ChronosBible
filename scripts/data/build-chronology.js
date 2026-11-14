@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { catalog as books } from "../../src/domain/scripture/catalog.ts";
+import { catalog as books } from "../../src/core/scripture/catalog.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
-} from "../../src/data/chronology/validate.ts";
+} from "../../src/features/chronology/data/validate.ts";
 import { ar } from "../../src/shared/lib/format.ts";
 import { readBibleChapters } from "./build-bible.js";
 import { payload, publishOwned } from "../lib/ownership.js";

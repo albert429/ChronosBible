@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { chapterVerse, isolate } from "../../domain/scripture/reference";
+import { chapterVerse, isolate } from "../../core/scripture/reference";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
 import Sheet from "../../shared/ui/Sheet";
 import { verseNumberButton } from "../../shared/browser/scriptureDom";

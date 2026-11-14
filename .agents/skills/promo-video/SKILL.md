@@ -29,7 +29,7 @@ schemas, and the user's brief take precedence over those fallback examples:
 - Reader/navigation/audio: `src/features/reader/`, `src/features/navigation/`,
   `src/features/audio/`, and composition in `src/app/`.
 - Study/AI demos: `src/features/study/`, `worker/prompt.ts`, and
-  `src/domain/study/types.ts`. Canonical study assets are under
+  `src/features/study/domain/types.ts`. Canonical study assets are under
   `public/study/v2/`, with chapter indexes and ranged word/translation resources;
   the old day-based study paths and seven-field Greek tuple are historical.
   Confirm Greek, Hebrew, or Aramaic labels and disclose sample AI answers.

@@ -4,11 +4,11 @@
  * the chronology catalogs, the study inventory), never from counts or
  * chapter ranges written here.
  */
-import { catalog } from "../../domain/scripture/catalog.ts";
-import type { ChronologyCatalog } from "../../domain/reading/chronology.ts";
-import { PLAN_DAYS } from "../../domain/reading/schedule.ts";
-import { chronologyCatalogs } from "../../data/chronology/client.ts";
-import { dataUrl } from "../../data/dataVersion.ts";
+import { catalog } from "../../core/scripture/catalog.ts";
+import type { ChronologyCatalog } from "../../core/reading/chronology.ts";
+import { PLAN_DAYS } from "../../core/reading/schedule.ts";
+import { chronologyCatalogs } from "../chronology/data/client.ts";
+import { dataUrl } from "../../shared/network/dataVersion.ts";
 
 /** Scripture text (every mode) or verse study for the whole Bible. */
 export type Pack = "text" | "study";

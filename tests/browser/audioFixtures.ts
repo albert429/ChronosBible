@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { Page, Route } from "@playwright/test";
-import type { AudioManifestV2 } from "../../src/domain/audio/types.ts";
+import type { AudioManifestV2 } from "../../src/features/audio/domain/types.ts";
 
 export const POSITION_KEY = "bible-reader-audio-position-v1";
 

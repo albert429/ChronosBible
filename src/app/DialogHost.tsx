@@ -2,9 +2,9 @@ import { Suspense, lazy, type RefObject } from "react";
 import { Check, X } from "lucide-react";
 import { ChunkBoundary, Loading } from "../shared/ui/Feedback";
 import { useModalDialog } from "../shared/ui/useModalDialog";
-import type { Modal } from "../features/profiles/dialogs";
+import type { Modal } from "../features/profiles/dialogs/index";
 import "./DialogHost.css";
-const Dialogs = lazy(() => import("../features/profiles/dialogs"));
+const Dialogs = lazy(() => import("../features/profiles/dialogs/index"));
 
 const DIALOG_NAMES: Record<Modal["kind"], string> = {
   join: "القراء على هذا الجهاز",

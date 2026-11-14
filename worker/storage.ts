@@ -1,4 +1,4 @@
-import { AiError, type AiStatus } from "../src/domain/ai/types.ts";
+import { AiError, type AiStatus } from "../src/features/ai/domain/types.ts";
 import {
   CACHE_ENTRIES,
   CACHE_TTL,

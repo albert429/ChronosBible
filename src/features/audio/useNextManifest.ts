@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { type ReadingLocation } from "../../domain/reading/types.ts";
-import { readingKey } from "../../domain/reading/identity.ts";
+import { type ReadingLocation } from "../../core/reading/types.ts";
+import { readingKey } from "../../core/reading/identity.ts";
 import { readingHasAudio } from "./availability.ts";
-import { audioManifests } from "./client.ts";
+import { audioManifests } from "./data/client.ts";
 import {
   currentConnection,
   type ConnectionFacts,

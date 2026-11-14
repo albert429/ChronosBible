@@ -1,13 +1,13 @@
 import "./study.css";
 import { lazy, Suspense } from "react";
-import { catalog } from "../../domain/scripture/catalog";
+import { catalog } from "../../core/scripture/catalog";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
-import type { Passage, Verse } from "../../domain/scripture/types";
+import type { Passage, Verse } from "../../core/scripture/types";
 import OriginalWords from "./OriginalWords";
 import AiSpark from "../ai/AiSpark";
 import OtherTranslation from "./OtherTranslation";
 import Section from "./Section";
-import { verseId } from "../../domain/study/reference";
+import { verseId } from "./domain/reference";
 
 // The disabled production build never includes the AI provider or panel chunks.
 const AiPanel = __AI_ENABLED__ ? lazy(() => import("../ai/AiPanel")) : null;

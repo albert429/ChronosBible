@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { ChunkBoundary, Loading } from "../../shared/ui/Feedback";
-import { scheduledDay } from "../../domain/reading/schedule";
-import type { Reader } from "../../domain/profiles/state";
+import { scheduledDay } from "../../core/reading/schedule";
+import type { Reader } from "../profiles/domain/state";
 import "./PlanView.css";
 const Calendar = lazy(() => import("./Calendar"));
 

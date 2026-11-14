@@ -15,16 +15,16 @@ import {
   cleanQuestion,
   QUESTION_MAX,
   QUESTION_MIN,
-} from "../../domain/ai/chips.ts";
+} from "./domain/chips.ts";
 import { createGuards, RETRYABLE, type Problem } from "./guards.ts";
 import { reportMailto } from "./report.ts";
 import { startAnswer, type View } from "./request.ts";
-import type { AiStatus, ChipId } from "../../domain/ai/types.ts";
+import type { AiStatus, ChipId } from "./domain/types.ts";
 import { APP_INFO } from "../../shared/lib/appInfo";
 import { ar, today } from "../../shared/lib/format";
-import type { Passage, Verse } from "../../domain/scripture/types";
+import type { Passage, Verse } from "../../core/scripture/types";
 import AiAnswer from "./AiAnswer";
-import { aiStatus } from "../../data/ai/client.ts";
+import { aiStatus } from "./data/client.ts";
 import AiSpark from "./AiSpark";
 import { reveal } from "../../shared/ui/reveal";
 import "../../shared/ui/form.css";

@@ -1,11 +1,8 @@
 import type {
   ReadingLocation,
   ScriptureReading,
-} from "../../domain/reading/types.ts";
-import {
-  audioAvailable,
-  type AdvertisedAudio,
-} from "../../domain/audio/availability.ts";
+} from "../../core/reading/types.ts";
+import { audioAvailable, type AdvertisedAudio } from "./domain/availability.ts";
 
 // Inlined by vite.config.ts: verified chronological playlists, as reading
 // keys. Declared here, not in the shared src/vite-env.d.ts.

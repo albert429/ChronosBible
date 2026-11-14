@@ -4,11 +4,11 @@
  * domain/profiles/state.ts. Storage is passed in, so a blocked or full
  * store surfaces as a message and nothing is half-written.
  */
-import type { ReadingLocation } from "../../domain/reading/types.ts";
+import type { ReadingLocation } from "../../core/reading/types.ts";
 import {
   parseReaderPlaces,
   type ReaderPlaces,
-} from "../../domain/reading/places.ts";
+} from "../../core/reading/places.ts";
 import {
   INVALID,
   addReader,
@@ -23,9 +23,9 @@ import {
   type GuestState,
   type ProgressState,
   type ReaderProfile,
-} from "../../domain/profiles/state.ts";
-import { parseBackup } from "../../domain/profiles/backup.ts";
-import { migrateLegacy } from "../../domain/profiles/legacy.ts";
+} from "./domain/state.ts";
+import { parseBackup } from "./domain/backup.ts";
+import { migrateLegacy } from "./domain/legacy.ts";
 import { today } from "../../shared/lib/format.ts";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;

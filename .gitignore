@@ -34,3 +34,5 @@ assets/reel*/
 .dev.vars
 .dev.vars.*
 !.dev.vars.example
+
+.playwright-mcp/

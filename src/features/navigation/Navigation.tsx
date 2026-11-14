@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from "react";
-import type { ReadingLocation } from "../../domain/reading/types";
+import type { ReadingLocation } from "../../core/reading/types";
 import { connectionAllowsPrefetch } from "../../shared/browser/network";
 import { navigationModel, type View } from "./model";
 import { useSheetController } from "./useSheetController";

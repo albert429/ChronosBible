@@ -1,5 +1,5 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
-import type { ScriptureReading } from "../../domain/reading/types";
+import type { ScriptureReading } from "../../core/reading/types";
 import { connectionAllowsPrefetch } from "../../shared/browser/network";
 import { loadStudyPanel, type StudyTarget } from "../study/load";
 import {

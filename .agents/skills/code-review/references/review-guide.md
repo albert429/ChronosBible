@@ -66,7 +66,7 @@ build outputs. Run commands in the checkout actually containing the reviewed cod
 | Formatting or repository instructions      | `git diff --check`; focused `npx prettier --check <files>`                             |
 | TypeScript, imports, or feature boundaries | `npm run lint`, `npm run typecheck`, `npm run layers`; relevant Node tests             |
 | Focused Node regression                    | `node --experimental-strip-types --test tests/<name>.test.ts`                          |
-| Python importers/audio/ownership           | `python3 -I -m unittest discover -s scripts/tests`                                     |
+| Python importers/audio/ownership           | `npm run test:python`                                                                  |
 | App/data/build behavior                    | `npm run build` (includes data generation); relevant generated-output tests            |
 | Broad cross-cutting change                 | `npm run validate`; `npm run verify:all` when full CI-equivalent coverage is warranted |
 | Browser behavior                           | Focused Playwright specs in the affected projects; see the setup below                 |
@@ -75,7 +75,7 @@ For a focused browser run, export `AUDIO_TEST_FIXTURES=1`,
 `VITE_AUDIO_BASE_URL=https://audio.example.test`, and
 `VITE_AUDIO_CHAPTERS_ENABLED=true`; run
 `node scripts/build/browser-build.mjs app`, then
-`npx playwright test tests/browser/<name>.spec.ts --project=chromium`.
+`npx playwright test --config config/playwright.config.ts tests/browser/<name>.spec.ts --project=chromium`.
 Use `mobile-webkit` for WebKit behavior and `ai-chromium` for `ai.spec.ts`.
 `npm run test:e2e` builds fixtures and runs the full browser suite. Set `PW_PORT`
 to an unused port in concurrent worktrees; reserve its next two ports too. Let

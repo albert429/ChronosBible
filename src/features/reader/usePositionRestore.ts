@@ -1,5 +1,5 @@
 import { useLayoutEffect } from "react";
-import type { ScriptureReading } from "../../domain/reading/types";
+import type { ScriptureReading } from "../../core/reading/types";
 import {
   clearSelected,
   markSelected,

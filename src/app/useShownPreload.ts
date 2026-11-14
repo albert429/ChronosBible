@@ -1,9 +1,6 @@
 import { useEffect, useRef } from "react";
-import type {
-  ReadingLocation,
-  ScriptureReading,
-} from "../domain/reading/types";
-import { readingKey } from "../domain/reading/identity";
+import type { ReadingLocation, ScriptureReading } from "../core/reading/types";
+import { readingKey } from "../core/reading/identity";
 import { afterStartup } from "../shared/browser/afterStartup";
 
 /**

@@ -1,4 +1,7 @@
-import type { AiMeta, StreamCallbacks } from "../src/domain/ai/types.ts";
+import type {
+  AiMeta,
+  StreamCallbacks,
+} from "../src/features/ai/domain/types.ts";
 
 export type AiRequest = {
   system: string;

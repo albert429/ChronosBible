@@ -13,10 +13,10 @@ import { gunzipSync } from "node:zlib";
 import { usfmCodes } from "../lib/books.js";
 import { ROOT, isMain } from "../lib/paths.js";
 
-// The word-range limits of src/domain/study/limits.ts, kept here as plain
+// The word-range limits of src/features/study/domain/limits.ts, kept here as plain
 // numbers: Workers Builds runs this file with plain `node`, which may lack
 // TypeScript support, so nothing on the deploy path imports a .ts module.
-// tests/cloudflare-app.test.ts fails if the two copies differ.
+// tests/integration/cloudflare-app.test.ts fails if the two copies differ.
 export const STUDY_WORDS_GZIP_LIMIT = 30000;
 export const STUDY_WORDS_RAW_LIMIT = 256 * 1024;
 

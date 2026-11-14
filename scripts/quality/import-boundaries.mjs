@@ -1,22 +1,5 @@
-// The layering of src/, as data and as one small ESLint rule.
-//
-//   domain/   pure contracts: domain (scripture <- reading <- profiles, audio,
-//             study) and shared/lib only
-//   data/     network clients: domain and data only
-//   shared/   generic UI, hooks, browser adapters: never features, app or data;
-//             shared/lib is pure and imports only shared/lib
-//   features/ one folder per feature; cross-feature imports only on the edges
-//             listed below
-//   app/      composition; nothing imports it except src/main.tsx
-//
-// Build and tool code outside src/ (scripts/, vite.config.ts) may import only
-// domain, data, shared/lib and the feature modules listed in TOOL_FEATURE_FILES.
-//
-// The rule resolves relative specifiers (static, re-export and lazy
-// `import()`) against the importing file, so it sees every edge whatever the
-// depth of the specifier. scripts/quality/layers.mjs reports the same edges and
-// finds cycles. Keep this table in step with docs/development.md.
-
+// Feature ownership with pure domain, client and UI roles.
+// Shared contracts live in core; see docs/development.md.
 import path from "node:path";
 
 /** Features may import their own folder plus these features. */
@@ -24,9 +7,19 @@ export const FEATURE_EDGES = {
   ai: [],
   appearance: ["audio"],
   audio: [],
-  navigation: ["appearance", "offline", "profiles", "streak"],
+  bible: ["profiles"],
+  chronology: [],
+  navigation: [
+    "appearance",
+    "offline",
+    "profiles",
+    "streak",
+    "bible",
+    "chronology",
+    "plan",
+  ],
   offline: [],
-  plan: ["streak"],
+  plan: ["streak", "profiles"],
   profiles: [],
   reader: ["appearance", "audio", "profiles", "streak", "study"],
   streak: ["profiles"],
@@ -57,9 +50,13 @@ export function placeOf(relative) {
   if (parts[0] === "worker") return { layer: "worker", area: "" };
   if (parts[0] !== "src") return undefined;
   if (parts.length === 2) return { layer: "root", area: "" };
-  const [, layer, area] = parts;
-  if (layer === "app" || layer === "assets" || layer === "data")
-    return { layer, area: "" };
+  const [, layer, area, role] = parts;
+  if (layer === "core") return { layer: "domain", area, unit: `core/${area}` };
+  if (layer === "features" && (role === "domain" || role === "data"))
+    return { layer: role, area, unit: `features/${area}/${role}` };
+  if (layer === "shared" && area === "network")
+    return { layer: "data", area: "network", unit: "shared/network" };
+  if (layer === "app" || layer === "assets") return { layer, area: "" };
   return { layer, area };
 }
 
@@ -87,7 +84,7 @@ export function violation(from, to, toFile) {
     if (to.layer === "domain" || to.layer === "data") return undefined;
     if (to.layer === "shared" && to.area === "lib") return undefined;
     if (TOOL_FEATURE_FILES.includes(toFile)) return undefined;
-    return `build and tool code may import only src/domain, src/data, src/shared/lib and ${TOOL_FEATURE_FILES.join(", ")}`;
+    return `build and tool code may import only core, feature domain/data, shared/network, shared/lib and ${TOOL_FEATURE_FILES.join(", ")}`;
   }
   if (from.layer === "domain") {
     if (to.layer === "shared" && to.area === "lib") return undefined;

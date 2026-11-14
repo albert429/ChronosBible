@@ -4,7 +4,7 @@ AI is optional. The reader stays a static application; only `/api/ai/*` runs Wor
 
 ## Architecture and public contract
 
-`worker/index.ts` routes requests to one SQLite-backed `AiCoordinator` per environment. `worker/` owns credentials, prompts, trusted context, provider calls, stream parsing, atomic quotas and shared answers. `src/domain/ai/` holds pure contracts; `src/data/ai/` holds the same-origin API client. Browser imports of Worker code are rejected by ESLint and `npm run layers`.
+`worker/index.ts` routes requests to one SQLite-backed `AiCoordinator` per environment. `worker/` owns credentials, prompts, trusted context, provider calls, stream parsing, atomic quotas and shared answers. `src/features/ai/domain/` holds pure contracts; `src/features/ai/data/` holds the same-origin API client. Browser imports of Worker code are rejected by ESLint and `npm run layers`.
 
 - `GET /api/ai/v1/status`: `available`, `cacheRevision`, device `limits` and `usage`, and `resets.device` (Cairo) / `resets.provider` (UTC), as epoch milliseconds. Availability describes runtime configuration; generation can still be refused by an allowance or concurrency limit.
 - `POST /api/ai/v1/answer`: `{ verseId, chip, question?, fresh?, turnstileToken }`. `chip` is `explain`, `words`, `background` or `ask`. Only `ask` accepts a question, cleaned and bounded to 3–200 characters. The entire UTF-8 body is bounded to 16 KiB, including chunked bodies. Extra fields are rejected.

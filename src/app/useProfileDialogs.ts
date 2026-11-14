@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Modal } from "../features/profiles/dialogs";
+import type { Modal } from "../features/profiles/dialogs/index";
 import type { ReadingSession } from "./useReadingSession";
 
 /**

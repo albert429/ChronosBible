@@ -1,12 +1,12 @@
-import { catalog, findBibleBook } from "../../domain/scripture/catalog.ts";
-import type { ReadingLocation } from "../../domain/reading/types.ts";
-import { trackOf } from "../../domain/reading/identity.ts";
+import { catalog, findBibleBook } from "../../core/scripture/catalog.ts";
+import type { ReadingLocation } from "../../core/reading/types.ts";
+import { trackOf } from "../../core/reading/identity.ts";
 import {
   chapterLabel,
   dayLabel,
   readingLabel,
   TRACK_NAMES,
-} from "../../domain/reading/labels.ts";
+} from "../../core/reading/labels.ts";
 
 export type View = "read" | "calendar";
 export type Panel =

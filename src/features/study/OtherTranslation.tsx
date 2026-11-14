@@ -1,10 +1,10 @@
 import { BookOpen } from "lucide-react";
 import { Loading, LoadError } from "../../shared/ui/Feedback";
-import { verseTranslations } from "../../data/study/client";
+import { verseTranslations } from "./data/client";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useAppearance } from "../appearance/appearance";
-import { studyReference } from "../../domain/study/reference";
-import type { VerseText } from "../../domain/study/types";
+import { studyReference } from "./domain/reference";
+import type { VerseText } from "./domain/types";
 import { useResource } from "../../shared/hooks/useResource";
 import Section from "./Section";
 

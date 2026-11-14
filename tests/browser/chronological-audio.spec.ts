@@ -16,7 +16,7 @@ import {
   rejectNextPlay,
   sameMediaElement,
 } from "./audioFixtures";
-import type { AudioManifestV3 } from "../../src/domain/audio/types.ts";
+import type { AudioManifestV3 } from "../../src/features/audio/domain/types.ts";
 
 // Chronological readings are v3 playlists: several immutable files played in
 // order by one persistent <audio> element. The fixture build advertises every

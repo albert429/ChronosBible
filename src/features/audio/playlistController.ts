@@ -1,4 +1,4 @@
-import { entryAt, type Timeline } from "../../domain/audio/timeline.ts";
+import { entryAt, type Timeline } from "./domain/timeline.ts";
 
 /** The parts of HTMLAudioElement the playlist drives (a fake in unit tests). */
 export type MediaLike = {

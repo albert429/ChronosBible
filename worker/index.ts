@@ -1,5 +1,5 @@
-import { AiError } from "../src/domain/ai/types.ts";
-import { PROMPT_VERSION } from "../src/domain/ai/chips.ts";
+import { AiError } from "../src/features/ai/domain/types.ts";
+import { PROMPT_VERSION } from "../src/features/ai/domain/chips.ts";
 import { AiCoordinator } from "./coordinator.ts";
 import { configured, DEVICE_LIMITS, type Env } from "./env.ts";
 import { failure, HEADERS } from "./http.ts";

@@ -3,13 +3,13 @@ import {
   isBibleChapter,
   isChronologicalReading,
   type ScriptureReading,
-} from "../../domain/reading/types";
+} from "../../core/reading/types";
 import { useResource } from "../../shared/hooks/useResource";
-import { audioManifests } from "./client";
-import { readingKey } from "../../domain/reading/identity";
-import { matchesReading } from "../../domain/audio/compatibility";
-import { toTimeline, type Timeline } from "../../domain/audio/timeline";
-import type { AudioManifest } from "../../domain/audio/types";
+import { audioManifests } from "./data/client";
+import { readingKey } from "../../core/reading/identity";
+import { matchesReading } from "./domain/compatibility";
+import { toTimeline, type Timeline } from "./domain/timeline";
+import type { AudioManifest } from "./domain/types";
 
 const mismatch = (reading: ScriptureReading) =>
   `يحتاج التسجيل إلى تحديث ليتطابق مع ${

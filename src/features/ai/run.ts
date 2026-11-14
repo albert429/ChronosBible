@@ -1,9 +1,5 @@
-import { answer } from "../../data/ai/client.ts";
-import {
-  AiError,
-  type ChipId,
-  type StreamCallbacks,
-} from "../../domain/ai/types.ts";
+import { answer } from "./data/client.ts";
+import { AiError, type ChipId, type StreamCallbacks } from "./domain/types.ts";
 import { challenge } from "./turnstile.ts";
 export type AskInput = {
   chip: ChipId;

@@ -1,5 +1,5 @@
-import { chapterRange, rangeAriaLabel } from "../../domain/scripture/reference";
-import type { Passage } from "../../domain/scripture/types";
+import { chapterRange, rangeAriaLabel } from "../../core/scripture/reference";
+import type { Passage } from "../../core/scripture/types";
 import "./PassageReference.css";
 
 export default function PassageReference({ passage }: { passage: Passage }) {

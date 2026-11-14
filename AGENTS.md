@@ -2,32 +2,37 @@
 
 ## Project Structure & Module Organization
 
-ChronosBible (formerly Bible150) is a static React/TypeScript Arabic Bible
-reader built with Vite, with an optional Cloudflare AI Worker backend. `src/` is layered, and ESLint enforces
-the imports (`scripts/quality/import-boundaries.mjs`; `npm run layers` checks
-cycles):
+ChronosBible uses feature ownership with a shared pure foundation:
 
-- `src/domain/` is pure contracts (scripture, reading, profiles, audio, study):
-  no React, DOM, storage, network, clock or build globals; it imports only
-  domain and `shared/lib`.
-- `src/data/` holds network clients (`jsonClient.ts`, bible, plan, chronology,
-  study); it imports only domain and data.
-- `src/features/<name>/` is one folder per feature (reader, navigation, plan,
-  profiles, audio, study, ai, appearance, offline, streak) with adjacent CSS.
-  Cross-feature edges are limited to those listed in `docs/development.md`.
-- `src/shared/` is generic `ui`, `hooks`, `lib`, `browser` and `styles`; it
-  never imports features, app or data.
+- `src/core/scripture/` and `src/core/reading/` hold shared Scripture and reading
+  contracts. Core imports only core and pure `shared/lib` helpers.
+- `src/features/<name>/` owns its UI, hooks, adjacent CSS, `domain/` pure logic,
+  `data/` network clients, and `tests/`. Feature domain modules import only
+  their own domain, core and pure shared helpers. Clients import contracts,
+  other clients and `shared/network` transport; never feature UI.
+- `src/shared/` holds generic UI, hooks, browser adapters, network transport,
+  styles and pure helpers. It never imports features or app code.
 - `src/app/` composes features; only `src/main.tsx` imports it.
+- `worker/` owns the server runtime and `worker/tests/`. It consumes pure
+  contracts, never browser implementation. Browser code never imports Worker code.
+- `config/typescript/` contains supporting compiler projects;
+  `config/playwright.config.ts` configures browser tests from the repository root.
+- `tests/integration/` holds cross-owner contracts, `tests/browser/` holds browser
+  workflows, and `tests/fixtures/` holds shared fixtures. Unit tests live beside
+  their owner under `tests/`; script Python tests follow the same convention.
 
-No barrel files: import the specific module, and keep lazy entry points lazy.
-Modules that Node runs (build scripts, tests) use relative imports with explicit
-`.ts` extensions, with no alias loader.
+The boundary table in `scripts/quality/import-boundaries.mjs` is enforced by
+ESLint and `npm run layers`. Its graph separates pure domain, data and UI roles
+inside each feature and excludes tests. Cross-feature UI edges are explicit.
+Navigation owns the toolbar and sheet coordination; Bible, chronology and plan
+own their picker panels. Preserve lazy imports and use direct module imports
+without barrels. Node-executed imports use explicit `.ts` extensions.
 
 One reader serves four tracks: the 150-day youth plan (Cairo dates), the full
 Bible, and Old/New Testament chronology. The place lives in the query string
 (`?day=N`, `?mode=bible&book=GEN&chapter=1`,
 `?mode=chronological&testament=OT&reading=<id>`), parsed in
-`src/domain/reading/location.ts`; there is no path routing. `vite.config.ts` validates
+`src/core/reading/location.ts`; there is no path routing. `vite.config.ts` validates
 `VITE_*` settings and inlines them as build constants (`__AUDIO_BASE_URL__`,
 `__AI_ENABLED__`, …); app code never reads `import.meta.env`, and disabled
 features are absent from the bundle.
@@ -50,14 +55,14 @@ Use Node.js 22 and `npm ci` for locked dependencies.
 - `npm run verify:all`: `validate` in the CI environment, Python tests,
   recursive `py_compile` and the browser tests; honors `PW_PORT`.
 - `npm run test:e2e`: build audio fixtures and run Playwright workflows.
-- `python3 -I -m unittest discover -s scripts/tests`: test Python utilities.
+- `npm run test:python`: test Python utilities.
 - One unit test: `node --experimental-strip-types --test tests/<name>.test.ts`
   (`--test-name-pattern` filters).
 - One browser spec: export `AUDIO_TEST_FIXTURES=1`,
   `VITE_AUDIO_BASE_URL=https://audio.example.test` and
   `VITE_AUDIO_CHAPTERS_ENABLED=true`, build with
   `node scripts/build/browser-build.mjs app` (what `test:e2e` runs), then
-  `npx playwright test tests/browser/<name>.spec.ts --project=chromium`
+  `npx playwright test --config config/playwright.config.ts tests/browser/<name>.spec.ts --project=chromium`
   (projects: `chromium`, `mobile-webkit`, `ai-chromium`).
 
 Install browser binaries with `npx playwright install chromium webkit`.
@@ -74,12 +79,12 @@ Name components `PascalCase.tsx`, hooks `useSomething.ts`, and helper modules
 
 ## Testing Guidelines
 
-Node's test runner executes `tests/*.test.ts` through `npm test`.
+`npm test` discovers colocated `*.test.ts` suites and central integration tests.
 Playwright specs live in `tests/browser/*.spec.ts`, covering Chromium, mobile
 WebKit, and axe accessibility checks. Add regression coverage for changed
 behavior and preserve exact Scripture-data checks. Storage changes must keep
 the `bible-reader-state-v2` migration and backup import tests passing
-(`tests/reader-contracts.test.ts`, `tests/progress.test.ts`). For UI changes,
+(`tests/integration/reader-contracts.test.ts`, `src/features/profiles/tests/progress.test.ts`). For UI changes,
 verify 320–430px widths, both themes, large Arabic text, focus, and reduced
 motion.
 

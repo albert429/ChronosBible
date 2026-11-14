@@ -28,7 +28,9 @@ function* walk(directory) {
 function unitOf(relative) {
   const place = placeOf(relative);
   if (!place) return undefined;
-  return place.area ? `${place.layer}/${place.area}` : place.layer;
+  return (
+    place.unit ?? (place.area ? `${place.layer}/${place.area}` : place.layer)
+  );
 }
 
 /** Strongly connected components with more than one unit (Tarjan). */
@@ -80,7 +82,8 @@ export function analyzeLayers(root) {
     fs.existsSync(dir),
   );
   for (const file of sources.flatMap((dir) => [...walk(dir)])) {
-    if (!SOURCE.test(file)) continue;
+    if (!SOURCE.test(file) || file.includes(`${path.sep}tests${path.sep}`))
+      continue;
     const relative = path.relative(resolved, file).split(path.sep).join("/");
     const from = placeOf(relative);
     const text = fs.readFileSync(file, "utf8");

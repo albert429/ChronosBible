@@ -3,9 +3,9 @@ import {
   isChronologicalReading,
   type ReadingLocation,
   type ScriptureReading,
-} from "../../domain/reading/types";
-import { chapterVerse } from "../../domain/scripture/reference";
-import { dayLabel } from "../../domain/reading/labels";
+} from "../../core/reading/types";
+import { chapterVerse } from "../../core/scripture/reference";
+import { dayLabel } from "../../core/reading/labels";
 import { ar } from "../../shared/lib/format";
 import AudioControls from "./AudioControls";
 import { nextEndAction, useEndAction } from "./endAction";
@@ -15,7 +15,7 @@ import {
   entryAt,
   stepCueIndex,
   stepCueStart,
-} from "../../domain/audio/timeline";
+} from "./domain/timeline";
 import { nextRate } from "./speed.ts";
 import { useAudioManifest } from "./useAudioManifest";
 import { useMediaElement } from "./useMediaElement";

@@ -2,13 +2,13 @@
 // this build may advertise, and so the only manifests it ships.
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { chapterAvailability } from "../../src/domain/audio/availability.ts";
+import { chapterAvailability } from "../../src/features/audio/domain/availability.ts";
 import {
   advertisedAudio,
   manifestOutputPath,
-} from "../../src/domain/audio/publication.ts";
-import { audioUrl } from "../../src/domain/audio/url.ts";
-import { catalog } from "../../src/domain/scripture/catalog.ts";
+} from "../../src/features/audio/domain/publication.ts";
+import { audioUrl } from "../../src/features/audio/domain/url.ts";
+import { catalog } from "../../src/core/scripture/catalog.ts";
 
 export interface AudioPublication {
   /** VITE_AUDIO_BASE_URL, validated ("" for none). */
@@ -45,7 +45,7 @@ export function audioPublication(
   // A Git-only deployment remains a working text reader until its public
   // audio host is configured. Never advertise files absent from that build.
   // Hosted chapters and chronological playlists additionally need every file
-  // in the verified upload inventory (src/domain/audio/publication.ts).
+  // in the verified upload inventory (src/features/audio/domain/publication.ts).
   const advertised = advertisedAudio({
     base: VITE_AUDIO_BASE_URL,
     chaptersEnabled: VITE_AUDIO_CHAPTERS_ENABLED === "true",

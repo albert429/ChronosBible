@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from "react";
-import { stepCueStart, type Timeline } from "../../domain/audio/timeline";
+import { stepCueStart, type Timeline } from "./domain/timeline";
 import appIcon from "../../assets/favicon.svg";
 
 type MediaSessionOptions = {

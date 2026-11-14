@@ -1,8 +1,8 @@
-import { catalog } from "../../domain/scripture/catalog.ts";
+import { catalog } from "../../core/scripture/catalog.ts";
 import {
   isBibleChapter,
   type ScriptureReading,
-} from "../../domain/reading/types.ts";
+} from "../../core/reading/types.ts";
 import type { StudyContext } from "../study/context.ts";
 
 /**

@@ -16,11 +16,11 @@ import { isMain } from "../lib/paths.js";
 import {
   AUDIO_MAX_BYTES,
   AUDIO_MEDIA_PATTERN,
-} from "../../src/domain/audio/contract.ts";
+} from "../../src/features/audio/domain/contract.ts";
 import {
   manifestMedia,
   publishedMedia,
-} from "../../src/domain/audio/publication.ts";
+} from "../../src/features/audio/domain/publication.ts";
 
 /** One wrangler process uploads this many objects at most (tokens can expire). */
 export const UPLOAD_BATCH_SIZE = 300;

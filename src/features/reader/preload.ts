@@ -1,9 +1,9 @@
-import { catalog } from "../../domain/scripture/catalog.ts";
+import { catalog } from "../../core/scripture/catalog.ts";
 import {
   isChronologicalReading,
   type ReadingLocation,
   type ScriptureReading,
-} from "../../domain/reading/types.ts";
+} from "../../core/reading/types.ts";
 // Read back by the page's inline early-reading script.
 import { PRELOAD_KEY } from "./earlyReading.ts";
 

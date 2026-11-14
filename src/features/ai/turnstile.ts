@@ -1,5 +1,5 @@
-import { AiError } from "../../domain/ai/types.ts";
-import { abortable } from "../../data/ai/abortable.ts";
+import { AiError } from "./domain/types.ts";
+import { abortable } from "./data/abortable.ts";
 
 type Turnstile = {
   render(

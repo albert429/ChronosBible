@@ -1,8 +1,8 @@
 import type {
   ReadingLocation,
   ScriptureReading,
-} from "../../domain/reading/types.ts";
-import { readingKey } from "../../domain/reading/identity.ts";
+} from "../../core/reading/types.ts";
+import { readingKey } from "../../core/reading/identity.ts";
 
 /**
  * An open player: the reading and navigation it belongs to. `continuing`

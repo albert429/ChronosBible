@@ -1,8 +1,8 @@
-import type { ChronologyCatalog } from "../domain/reading/chronology.ts";
-import { firstChronologicalLocation } from "../domain/reading/chronologyCatalog.ts";
-import type { ReadingTrack } from "../domain/reading/identity.ts";
-import type { ChronologicalLocation } from "../domain/reading/types.ts";
-import type { Testament } from "../domain/scripture/types.ts";
+import type { ChronologyCatalog } from "../core/reading/chronology.ts";
+import { firstChronologicalLocation } from "../core/reading/chronologyCatalog.ts";
+import type { ReadingTrack } from "../core/reading/identity.ts";
+import type { ChronologicalLocation } from "../core/reading/types.ts";
+import type { Testament } from "../core/scripture/types.ts";
 
 /** What a pending choice must still match when it resolves. */
 export type SessionMarks = {

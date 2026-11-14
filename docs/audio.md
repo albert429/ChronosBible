@@ -221,7 +221,7 @@ element handles buffering and HTTP range requests; audio is never fetched into a
 JavaScript Blob or processed with Web Audio. Scripture is not rerendered on each
 audio event; only the active verse marker and small player update.
 
-The delivery rules live in `src/domain/audio/contract.ts`: the media path patterns
+The delivery rules live in `src/features/audio/domain/contract.ts`: the media path patterns
 `/audio/days/NNN-<hash>.m4a` and `/audio/chapters/assets/<USFM>-<n>-<hash>.m4a`,
 the 8 MiB size cap, the content type, the cache
 value, the R2 bucket and its origin. The app validates every manifest `src`
@@ -249,7 +249,7 @@ the same paths (`/audio/days/…`, `/audio/chapters/assets/…`, `/audio/clips/�
 Objects carry `Content-Type: audio/mp4` and
 `Cache-Control: public, max-age=31536000, immutable`; R2 answers byte ranges
 natively, so no range handler, proxy or Worker is involved. The origin and bucket
-name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/domain/audio/contract.ts`.
+name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/features/audio/domain/contract.ts`.
 
 Both app hosts load audio from that origin. The Cloudflare builds set
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com` themselves
@@ -412,7 +412,7 @@ Background playback still depends on the browser/OS and needs physical-device
 verification. Automatic playback after the manifest loads can require a second
 tap on Safari; the play button remains available.
 
-Run `npm test` and `npx playwright test tests/browser/audio.spec.ts` after building
+Run `npm test` and `npx playwright test --config config/playwright.config.ts tests/browser/audio.spec.ts` after building
 the pilot media. Browser tests exercise real playback in Chromium and WebKit,
 lazy requests, cue navigation, retries, stale transcripts, dialog pausing,
 the end choice, seeking, saved speed,

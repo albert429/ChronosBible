@@ -1,15 +1,15 @@
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { ar, dateLabel } from "../../shared/lib/format";
-import { dayLabel } from "../../domain/reading/labels";
+import { dayLabel } from "../../core/reading/labels";
 import {
   PAGE_COUNT,
   PAGE_SIZE,
   PLAN_DAYS,
   dateFor,
   dayStatus,
-} from "../../domain/reading/schedule";
-import type { Reader } from "../../domain/profiles/state";
-import { planIndex } from "../../data/plan/client";
+} from "../../core/reading/schedule";
+import type { Reader } from "../profiles/domain/state";
+import { planIndex } from "./data/client";
 import { useResource } from "../../shared/hooks/useResource";
 import { Loading, LoadError } from "../../shared/ui/Feedback";
 import { StreakChip } from "../streak/Streak";

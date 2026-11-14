@@ -10,10 +10,10 @@ React/TypeScript/Vite, Arabic-first, with an optional Cloudflare AI Worker and n
 Start with `AGENTS.md`, `docs/development.md`,
 `scripts/quality/import-boundaries.mjs`, and `vite.config.ts`.
 
-- `src/domain/` owns pure scripture, reading, profiles, audio, and study contracts.
+- `src/core/` and feature `domain/` owns pure scripture, reading, profiles, audio, and study contracts.
   No React, browser APIs, storage, network, wall clock, or build globals. Its
   allowed dependencies are domain areas and pure `src/shared/lib/` helpers.
-- `src/data/` owns network clients and imports only domain/data. Shared UI,
+- feature `data/` and `src/shared/network/` owns network clients and imports only domain/data. Shared UI,
   hooks, browser adapters, styles, and pure helpers live in `src/shared/`, which
   never imports data, features, or app. `shared/lib` imports only itself.
 - `src/features/` owns reader, navigation, plan, profiles, audio, study, ai,
@@ -29,19 +29,19 @@ Start with `AGENTS.md`, `docs/development.md`,
   absent from the bundle. Avoid barrel files or helper imports that pull optional
   features, React, or browser globals into startup, tooling, or pure contracts.
 
-Tests: `tests/import-boundaries.test.ts`, `tests/vite-config.test.ts`,
-`tests/ai-static.test.ts`, `tests/build-config.test.ts`, plus `npm run layers`.
+Tests: `scripts/quality/tests/import-boundaries.test.ts`, `scripts/build/tests/vite-config.test.ts`,
+`tests/integration/ai-static.test.ts`, `tests/integration/build-config.test.ts`, plus `npm run layers`.
 
 ## Reader, navigation, and profiles
 
 Start with `src/app/useReadingSession.ts`, `src/app/trackChoice.ts`,
-`src/domain/reading/`, `src/features/reader/useReadingLocation.ts`,
-`src/domain/profiles/`, and `src/features/profiles/storage.ts`.
+`src/core/reading/`, `src/features/reader/useReadingLocation.ts`,
+`src/features/profiles/domain/`, and `src/features/profiles/storage.ts`.
 
 - Four tracks share one reader: the youth plan, the Bible, and OT/NT chronology.
   Query strings (`?day=N`, `?mode=bible&book=GEN&chapter=1`,
   `?mode=chronological&testament=OT&reading=<id>`) are the navigation contract;
-  parsing belongs to `src/domain/reading/location.ts`. Preserve verse links,
+  parsing belongs to `src/core/reading/location.ts`. Preserve verse links,
   history/back behavior, explicit-link precedence, and canonical reading identity.
   Do not hardcode catalog counts or assume every reading is one chapter.
 - Guest and named profiles retain independent places and completion per track.
@@ -60,10 +60,10 @@ Start with `src/app/useReadingSession.ts`, `src/app/trackChoice.ts`,
   (`bible-reader-scroll-v1`) are device-local and outside progress backups.
   Keep their identity, eviction, and restore rules separate from completion.
 
-Tests: `tests/app-coordination.test.ts`, `tests/reader-seams.test.ts`,
-`tests/reader-location.test.ts`, `tests/reader-contracts.test.ts`,
-`tests/reader-modes.test.ts`, `tests/progress.test.ts`,
-`tests/profile-state.test.ts`, `tests/streak.test.ts`, `tests/schedule.test.ts`.
+Tests: `tests/integration/app-coordination.test.ts`, `tests/integration/reader-seams.test.ts`,
+`tests/integration/reader-location.test.ts`, `tests/integration/reader-contracts.test.ts`,
+`src/core/reading/tests/reader-modes.test.ts`, `src/features/profiles/tests/progress.test.ts`,
+`src/features/profiles/tests/profile-state.test.ts`, `src/features/profiles/tests/streak.test.ts`, `tests/integration/schedule.test.ts`.
 Browser coverage: `places`, `progress`, `reading-flow`, `bible`, `chronology`,
 `loading`, and `streak` specs under `tests/browser/`.
 
@@ -86,12 +86,12 @@ Start with `src/features/navigation/`, `src/features/appearance/`,
 - Scripture DOM attributes are shared with tap selection, audio highlighting,
   scrolling, and tests. Treat markup refactors as contract changes.
 
-Tests: `tests/arabic-display.test.ts`, `tests/reader-seams.test.ts`; browser
+Tests: `src/shared/lib/tests/arabic-display.test.ts`, `tests/integration/reader-seams.test.ts`; browser
 `layout`, `loading-layout`, `sheets`, `menu`, `jumper`, and `diacritics` specs.
 
 ## Audio and publication
 
-Read `docs/audio.md`; trace `src/domain/audio/`,
+Read `docs/audio.md`; trace `src/features/audio/domain/`,
 `src/features/audio/playlistController.ts`, `src/features/audio/useMediaElement.ts`,
 `src/features/reader/useListeningSession.ts`, and `data/audio/publication.json`.
 
@@ -112,15 +112,15 @@ Read `docs/audio.md`; trace `src/domain/audio/`,
   publication inventory only. Upload/verification is a separate authorized task;
   a code review does not publish media or mutate the publication inventory.
 
-Tests: `tests/audio*.test.ts`, `tests/end-action.test.ts`,
-`tests/build-audio-index.test.ts`; browser `audio`, `bible-audio`, and
+Tests: `tests/audio*.test.ts`, `src/features/audio/tests/end-action.test.ts`,
+`tests/integration/build-audio-index.test.ts`; browser `audio`, `bible-audio`, and
 `chronological-audio` specs. Use Python tests for encoding/alignment/importer
 changes. Simulated media tests do not replace real-device lock-screen evidence.
 
 ## Study, source text, and optional AI
 
 Start with `data/study/CANONICAL.md`, `data/study/LICENSE.md`,
-`src/domain/study/`, `src/data/study/`, `src/features/study/`,
+`src/features/study/domain/`, `src/features/study/data/`, `src/features/study/`,
 `src/features/ai/`, and the relevant importers in `scripts/data/`.
 
 - Study is keyed by canonical book/chapter/verse across every reading track.
@@ -136,7 +136,7 @@ Start with `data/study/CANONICAL.md`, `data/study/LICENSE.md`,
   invalidates the associated chapter index. Keep shared pending requests and
   cancellation ownership correct; avoid an unbounded derived verse cache.
 - Word decoding handles stored gzip and already-decoded HTTP responses. Preserve
-  size limits from `src/domain/study/limits.ts`, native `DecompressionStream`, and
+  size limits from `src/features/study/domain/limits.ts`, native `DecompressionStream`, and
   the lazy `fflate` fallback. Test raw gzip through the production-like static
   server as well as decoded responses; Vite preview alone is insufficient.
 - Opening study does not eagerly fetch all resources. Optional AI is behind the
@@ -147,13 +147,13 @@ Start with `data/study/CANONICAL.md`, `data/study/LICENSE.md`,
   the core request; aborting one AI request must not cancel shared study fetches.
   UI language selection and prompt-context selection can have different purposes.
 
-Tests: `tests/study*.test.ts`, `tests/json-client.test.ts`, `tests/ai-*.test.ts`,
+Tests: `tests/study*.test.ts`, `src/shared/network/tests/json-client.test.ts`, `tests/ai-*.test.ts`,
 Python `test_import_study*.py`; browser `study`, `study-full-bible`, and `ai` specs.
 
 ## Offline packs, service worker, and startup
 
-Start with `src/features/offline/`, `src/data/dataVersion.ts`,
-`src/data/earlyResponses.ts`, `src/features/reader/earlyReading.ts`,
+Start with `src/features/offline/`, `src/shared/network/dataVersion.ts`,
+`src/shared/network/earlyResponses.ts`, `src/features/reader/earlyReading.ts`,
 `src/shared/browser/afterStartup.ts`, and `scripts/build/`.
 
 - Offline packs validate inventory paths and persist raw responses, including
@@ -171,9 +171,9 @@ Start with `src/features/offline/`, `src/data/dataVersion.ts`,
   `window.__earlyData`. Preserve dev/production behavior and WebKit request reuse.
   Service-worker registration and optional preloads wait until after startup.
 
-Tests: `tests/offline-*.test.ts`, `tests/pwa-rules.test.ts`,
-`tests/service-worker*.test.ts`, `tests/early-reading.test.ts`,
-`tests/prefetch.test.ts`, `tests/measure-startup.test.ts`; browser `offline` and
+Tests: `tests/offline-*.test.ts`, `src/features/offline/tests/pwa-rules.test.ts`,
+`tests/service-worker*.test.ts`, `tests/integration/early-reading.test.ts`,
+`src/shared/browser/tests/prefetch.test.ts`, `scripts/quality/tests/measure-startup.test.ts`; browser `offline` and
 `loading` specs. Check both raw-gzip and data-version behavior when cache paths move.
 
 ## Generators, licensing, and hosting
@@ -204,10 +204,10 @@ Start with `scripts/data/`, `scripts/audio/`, `scripts/lib/ownership.js`,
   reviewing them never requires a real deployment. Do not print credentials.
 - Quality checks must exclude local `.agents/` worktrees, `.claude/worktrees/`,
   ignored media, and generated output while still covering maintained skills,
-  source, docs, tests, and scripts. See `tests/quality-scope.test.ts`.
+  source, docs, tests, and scripts. See `tests/integration/quality-scope.test.ts`.
 
-Tests: `tests/ownership.test.ts`, `tests/generated-output.test.ts`,
-`tests/build-*.test.ts`, `tests/script-books.test.ts`, `tests/snapshot.test.ts`,
-`tests/app-host.test.ts`, `tests/cloudflare-app.test.ts`,
-`tests/static-server.test.ts`, `tests/quality-scope.test.ts`, and
+Tests: `scripts/lib/tests/ownership.test.ts`, `scripts/data/tests/generated-output.test.ts`,
+`tests/build-*.test.ts`, `scripts/lib/tests/script-books.test.ts`, `scripts/quality/tests/snapshot.test.ts`,
+`tests/integration/app-host.test.ts`, `tests/integration/cloudflare-app.test.ts`,
+`scripts/quality/tests/static-server.test.ts`, `tests/integration/quality-scope.test.ts`, and
 `scripts/tests/`. Inspect `.github/workflows/checks.yml` for the current CI contract.

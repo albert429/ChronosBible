@@ -8,22 +8,22 @@ import {
 import { useProgress } from "../features/profiles/useProgress";
 import { useReadingLocation } from "../features/reader/useReadingLocation";
 import type { View } from "../features/navigation/model";
-import { dayIndex, pageFor, scheduledDay } from "../domain/reading/schedule";
-import { isReadingComplete } from "../domain/profiles/state";
-import type { ReadingLocation } from "../domain/reading/types";
-import { readingKey, type ReadingTrack } from "../domain/reading/identity";
-import { adjacentLocation } from "../domain/reading/adjacent";
-import { readingTitle } from "../domain/reading/labels";
+import { dayIndex, pageFor, scheduledDay } from "../core/reading/schedule";
+import { isReadingComplete } from "../features/profiles/domain/state";
+import type { ReadingLocation } from "../core/reading/types";
+import { readingKey, type ReadingTrack } from "../core/reading/identity";
+import { adjacentLocation } from "../core/reading/adjacent";
+import { readingTitle } from "../core/reading/labels";
 import {
   chronologicalLocationExists,
   firstChronologicalLocation,
-} from "../domain/reading/chronologyCatalog";
-import { days } from "../data/plan/client";
-import { chapters } from "../data/bible/client";
+} from "../core/reading/chronologyCatalog";
+import { days } from "../features/plan/data/client";
+import { chapters } from "../features/bible/data/client";
 import {
   chronologicalReadings,
   chronologyCatalogs,
-} from "../data/chronology/client";
+} from "../features/chronology/data/client";
 import { useResource } from "../shared/hooks/useResource";
 import { useToday } from "../shared/hooks/useToday";
 import { today } from "../shared/lib/format";

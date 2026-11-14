@@ -7,7 +7,7 @@ import {
   AUDIO_CACHE_CONTROL,
   AUDIO_CONTENT_TYPE,
   AUDIO_R2_BUCKET,
-} from "../../src/domain/audio/contract.ts";
+} from "../../src/features/audio/domain/contract.ts";
 
 /** Retries after the first attempt of one batch. */
 export const UPLOAD_RETRIES = 3;

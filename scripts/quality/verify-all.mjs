@@ -57,7 +57,7 @@ export function verificationSteps(root = ROOT, environment = process.env) {
     {
       name: "Python tests",
       command: "python3",
-      args: ["-I", "-m", "unittest", "discover", "-s", "scripts/tests"],
+      args: ["-I", "scripts/quality/python-tests.py"],
       env: environment,
     },
     {

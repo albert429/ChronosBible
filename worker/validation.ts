@@ -1,10 +1,13 @@
-import { catalog, findBibleBook } from "../src/domain/scripture/catalog.ts";
+import { catalog, findBibleBook } from "../src/core/scripture/catalog.ts";
 import {
   cleanQuestion,
   QUESTION_MIN,
   QUESTION_MAX,
-} from "../src/domain/ai/chips.ts";
-import { AiError, type AnswerRequest } from "../src/domain/ai/types.ts";
+} from "../src/features/ai/domain/chips.ts";
+import {
+  AiError,
+  type AnswerRequest,
+} from "../src/features/ai/domain/types.ts";
 
 export function reference(id: string) {
   const match = /^([1-3]?[A-Z]{2,3})\.([1-9]\d{0,2})\.([1-9]\d{0,2})$/.exec(id);

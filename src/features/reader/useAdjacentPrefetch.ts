@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { connectionAllowsPrefetch } from "../../shared/browser/network.ts";
-import { adjacentChapter } from "../../domain/reading/adjacent";
-import { catalog } from "../../domain/scripture/catalog";
-import { chapters } from "../../data/bible/client";
+import { adjacentChapter } from "../../core/reading/adjacent";
+import { catalog } from "../../core/scripture/catalog";
+import { chapters } from "../bible/data/client";
 import {
   type ReadingLocation,
   type ScriptureReading,
-} from "../../domain/reading/types";
-import { readingKey } from "../../domain/reading/identity";
-import { chronologicalReadings } from "../../data/chronology/client";
-import { adjacentChronologicalLocation } from "../../domain/reading/chronologyCatalog";
-import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import { days } from "../../data/plan/client.ts";
+} from "../../core/reading/types";
+import { readingKey } from "../../core/reading/identity";
+import { chronologicalReadings } from "../chronology/data/client";
+import { adjacentChronologicalLocation } from "../../core/reading/chronologyCatalog";
+import type { ChronologyCatalog } from "../../core/reading/chronology";
+import { days } from "../plan/data/client.ts";
 
 /**
  * Run `prefetch` once the selected reading and its fonts settle, unless the

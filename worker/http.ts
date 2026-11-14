@@ -1,4 +1,4 @@
-import { AiError } from "../src/domain/ai/types.ts";
+import { AiError } from "../src/features/ai/domain/types.ts";
 
 export const HEADERS = {
   "Cache-Control": "no-store, private",

@@ -3,10 +3,10 @@ import { readingHasAudio } from "../audio/availability";
 import {
   type ReadingLocation,
   type ScriptureReading,
-} from "../../domain/reading/types";
-import { readingKey } from "../../domain/reading/identity";
-import type { ChronologyCatalog } from "../../domain/reading/chronology";
-import { readingTitle } from "../../domain/reading/labels";
+} from "../../core/reading/types";
+import { readingKey } from "../../core/reading/identity";
+import type { ChronologyCatalog } from "../../core/reading/chronology";
+import { readingTitle } from "../../core/reading/labels";
 import { Loading, LoadError, ChunkBoundary } from "../../shared/ui/Feedback";
 import { loadVerseStudy } from "../study/load";
 import CompletionBar from "./CompletionBar";

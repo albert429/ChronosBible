@@ -1,6 +1,10 @@
 import { MODELS } from "./models.ts";
-import { AiError, type AiEvent, type AiMeta } from "../src/domain/ai/types.ts";
-import { cleanAnswer, clip, MAX_TEXT } from "../src/domain/ai/text.ts";
+import {
+  AiError,
+  type AiEvent,
+  type AiMeta,
+} from "../src/features/ai/domain/types.ts";
+import { cleanAnswer, clip, MAX_TEXT } from "../src/features/ai/domain/text.ts";
 import { Assets } from "./context.ts";
 import { configured, OVERALL_MS, type Env } from "./env.ts";
 import { failure, HEADERS, jsonBody } from "./http.ts";

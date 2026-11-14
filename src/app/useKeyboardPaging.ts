@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import type { ReadingLocation } from "../domain/reading/types";
+import type { ReadingLocation } from "../core/reading/types";
 import type { View } from "../features/navigation/model";
 import { pagingTarget } from "./keyboardPaging";
 

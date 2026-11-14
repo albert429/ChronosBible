@@ -4,7 +4,7 @@ import {
   type AiErrorKind,
   type AiMeta,
   type StreamCallbacks,
-} from "../src/domain/ai/types.ts";
+} from "../src/features/ai/domain/types.ts";
 
 export const FIRST_TOKEN_MS = 25000;
 /** Keep-alives or hidden reasoning may extend the wait for text up to this. */

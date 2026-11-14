@@ -5,12 +5,12 @@ import { gunzipSync, gzipSync } from "node:zlib";
 import {
   STUDY_WORDS_GZIP_LIMIT,
   STUDY_WORDS_RAW_LIMIT,
-} from "../../src/domain/study/limits.ts";
+} from "../../src/features/study/domain/limits.ts";
 import { publishOwned } from "../lib/ownership.js";
 import { readBibleChapters } from "./build-bible.js";
 
 // The word-range limits are the ones the app's decoder and the hosting audit
-// enforce (src/domain/study/limits.ts). Translation and lexicon budgets are
+// enforce (src/features/study/domain/limits.ts). Translation and lexicon budgets are
 // build-only: nothing at run time checks them.
 export { STUDY_WORDS_RAW_LIMIT };
 export const STUDY_BUDGETS = {

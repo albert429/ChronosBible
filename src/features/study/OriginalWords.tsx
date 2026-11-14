@@ -4,7 +4,7 @@ import { Loading, LoadError } from "../../shared/ui/Feedback";
 import { useResource } from "../../shared/hooks/useResource";
 import { displayArabic } from "../../shared/lib/arabicDisplay";
 import { useDiacritics } from "../appearance/appearance";
-import { verseWords } from "../../data/study/client";
+import { verseWords } from "./data/client";
 import {
   gloss,
   originalWord,
@@ -12,9 +12,9 @@ import {
   tokens,
   verseWordsTitle,
   wordGroups,
-} from "../../domain/study/words";
-import { studyReference } from "../../domain/study/reference";
-import type { WordToken } from "../../domain/study/types";
+} from "./domain/words";
+import { studyReference } from "./domain/reference";
+import type { WordToken } from "./domain/types";
 import Section from "./Section";
 
 function Words({

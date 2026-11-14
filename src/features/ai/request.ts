@@ -4,12 +4,12 @@ import {
   saveAnswer,
   type StorageLike,
 } from "./cache.ts";
-import { CHIPS, PROMPT_VERSION } from "../../domain/ai/chips.ts";
-import { cleanAnswer, clip, MAX_TEXT } from "../../domain/ai/text.ts";
+import { CHIPS, PROMPT_VERSION } from "./domain/chips.ts";
+import { cleanAnswer, clip, MAX_TEXT } from "./domain/text.ts";
 import type { Guards, Problem } from "./guards.ts";
 import type { AskInput } from "./run.ts";
-import { AiError, type ChipId, type AiStatus } from "../../domain/ai/types.ts";
-import { abortable } from "../../data/ai/abortable.ts";
+import { AiError, type ChipId, type AiStatus } from "./domain/types.ts";
+import { abortable } from "./data/abortable.ts";
 
 /** What the panel shows for the current request. */
 export type View =

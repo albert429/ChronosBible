@@ -27,7 +27,7 @@ about ten minutes. The PDF and page renders are not committed.
    ignored output `public/chronology/OT.json` and `NT.json` (catalogs:
    summaries only) and one definition per reading,
    `public/chronology/<T>/<id>.json` (references only). Scripture text is
-   never copied: at run time `src/data/chronology/client.ts` slices the existing
+   never copied: at run time `src/features/chronology/data/client.ts` slices the existing
    canonical chapters, `/bible/<USFM>/<n>.json`, which load through the shared
    chapter cache. Headings, superscriptions, acrostics, paragraphs and poetry
    blocks inside each range are kept with their canonical verse numbers and

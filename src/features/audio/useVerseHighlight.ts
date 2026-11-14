@@ -5,7 +5,7 @@ import {
   verseElement,
 } from "../../shared/browser/scriptureDom";
 import { scrollDelta } from "./highlightScroll.ts";
-import type { Cue } from "../../domain/audio/types";
+import type { Cue } from "./domain/types";
 
 /** After the reader scrolls by hand, the text stays put this long. */
 const HANDS_OFF = 8000;

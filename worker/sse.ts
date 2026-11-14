@@ -2,7 +2,7 @@ import {
   AiError,
   type AiErrorKind,
   type StreamCallbacks,
-} from "../src/domain/ai/types.ts";
+} from "../src/features/ai/domain/types.ts";
 
 export const MAX_LINE = 65536;
 

@@ -1,21 +1,21 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { catalog } from "../../domain/scripture/catalog";
+import { catalog } from "../../core/scripture/catalog";
 import {
   parseReadingLocation,
   locationSearch,
   validReadingLocation,
-} from "../../domain/reading/location";
+} from "../../core/reading/location";
 import {
   type ReadingLocation,
   type ChronologicalLocation,
   type PlanLocation,
-} from "../../domain/reading/types";
+} from "../../core/reading/types";
 import {
   readingKey,
   type ReadingTrack,
   sameLocation,
-} from "../../domain/reading/identity";
-import { readerPlaces } from "../../domain/profiles/state";
+} from "../../core/reading/identity";
+import { readerPlaces } from "../profiles/domain/state";
 import {
   loadProgress,
   saveReaderPlaces,
@@ -26,11 +26,11 @@ import {
   freshPlaces,
   trackPlace,
   withPlace,
-} from "../../domain/reading/places";
+} from "../../core/reading/places";
 import {
   loadPreferences,
   placesFromPreferences,
-} from "../../domain/profiles/legacy";
+} from "../profiles/domain/legacy";
 import { saveReadingPosition } from "./position";
 import { topVisibleVerse } from "./verseScroll";
 

@@ -109,6 +109,6 @@ The Cloudflare scanner allows only this exact compressed word path, validates
 bounded decompression and resource identity, and scans decoded content for
 credentials. Existing deployment limits remain unchanged.
 
-Run `python3 -I -m unittest discover -s scripts/tests -p test_import_study_full.py`
-and `node --experimental-strip-types --test tests/study-canonical-data.test.ts`
+Run `python3 -I scripts/quality/python-tests.py`
+and `node --experimental-strip-types --test tests/integration/study-canonical-data.test.ts`
 for source exceptions, coverage, splitting, and publication checks.

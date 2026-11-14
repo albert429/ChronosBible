@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
-import { catalog as defaultCatalog } from "../../src/domain/scripture/catalog.ts";
-import { validBibleChapter } from "../../src/data/bible/client.ts";
+import { catalog as defaultCatalog } from "../../src/core/scripture/catalog.ts";
+import { validBibleChapter } from "../../src/features/bible/data/client.ts";
 import { payload, publishOwned } from "../lib/ownership.js";
 import { ROOT } from "../lib/paths.js";
 

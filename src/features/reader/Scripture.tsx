@@ -5,8 +5,8 @@ import {
   isBibleChapter,
   isChronologicalReading,
   type ScriptureReading,
-} from "../../domain/reading/types";
-import type { BibleBlock, Passage } from "../../domain/scripture/types";
+} from "../../core/reading/types";
+import type { BibleBlock, Passage } from "../../core/scripture/types";
 import ChapterText from "./ChapterText";
 import PassageReference from "../../shared/ui/PassageReference";
 import ListenButton from "./ListenButton";

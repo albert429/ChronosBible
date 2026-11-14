@@ -1,4 +1,4 @@
-import { AiError } from "../src/domain/ai/types.ts";
+import { AiError } from "../src/features/ai/domain/types.ts";
 import type { AiProvider } from "./types.ts";
 import type { Env } from "./env.ts";
 import { classifyCode, readChatStream, retryAtFrom } from "./sse.ts";

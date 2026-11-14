@@ -6,8 +6,8 @@ import {
   ChevronDown,
   Settings,
 } from "lucide-react";
-import type { ReadingLocation } from "../../domain/reading/types";
-import { TRACK_NAMES, TRACK_SHORT_NAMES } from "../../domain/reading/labels";
+import type { ReadingLocation } from "../../core/reading/types";
+import { TRACK_NAMES, TRACK_SHORT_NAMES } from "../../core/reading/labels";
 import type { NavigationModel, View } from "./model";
 import type { SheetController } from "./useSheetController";
 import { loadAppearancePanel, warm } from "./panels";

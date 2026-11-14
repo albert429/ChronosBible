@@ -1,16 +1,16 @@
-import type { BibleChapter } from "../src/domain/reading/types.ts";
+import type { BibleChapter } from "../src/core/reading/types.ts";
 import type {
   StudyChapterIndex,
   StudyWords,
   StudyTranslations,
   StudyLexicon,
-} from "../src/domain/study/types.ts";
+} from "../src/features/study/domain/types.ts";
 import {
   STUDY_WORDS_GZIP_LIMIT,
   STUDY_WORDS_RAW_LIMIT,
-} from "../src/domain/study/limits.ts";
-import { PROMPT_VERSION } from "../src/domain/ai/chips.ts";
-import { AiError, type ChipId } from "../src/domain/ai/types.ts";
+} from "../src/features/study/domain/limits.ts";
+import { PROMPT_VERSION } from "../src/features/ai/domain/chips.ts";
+import { AiError, type ChipId } from "../src/features/ai/domain/types.ts";
 import type { Material } from "./prompt.ts";
 import { reference } from "./validation.ts";
 import { bytes } from "./http.ts";

@@ -1,4 +1,4 @@
-// Shared by playwright.config.ts and ai.spec.ts: the AI test build talks to the
+// Shared by config/playwright.config.ts and ai.spec.ts: the AI test build talks to the
 // local SSE stub (scripts/quality/sse-stub.mjs) with a dummy key, never to OpenRouter.
 // PW_PORT (default 4173) moves all three servers (app, AI preview at +1, stub
 // at +2) so several worktrees can run the browser suite at once.

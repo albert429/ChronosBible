@@ -4,10 +4,10 @@
  * scripts/build/inline-startup.ts bundles startEarlyReading() into an inline
  * <script> in index.html, in the page's <head>; an external module script
  * would run only after the page was parsed. A wrong guess costs one small
- * request. The app takes the responses over (src/data/earlyResponses.ts).
+ * request. The app takes the responses over (src/shared/network/earlyResponses.ts).
  */
-import { dataUrl } from "../../data/dataVersion.ts";
-import { startEarlyResponses } from "../../data/earlyResponses.ts";
+import { dataUrl } from "../../shared/network/dataVersion.ts";
+import { startEarlyResponses } from "../../shared/network/earlyResponses.ts";
 import { LOCATION_KEY, PROGRESS_KEY, STATE_KEY } from "../profiles/storage.ts";
 
 /** The paths shown at the end of the last visit (written by preload.ts). */

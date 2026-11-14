@@ -1,6 +1,6 @@
 import { today } from "../../shared/lib/format";
-import { type Reader, type ReaderProfile } from "../../domain/profiles/state";
-import { MAX_BACKUP_BYTES, exportBackup } from "../../domain/profiles/backup";
+import { type Reader, type ReaderProfile } from "./domain/state";
+import { MAX_BACKUP_BYTES, exportBackup } from "./domain/backup";
 import { loadProgress } from "./storage";
 
 /** Downloads a v2 backup with the reader's latest stored places. */

@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from "react";
-import type { ReadingLocation } from "../../domain/reading/types";
+import type { ReadingLocation } from "../../core/reading/types";
 import {
   emptyCompletion,
   type GuestState,
   type ReadOn,
   type ReaderProfile,
   type TrackCompletion,
-} from "../../domain/profiles/state";
+} from "./domain/state";
 import {
   PROGRESS_KEY,
   STATE_KEY,

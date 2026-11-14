@@ -57,12 +57,14 @@ export default tseslint.config(
       "scripts/**/*.{js,mjs,ts}",
       "vite.config.ts",
     ],
+    ignores: ["**/tests/**"],
     plugins: { chronos: boundaries },
     rules: { "chronos/import-boundaries": "error" },
   },
   {
     // Domain and shared/lib stay free of the UI framework and Node.
-    files: ["src/domain/**", "src/shared/lib/**"],
+    files: ["src/core/**", "src/features/*/domain/**", "src/shared/lib/**"],
+    ignores: ["**/tests/**"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -82,7 +84,14 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/**", "hosting/**", "tests/**", "*.config.{js,ts}"],
+    files: [
+      "scripts/**",
+      "hosting/**",
+      "tests/**",
+      "**/tests/**",
+      "config/**",
+      "*.config.{js,ts}",
+    ],
     languageOptions: { globals: globals.node },
   },
   {

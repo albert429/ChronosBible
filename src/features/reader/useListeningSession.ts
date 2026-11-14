@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import type {
   ReadingLocation,
   ScriptureReading,
-} from "../../domain/reading/types";
+} from "../../core/reading/types";
 import { playbackPosition, savePlaybackPosition } from "../audio/position";
 import {
   continuedListening,
