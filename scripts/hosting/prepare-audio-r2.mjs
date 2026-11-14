@@ -261,6 +261,6 @@ if (isMain(import.meta.url)) {
       `${(inventory.bytes / 1e9).toFixed(2)} GB, largest ${inventory.largest?.bytes} bytes, ` +
       `in ${inventory.output}; local inventory ${values.inventory}. ` +
       `${pending} to upload in ${batches.length} batches in ${values["upload-dir"]}. ` +
-      `Prepared is not published: upload, then run scripts/verify-audio-host.py.`,
+      `Prepared is not published: upload, then run scripts/hosting/verify-audio-host.py.`,
   );
 }

@@ -169,7 +169,7 @@ test("Announced plan days clear verses from one passage's end to the next passag
       },
     ],
   };
-  // The shape scripts/build-audio.py writes for an announced day.
+  // The shape scripts/audio/build-audio.py writes for an announced day.
   const m: AudioManifestV2 = {
     version: 2,
     identity: "plan:1",

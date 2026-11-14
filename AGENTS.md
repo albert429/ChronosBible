@@ -56,8 +56,9 @@ features are absent from the bundle.
 `data/` holds source data; `scripts/` is grouped by workflow (`build/`, `data/`,
 `audio/`, `hosting/`, `assets/`, `quality/`, shared `lib/`) and builds static
 JSON into `app/public/` (`scripts/data/build-data.js` runs in `predev`/`prebuild`; a
-bare `vite build` skips it). A few old script paths stay as thin wrappers. Runtime assets live in `app/src/assets/`; documentation
-images belong in `docs/assets/`. See `docs/development.md` for the full
+bare `vite build` skips it). Retired CLI paths and their replacements are listed in
+`docs/script-command-map.md`. Runtime assets live in `app/src/assets/`;
+documentation images belong in `docs/assets/`. See `docs/development.md` for the full
 architecture and `docs/audio.md` for the audio pipeline.
 
 ## Build, Test, and Development Commands
@@ -130,7 +131,7 @@ assets directly, with `/api/ai/*` handled by `app/worker/` (`wrangler.json`). `h
 
 Never run a bare `wrangler deploy`: without the right config, Wrangler
 reconfigures the project and uploads whatever is in `dist/`, including local
-media and `.env.local` values. Deploy only through `scripts/cloudflare-app.mjs`
+media and `.env.local` values. Deploy only through `scripts/hosting/cloudflare-app.mjs`
 (`npm run app:host:build`, `app:host:deploy`, and their `:dev` variants), which
 refuses dirty checkouts, task branches, `.env*` files, and media in assets.
 Production AI is guarded by an explicit release gate, initially closed until

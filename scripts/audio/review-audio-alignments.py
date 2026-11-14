@@ -16,7 +16,7 @@ Flags only decide what an automated build may not rely on (clip boundaries).
 
 With --import DIR, alignments whose hashes match are copied there unchanged
 (resume-safe: identical files are left alone), and --summary writes the
-compact flag list that scripts/build-reading-audio.py consults, with the
+compact flag list that scripts/audio/build-reading-audio.py consults, with the
 SHA-256 of every alignment file it reviewed so the builder can refuse an
 alignment the summary does not describe. Standard library only.
 """

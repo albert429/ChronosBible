@@ -223,7 +223,7 @@ export async function routeChapterAudio(
 }
 
 /**
- * A committed daily manifest rebuilt as scripts/build-audio.py --announcements
+ * A committed daily manifest rebuilt as scripts/audio/build-audio.py --announcements
  * would lay it out: a spoken reference before every passage, then its verses.
  * The draft reference wording is display data only here.
  */

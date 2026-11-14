@@ -201,7 +201,7 @@ Start with `scripts/data/`, `scripts/audio/`, `scripts/lib/ownership.js`,
 - Every push deploys. Production `main` has AI off; dev enables it explicitly.
   Hosting stays static-only. Keep Cloudflare `_headers`/`_redirects` in step with
   `vercel.json`, and check cache policy and gzip handling against shipped assets.
-- `scripts/cloudflare-app.mjs` is the guarded deployment entry. Never use bare
+- `scripts/hosting/cloudflare-app.mjs` is the guarded deployment entry. Never use bare
   `wrangler deploy` or bypass dirty-checkout, branch, environment, media, and
   publication preflights. Test guards with fixtures or a controlled checkout;
   reviewing them never requires a real deployment. Do not print credentials.

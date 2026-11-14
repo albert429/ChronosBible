@@ -114,7 +114,7 @@ if (isMain(import.meta.url)) {
     if (failed) process.exitCode = 1;
     else
       console.log(
-        "Uploaded. Now run scripts/verify-audio-host.py https://audio.chronosbible.com --publish.",
+        "Uploaded. Now run scripts/hosting/verify-audio-host.py https://audio.chronosbible.com --publish.",
       );
   }
 }

@@ -2,7 +2,7 @@
   "name": "chronosbible",
   "compatibility_date": "2026-10-01",
   "build": {
-    "command": "node scripts/cloudflare-app.mjs build production"
+    "command": "node scripts/hosting/cloudflare-app.mjs build production"
   },
   "assets": {
     "directory": "./dist",
@@ -21,7 +21,7 @@
     "dev": {
       "name": "chronosbible-dev",
       "build": {
-        "command": "node scripts/cloudflare-app.mjs build dev"
+        "command": "node scripts/hosting/cloudflare-app.mjs build dev"
       },
       "assets": {
         "directory": "./dist",

@@ -36,7 +36,7 @@ const MAINTAINED = [
   "scripts/quality/snapshot.mjs",
   "scripts/data/build-data.js",
   "scripts/build/data-versions.ts",
-  "scripts/cloudflare-app.mjs",
+  "scripts/hosting/cloudflare-app.mjs",
   "hosting/cloudflare-app/_headers",
   "scripts/quality/tests/snapshot.test.ts",
   "tests/browser/ai.spec.ts",

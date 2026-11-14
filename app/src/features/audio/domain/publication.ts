@@ -2,7 +2,7 @@ import { AUDIO_MAX_BYTES, AUDIO_MEDIA_PATTERN } from "./contract.ts";
 
 /**
  * The verified upload inventory, `data/audio/publication.json`. Written only
- * by scripts/verify-audio-host.py after every file of a prepared release was
+ * by scripts/hosting/verify-audio-host.py after every file of a prepared release was
  * range-checked byte for byte on the deployed host. A file that is merely
  * prepared locally (`artifacts/r2-audio-inventory.json`) is not here.
  * Entries are never removed by verification, so an older release's media stay

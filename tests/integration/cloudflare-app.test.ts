@@ -357,7 +357,7 @@ test("CLI rejects a wrong cwd before removing dist or running a build", () => {
       process.execPath,
       [
         fileURLToPath(
-          new URL("../../scripts/cloudflare-app.mjs", import.meta.url),
+          new URL("../../scripts/hosting/cloudflare-app.mjs", import.meta.url),
         ),
         "build",
         "production",
@@ -403,7 +403,6 @@ test("Asset audit rejects unexpected file types, audio artifacts and oversized f
 });
 
 const HOSTING_FILES = [
-  "scripts/cloudflare-app.mjs",
   "scripts/hosting/cloudflare-app.mjs",
   "scripts/hosting/cloudflare-policy.mjs",
   "scripts/hosting/cloudflare-assets.mjs",
@@ -412,7 +411,7 @@ const HOSTING_FILES = [
   "scripts/lib/paths.js",
 ];
 
-// Each case runs the real wrapper against a fixture checkout whose build script
+// Each case runs the real CLI against a fixture checkout whose build script
 // asserts the exact environment it receives and writes the given extra assets.
 const buildCases = [
   {
@@ -570,7 +569,7 @@ for (const [name, body] of Object.entries(${JSON.stringify(assets)})) {
       writeFileSync(join(f.root, "app/public/keep.json"), "{}");
       const result = spawnSync(
         process.execPath,
-        [join(f.root, "scripts/cloudflare-app.mjs"), "build", target],
+        [join(f.root, "scripts/hosting/cloudflare-app.mjs"), "build", target],
         {
           cwd: f.root,
           env: {
@@ -736,17 +735,17 @@ test("The hosting audit's word limits equal the study domain's", () => {
 });
 
 test("The deploy entry point loads without TypeScript support", () => {
-  // Workers Builds runs plain `node scripts/cloudflare-app.mjs`; an older
+  // Workers Builds runs plain `node scripts/hosting/cloudflare-app.mjs`; an older
   // Node 22 cannot strip types, so no module on that path may be .ts.
   const entry = fileURLToPath(
-    new URL("../../scripts/cloudflare-app.mjs", import.meta.url),
+    new URL("../../scripts/hosting/cloudflare-app.mjs", import.meta.url),
   );
   const result = spawnSync(
     process.execPath,
     ["--no-experimental-strip-types", entry],
     { encoding: "utf8", env: gitEnvironment() },
   );
-  // Without arguments the wrapper prints its usage and exits 1, after every
+  // Without arguments the CLI prints its usage and exits 1, after every
   // import has loaded.
   assert.equal(result.status, 1, result.stderr);
   assert.match(

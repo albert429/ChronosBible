@@ -25,13 +25,13 @@ test("wrangler.json routes only AI API requests through Worker code", () => {
   assert.equal(config.main, "app/worker/index.ts");
   assert.equal(
     config.build.command,
-    "node scripts/cloudflare-app.mjs build production",
+    "node scripts/hosting/cloudflare-app.mjs build production",
   );
   assert.equal(config.workers_dev, false);
   assert.equal(config.preview_urls, false);
   assert.equal(
     json("package.json").scripts["app:host:deploy"],
-    "node scripts/cloudflare-app.mjs deploy production",
+    "node scripts/hosting/cloudflare-app.mjs deploy production",
   );
   assert.ok(
     !existsSync(
@@ -56,11 +56,11 @@ test("Dev has a separate Worker and domain with the same assets-only setup", () 
   assert.equal(config.env.dev.preview_urls, false);
   assert.equal(
     config.env.dev.build.command,
-    "node scripts/cloudflare-app.mjs build dev",
+    "node scripts/hosting/cloudflare-app.mjs build dev",
   );
   assert.equal(
     json("package.json").scripts["app:host:deploy:dev"],
-    "node scripts/cloudflare-app.mjs deploy dev",
+    "node scripts/hosting/cloudflare-app.mjs deploy dev",
   );
 });
 

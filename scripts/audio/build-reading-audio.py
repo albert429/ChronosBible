@@ -14,7 +14,7 @@ Alignments are checked when loaded, not taken from a summary: original
 recording name and SHA-256 (canonical provenance), transcript hash of the
 current text, complete ordered verses inside the recording (or before its
 reviewed source trim), and the file's SHA-256 must be one the review
-summaries (scripts/review-audio-alignments.py) actually reviewed.
+summaries (scripts/audio/review-audio-alignments.py) actually reviewed.
 
 A verse is questionable when its score is below --min-score or the review
 flagged it. Only the two cut points matter for the cut: the verses on both

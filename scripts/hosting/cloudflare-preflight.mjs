@@ -133,7 +133,7 @@ export function preflight(
     effective.workers_dev !== false ||
     effective.preview_urls !== false ||
     effective.build?.command !==
-      `node scripts/cloudflare-app.mjs build ${target}`
+      `node scripts/hosting/cloudflare-app.mjs build ${target}`
   )
     fail("unexpected Worker, routes, assets, or build configuration");
   const redirects = committedRedirects(root);

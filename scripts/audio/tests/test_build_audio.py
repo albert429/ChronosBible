@@ -1,4 +1,4 @@
-"""Spoken-reference assembly in scripts/build-audio.py, with synthetic audio.
+"""Spoken-reference assembly in scripts/audio/build-audio.py, with synthetic audio.
 
 Standard library only and no ffmpeg: decoding and encoding are injected. Real
 plan text, reference wording and tracked chapter alignments are used, with

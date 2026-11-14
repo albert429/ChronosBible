@@ -111,9 +111,8 @@ Python scripts are grouped by workflow: `scripts/data/` (importers),
 with `python3 -I`); shared code is the importable package
 `scripts/lib/chronos_tools/` (repository paths, the book table, USFM cleanup,
 study-text helpers, fingerprints, ffmpeg/ffprobe calls and inventory-owned
-output). The previous top-level paths (`scripts/import-study.py`,
-`scripts/verify-audio-host.py`, and so on) remain as thin aliases that run the
-grouped script with the same arguments. Python is never needed to build or
+output). The retired top-level aliases and their maintained replacements are listed
+in [the script command map](script-command-map.md). Python is never needed to build or
 deploy the app. Generators that publish many files into a tracked folder record
 them in an `inventory.json` and remove only unmodified files they wrote earlier
 (`chronos_tools.ownership`); they never delete media or unrelated files.
@@ -245,9 +244,9 @@ checkout is accepted only at the exact `origin/main` or `origin/dev` commit for
 that environment. Task branches and dirty checkouts fail before building or
 uploading. Workers Builds branch and commit metadata must also match when set.
 Workers Builds checks out the pushed commit detached without remote branches, so
-the wrapper also accepts it when `WORKERS_CI_BRANCH` and `WORKERS_CI_COMMIT_SHA`
+the CLI also accepts it when `WORKERS_CI_BRANCH` and `WORKERS_CI_COMMIT_SHA`
 name the environment's branch and that exact commit.
-For a local check, use `node scripts/cloudflare-app.mjs preflight production`
+For a local check, use `node scripts/hosting/cloudflare-app.mjs preflight production`
 (or `dev`); `npm run app:host:build` and `npm run app:host:build:dev` build and audit
 without uploading.
 

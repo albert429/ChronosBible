@@ -1,4 +1,4 @@
-// Build/deploy orchestration for the stable scripts/cloudflare-app.mjs CLI.
+// Build/deploy orchestration for the scripts/hosting/cloudflare-app.mjs CLI.
 // Policy, checkout verification and asset auditing remain independently testable.
 import { copyFileSync, existsSync, readFileSync, rmSync } from "node:fs";
 import { isAbsolute, join } from "node:path";

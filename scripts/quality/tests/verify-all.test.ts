@@ -31,7 +31,7 @@ test("verify:all runs the checks CI runs, in CI's order, and validate keeps its 
       "npm run test:worker",
       "npm run layers",
       "python3 -I scripts/quality/python-tests.py",
-      "python3 -m py_compile scripts/align-audio.py",
+      "python3 -m py_compile scripts/assets/optimize-assets.py",
       "npm run test:e2e",
     ],
   );

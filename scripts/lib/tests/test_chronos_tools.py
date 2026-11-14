@@ -194,17 +194,8 @@ class StudyText(unittest.TestCase):
 class Layout(unittest.TestCase):
     """Every operational script is documented and runs at its documented path."""
 
-    def test_aliases_run_their_grouped_script(self):
-        aliases = sorted((ROOT / "scripts").glob("*.py"))
-        self.assertEqual(len(aliases), 17)
-        for alias in aliases:
-            match = re.search(r"scripts/(\w+)/([\w-]+)\.py", alias.read_text())
-            self.assertIsNotNone(match, alias.name)
-            self.assertEqual(match[2], alias.stem)
-            self.assertTrue((ROOT / "scripts" / match[1] / f"{alias.stem}.py").is_file(), alias.name)
-
-    def test_alias_forwards_arguments(self):
-        result = subprocess.run([sys.executable, "-I", str(ROOT / "scripts/verify-audio-host.py"), "--help"],
+    def test_host_verifier_help(self):
+        result = subprocess.run([sys.executable, "-I", str(ROOT / "scripts/hosting/verify-audio-host.py"), "--help"],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("usage: verify-audio-host.py", result.stdout)
