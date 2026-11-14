@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { studyContext } from "../../src/features/reader/studyContext.ts";
+import { studyContext } from "../../app/src/features/reader/studyContext.ts";
 import {
   continuedListening,
   listeningSurvives,
-} from "../../src/features/reader/listening.ts";
-import { navigationModel } from "../../src/features/navigation/model.ts";
-import { catalog } from "../../src/core/scripture/catalog.ts";
+} from "../../app/src/features/reader/listening.ts";
+import { navigationModel } from "../../app/src/features/navigation/model.ts";
+import { catalog } from "../../app/src/core/scripture/catalog.ts";
 import type {
   BibleChapter,
   Day,
   ScriptureReading,
-} from "../../src/core/reading/types.ts";
-import type { ChronologicalReading } from "../../src/core/reading/chronology.ts";
-import type { Passage } from "../../src/core/scripture/types.ts";
+} from "../../app/src/core/reading/types.ts";
+import type { ChronologicalReading } from "../../app/src/core/reading/chronology.ts";
+import type { Passage } from "../../app/src/core/scripture/types.ts";
 
 const plan: Day[] = JSON.parse(
   readFileSync(new URL("../../data/plan.json", import.meta.url), "utf8"),

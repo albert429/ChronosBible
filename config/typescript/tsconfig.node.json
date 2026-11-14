@@ -19,12 +19,12 @@
     "erasableSyntaxOnly": true
   },
   "include": [
-    "../../vite.config.ts",
+    "../../app/vite.config.ts",
     "../playwright.config.ts",
     "../../scripts/**/*.ts",
-    "../../src/vite-env.d.ts",
-    "../../src/**/tests/**/*.ts",
-    "../../worker/tests/*.test.ts",
+    "../../app/src/vite-env.d.ts",
+    "../../app/src/**/tests/**/*.ts",
+    "../../app/worker/tests/*.test.ts",
     "../../tests/**/*.ts"
   ]
 }

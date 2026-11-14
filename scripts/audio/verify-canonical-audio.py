@@ -118,7 +118,7 @@ def check_chapter(reading, manifest, record, settings, aligned, media, trim=None
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--media", type=Path, nargs="+", default=[ROOT / "public"],
+    parser.add_argument("--media", type=Path, nargs="+", default=[ROOT / "app/public"],
                         help="Folders holding audio/chapters/assets (default public)")
     parser.add_argument("--trims", type=Path, default=ROOT / "data/audio/source-trims.json")
     parser.add_argument("--ot", type=Path, help="Original Old Testament MP3 folder (hash check)")

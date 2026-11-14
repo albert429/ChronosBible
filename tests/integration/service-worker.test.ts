@@ -13,9 +13,9 @@ import {
   DATA_CACHE,
   SAVE_HEADER,
   route,
-} from "../../src/features/offline/rules.ts";
+} from "../../app/src/features/offline/rules.ts";
 
-const ROOT = fileURLToPath(new URL("../../", import.meta.url));
+const ROOT = fileURLToPath(new URL("../../app/", import.meta.url));
 const ORIGIN = "https://chronosbible.com";
 const VERSIONS = {
   bible: "bible-new",
@@ -145,7 +145,7 @@ test("a new build installs its shell and waits for the reader to accept it", asy
     name.startsWith("chronos-shell-"),
   );
   assert.equal(shells.length, 1);
-  // The page, its hashed files, the manifest and the icons in public/.
+  // The page, its hashed files, the manifest and the icons in app/public/.
   const shell = [...worker.stores.get(shells[0])!.keys()];
   for (const path of ["/", "/assets/index-AbCdEf12.js", "/manifest.json"])
     assert.ok(shell.includes(key(path)), path);

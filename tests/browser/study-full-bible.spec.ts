@@ -155,7 +155,9 @@ for (const decoder of ["DecompressionStream", "the fallback decoder"])
       );
     await page.route("**/study/v2/GEN/1/*.words.json.gz*", (route) =>
       route.fulfill({
-        body: readFileSync(`public${new URL(route.request().url()).pathname}`),
+        body: readFileSync(
+          `app/public${new URL(route.request().url()).pathname}`,
+        ),
         contentType: "application/gzip",
       }),
     );

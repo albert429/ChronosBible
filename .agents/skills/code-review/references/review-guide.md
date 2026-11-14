@@ -61,15 +61,15 @@ Use Node 22 and the lockfile (`npm ci` when installation is needed). Select chec
 from the repository map and inspect scripts before running commands that replace
 build outputs. Run commands in the checkout actually containing the reviewed code.
 
-| Scope                                      | Useful verification                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------------------- |
-| Formatting or repository instructions      | `git diff --check`; focused `npx prettier --check <files>`                             |
-| TypeScript, imports, or feature boundaries | `npm run lint`, `npm run typecheck`, `npm run layers`; relevant Node tests             |
-| Focused Node regression                    | `node --experimental-strip-types --test src/features/profiles/tests/progress.test.ts`  |
-| Python importers/audio/ownership           | `npm run test:python`                                                                  |
-| App/data/build behavior                    | `npm run build` (includes data generation); relevant generated-output tests            |
-| Broad cross-cutting change                 | `npm run validate`; `npm run verify:all` when full CI-equivalent coverage is warranted |
-| Browser behavior                           | Focused Playwright specs in the affected projects; see the setup below                 |
+| Scope                                      | Useful verification                                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Formatting or repository instructions      | `git diff --check`; focused `npx prettier --check <files>`                                |
+| TypeScript, imports, or feature boundaries | `npm run lint`, `npm run typecheck`, `npm run layers`; relevant Node tests                |
+| Focused Node regression                    | `node --experimental-strip-types --test app/src/features/profiles/tests/progress.test.ts` |
+| Python importers/audio/ownership           | `npm run test:python`                                                                     |
+| App/data/build behavior                    | `npm run build` (includes data generation); relevant generated-output tests               |
+| Broad cross-cutting change                 | `npm run validate`; `npm run verify:all` when full CI-equivalent coverage is warranted    |
+| Browser behavior                           | Focused Playwright specs in the affected projects; see the setup below                    |
 
 For a focused browser run, export `AUDIO_TEST_FIXTURES=1`,
 `VITE_AUDIO_BASE_URL=https://audio.example.test`, and
@@ -87,7 +87,7 @@ Preserve the workspace while verifying:
   reference builds, use a disposable checkout/worktree under `.agents/` at the
   recorded SHA. Tool-created worktrees can start from `origin/main`; confirm the
   intended revision before testing. Never repurpose another contributor's tree.
-- `scripts/build/build-config.mjs build ...` cleans generated `public/` trees and
+- `scripts/build/build-config.mjs build ...` cleans generated `app/public/` trees and
   output directories. Do not run it in the author's checkout with local media or
   work. Ordinary builds also replace outputs; avoid racing a running preview or
   another agent's build. Never delete `.env*` or media to make a preflight pass.

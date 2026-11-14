@@ -1,13 +1,14 @@
-// Which audio days vite.config.ts advertises as __AUDIO_DAYS__. The config reads
-// data/ and public/ relative to the working directory, so it runs here inside a
+// Which audio days app/vite.config.ts advertises as __AUDIO_DAYS__. The config reads
+// data/ and app/public/ relative to the working directory, so it runs here inside a
 // scratch repository, with the build's VITE_* variables cleared.
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ConfigEnv, UserConfigFn } from "vite";
-import config from "../../../vite.config.ts";
+import config from "../../../app/vite.config.ts";
 import { dataVersions } from "../data-versions.ts";
 
 assert.equal(typeof config, "function");
@@ -22,7 +23,7 @@ const env: ConfigEnv = {
 const original = process.cwd();
 const root = mkdtempSync(join(tmpdir(), "vite-config-"));
 mkdirSync(join(root, "data/audio/manifests"), { recursive: true });
-mkdirSync(join(root, "public/audio/days"), { recursive: true });
+mkdirSync(join(root, "app/public/audio/days"), { recursive: true });
 writeFileSync(
   join(root, "data/audio/catalog.json"),
   JSON.stringify({ days: [1, 2, 3] }),
@@ -34,11 +35,11 @@ for (const day of [1, 2, 3])
   );
 // Only days 1 and 3 have their recording in this checkout.
 for (const file of ["001-abc.m4a", "003-abc.m4a"])
-  writeFileSync(join(root, "public/audio/days", file), "");
+  writeFileSync(join(root, "app/public/audio/days", file), "");
 // Two catalogued chapters; only Genesis 1 has its recording here.
 mkdirSync(join(root, "data/audio/chapters/GEN"), { recursive: true });
 mkdirSync(join(root, "data/audio/chapters/REV"), { recursive: true });
-mkdirSync(join(root, "public/audio/chapters/assets"), { recursive: true });
+mkdirSync(join(root, "app/public/audio/chapters/assets"), { recursive: true });
 writeFileSync(
   join(root, "data/audio/chapter-catalog.json"),
   JSON.stringify({ chapters: ["bible:GEN:1", "bible:REV:22"] }),
@@ -53,8 +54,8 @@ for (const [book, chapter] of [
       src: `/audio/chapters/assets/${book}-${chapter}-abc.m4a`,
     }),
   );
-writeFileSync(join(root, "public/audio/chapters/assets/GEN-1-abc.m4a"), "");
-// Revelation 22 was uploaded and verified (src/features/audio/domain/publication.ts).
+writeFileSync(join(root, "app/public/audio/chapters/assets/GEN-1-abc.m4a"), "");
+// Revelation 22 was uploaded and verified (app/src/features/audio/domain/publication.ts).
 writeFileSync(
   join(root, "data/audio/publication.json"),
   JSON.stringify({
@@ -191,10 +192,10 @@ test("The audio host is inlined as __AUDIO_BASE_URL__", async () => {
 test("Each data folder is versioned by its content, names included", async () => {
   // The scratch checkout has no generated data yet: plain addresses.
   assert.equal((await makeConfig(env)).define?.__DATA_VERSIONS__, "{}");
-  mkdirSync(join(root, "public/bible/GEN"), { recursive: true });
-  mkdirSync(join(root, "public/readings"), { recursive: true });
-  writeFileSync(join(root, "public/bible/GEN/1.json"), "{}");
-  writeFileSync(join(root, "public/readings/1.json"), "{}");
+  mkdirSync(join(root, "app/public/bible/GEN"), { recursive: true });
+  mkdirSync(join(root, "app/public/readings"), { recursive: true });
+  writeFileSync(join(root, "app/public/bible/GEN/1.json"), "{}");
+  writeFileSync(join(root, "app/public/readings/1.json"), "{}");
   const first = dataVersions();
   assert.deepEqual(Object.keys(first).sort(), ["bible", "readings"]);
   assert.match(first.bible, /^[0-9a-f]{10}$/);
@@ -202,11 +203,21 @@ test("Each data folder is versioned by its content, names included", async () =>
     (await makeConfig(env)).define?.__DATA_VERSIONS__,
     JSON.stringify(first),
   );
-  writeFileSync(join(root, "public/bible/GEN/1.json"), '{"v":2}');
+  writeFileSync(join(root, "app/public/bible/GEN/1.json"), '{"v":2}');
   const changed = dataVersions();
   assert.notEqual(changed.bible, first.bible);
   assert.equal(changed.readings, first.readings);
-  rmSync(join(root, "public/bible/GEN/1.json"));
-  writeFileSync(join(root, "public/bible/GEN/2.json"), '{"v":2}');
+  rmSync(join(root, "app/public/bible/GEN/1.json"));
+  writeFileSync(join(root, "app/public/bible/GEN/2.json"), '{"v":2}');
   assert.notEqual(dataVersions().bible, changed.bible);
+});
+
+test("App root is independent of cwd while build output remains at repository root", async () => {
+  const resolved = await makeConfig(env);
+  assert.equal(
+    resolved.root,
+    fileURLToPath(new URL("../../../app/", import.meta.url)),
+  );
+  assert.equal(resolved.envDir, process.cwd());
+  assert.equal(resolved.build?.outDir, "../dist");
 });

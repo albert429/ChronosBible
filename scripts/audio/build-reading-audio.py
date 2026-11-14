@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build version-3 playlists for the chronological readings, with clips.
 
-For every reading definition (public/chronology/<OT|NT>/<id>.json, from the
+For every reading definition (app/public/chronology/<OT|NT>/<id>.json, from the
 chronology build) each passage becomes one playlist entry:
 
 - a passage covering a whole chapter reuses that chapter's published

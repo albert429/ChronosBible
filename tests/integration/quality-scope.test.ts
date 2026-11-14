@@ -27,12 +27,12 @@ const LOCAL = [
   "artifacts/refactor/VERIFY.md",
   "dist/assets/index.js",
   "dist-ai/assets/index.js",
-  "public/study/v2/inventory.json",
+  "app/public/study/v2/inventory.json",
 ];
 // Maintained code and documentation that both tools must keep covering.
 const MAINTAINED = [
-  "src/main.tsx",
-  "src/features/study/domain/words.ts",
+  "app/src/main.tsx",
+  "app/src/features/study/domain/words.ts",
   "scripts/quality/snapshot.mjs",
   "scripts/data/build-data.js",
   "scripts/build/data-versions.ts",
@@ -40,7 +40,7 @@ const MAINTAINED = [
   "hosting/cloudflare-app/_headers",
   "scripts/quality/tests/snapshot.test.ts",
   "tests/browser/ai.spec.ts",
-  "vite.config.ts",
+  "app/vite.config.ts",
   "config/playwright.config.ts",
   "eslint.config.js",
   "docs/development.md",

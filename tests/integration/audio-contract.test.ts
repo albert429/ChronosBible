@@ -1,4 +1,4 @@
-// The audio delivery contract (src/features/audio/domain/contract.ts) against everything that
+// The audio delivery contract (app/src/features/audio/domain/contract.ts) against everything that
 // restates it: committed manifests, the R2 staging folder and the upload
 // command.
 import { test } from "node:test";
@@ -26,7 +26,7 @@ import {
   AUDIO_MEDIA_PREFIXES,
   AUDIO_HOST_ORIGIN,
   AUDIO_R2_BUCKET,
-} from "../../src/features/audio/domain/contract.ts";
+} from "../../app/src/features/audio/domain/contract.ts";
 import { copyMedia } from "../../scripts/hosting/prepare-audio-r2.mjs";
 import { bulkPutArguments } from "../../scripts/hosting/upload-audio-r2.mjs";
 

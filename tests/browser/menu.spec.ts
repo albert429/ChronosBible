@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { APP_INFO } from "../../src/shared/lib/appInfo.ts";
+import { APP_INFO } from "../../app/src/shared/lib/appInfo.ts";
 import {
   MODES,
   article,

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   readingTranscript,
   validManifest,
-} from "../../src/features/audio/domain/manifest.ts";
+} from "../../app/src/features/audio/domain/manifest.ts";
 import { readBibleChapters } from "./build-bible.js";
 import { ROOT } from "../lib/paths.js";
 import { AUDIO_MANIFEST_PATH } from "../lib/audio-manifests.js";
@@ -96,7 +96,7 @@ export function buildAudioIndex({
   });
   if (unowned.length)
     warn(
-      `public/audio holds ${unowned.length} manifest(s) no build owns (${unowned.slice(0, 3).join(", ")}${unowned.length > 3 ? ", ..." : ""}); the build will not ship them. Remove them if they are stale.`,
+      `app/public/audio holds ${unowned.length} manifest(s) no build owns (${unowned.slice(0, 3).join(", ")}${unowned.length > 3 ? ", ..." : ""}); the build will not ship them. Remove them if they are stale.`,
     );
   return `Prepared ${days.length} audio manifests, ${chapters.length} chapter manifests and ${readings.length} reading playlists (recordings are hosted separately).`;
 }

@@ -1,4 +1,4 @@
-// The page's early reading (src/features/reader/earlyReading.ts): which
+// The page's early reading (app/src/features/reader/earlyReading.ts): which
 // files index.html fetches before the app runs, and the inline script the
 // build makes of it (scripts/build/inline-startup.ts).
 import assert from "node:assert/strict";
@@ -9,12 +9,12 @@ import vm from "node:vm";
 import {
   PRELOAD_KEY,
   earlyPaths,
-} from "../../src/features/reader/earlyReading.ts";
+} from "../../app/src/features/reader/earlyReading.ts";
 import {
   LOCATION_KEY,
   PROGRESS_KEY,
   STATE_KEY,
-} from "../../src/features/profiles/storage.ts";
+} from "../../app/src/features/profiles/storage.ts";
 import {
   EARLY_READING_MARKER,
   bundleEarlyReading,
@@ -110,19 +110,22 @@ function runPage(
 }
 
 test("the build inlines one classic script that starts the fetches with the page", async () => {
-  const { code, modules } = await bundleEarlyReading(ROOT, {
-    bible: "b1",
-    chronology: "c1",
-  });
+  const { code, modules } = await bundleEarlyReading(
+    fileURLToPath(new URL("../../app/", import.meta.url)),
+    {
+      bible: "b1",
+      chronology: "c1",
+    },
+  );
   assert.doesNotMatch(code, /\bimport\b|\bexport\b/);
   // Only the handoff, the versioned addresses and the storage keys: the
   // rest of the app (and of the modules it reads) stays out.
   assert.ok(code.length < 2048, `${code.length} bytes`);
   assert.deepEqual(modules.map((file) => file.slice(ROOT.length)).sort(), [
-    "src/features/profiles/storage.ts",
-    "src/features/reader/earlyReading.ts",
-    "src/shared/network/dataVersion.ts",
-    "src/shared/network/earlyResponses.ts",
+    "app/src/features/profiles/storage.ts",
+    "app/src/features/reader/earlyReading.ts",
+    "app/src/shared/network/dataVersion.ts",
+    "app/src/shared/network/earlyResponses.ts",
   ]);
 
   let page = runPage(code, "?mode=chronological&testament=OT&reading=gen-1-1");
@@ -155,7 +158,7 @@ test("the build inlines one classic script that starts the fetches with the page
 
 test("index.html runs the early reading in its head, before the app's module", () => {
   const html = readFileSync(
-    new URL("../../index.html", import.meta.url),
+    new URL("../../app/index.html", import.meta.url),
     "utf8",
   );
   const page = inlineEarlyReading(html, "start()");

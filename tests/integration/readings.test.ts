@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createReadingsClients } from "../../src/features/plan/data/client.ts";
-import type { Day, PlanEntry } from "../../src/core/reading/types.ts";
-import { scheduledDay, dayIndex } from "../../src/core/reading/schedule.ts";
+import { createReadingsClients } from "../../app/src/features/plan/data/client.ts";
+import type { Day, PlanEntry } from "../../app/src/core/reading/types.ts";
+import { scheduledDay, dayIndex } from "../../app/src/core/reading/schedule.ts";
 
 const day = (n: number): Day => ({
   day: n,

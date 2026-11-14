@@ -1,7 +1,7 @@
 // Checks the configured AI models against OpenRouter's public model list:
 // each must still exist and be free. Prints any announced expiry date.
 // Usage: npm run ai:models [-- --mode <mode>]
-import { MODELS as models } from "../../worker/models.ts";
+import { MODELS as models } from "../../app/worker/models.ts";
 
 const response = await fetch("https://openrouter.ai/api/v1/models", {
   headers: { Accept: "application/json" },

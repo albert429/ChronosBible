@@ -53,8 +53,8 @@ Generated output:
 
 - `data/audio/manifests/`: compact timing manifests, suitable for Git.
 - `data/audio/catalog.json`: days for which audio has been prepared.
-- `public/audio/days/`: encoded audio, ignored by Git.
-- `public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/data/build-data.js`), not by `build-audio.py`.
+- `app/public/audio/days/`: encoded audio, ignored by Git.
+- `app/public/audio/*.json`: copies of the timing manifests, written by `npm run build` (`scripts/data/build-data.js`), not by `build-audio.py`.
 
 ## Canonical chapters (Bible mode)
 
@@ -95,7 +95,7 @@ Current state and the OT alignment benchmark are in
 alignment script takes `--testament OT|NT|all`; a full OT run takes about 2.4 hours
 on an Apple-silicon Mac and still needs listening review before publication.
 
-Keep the 2.2 GB of chapter media outside `public/` (Vite copies `public/` into
+Keep the 2.2 GB of chapter media outside `app/public/` (Vite copies `app/public/` into
 every local build) and point `AUDIO_MEDIA_ROOT` at it when preparing the host.
 
 ## Chronological readings (version-3 playlists)
@@ -109,7 +109,7 @@ and reference; the player lays them on one timeline and the browser's native
 displayed passages, so a changed text or chronology makes the manifest stale
 and the player refuses it.
 
-`scripts/audio/build-reading-audio.py --chronology <public/chronology> --ot <OT> --nt <NT>`
+`scripts/audio/build-reading-audio.py --chronology <app/public/chronology> --ot <OT> --nt <NT>`
 builds them offline, resume-safe and deterministic:
 
 - A passage that is a whole chapter reuses that chapter's published file and
@@ -185,7 +185,7 @@ before every passage. The catalog sits beside its WAV clips:
 
 Assembly refuses a clip whose wording, text hash, settings hash or audio hash
 differs, and unreviewed wording or clips unless `--draft`. Draft output must stay
-outside `public/` and `data/`. Scripture PCM comes from the original chapter
+outside `app/public/` and `data/`. Scripture PCM comes from the original chapter
 recordings and is never scaled; only clips are matched to the day's active
 Scripture loudness, within a peak limit. Each passage is laid out in whole
 samples at 24 kHz: separation (0.2–0.35 s, default 0.25), reference, separation,
@@ -221,7 +221,7 @@ element handles buffering and HTTP range requests; audio is never fetched into a
 JavaScript Blob or processed with Web Audio. Scripture is not rerendered on each
 audio event; only the active verse marker and small player update.
 
-The delivery rules live in `src/features/audio/domain/contract.ts`: the media path patterns
+The delivery rules live in `app/src/features/audio/domain/contract.ts`: the media path patterns
 `/audio/days/NNN-<hash>.m4a` and `/audio/chapters/assets/<USFM>-<n>-<hash>.m4a`,
 the 8 MiB size cap, the content type, the cache
 value, the R2 bucket and its origin. The app validates every manifest `src`
@@ -249,13 +249,13 @@ the same paths (`/audio/days/…`, `/audio/chapters/assets/…`, `/audio/clips/�
 Objects carry `Content-Type: audio/mp4` and
 `Cache-Control: public, max-age=31536000, immutable`; R2 answers byte ranges
 natively, so no range handler, proxy or Worker is involved. The origin and bucket
-name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `src/features/audio/domain/contract.ts`.
+name are `AUDIO_HOST_ORIGIN` and `AUDIO_R2_BUCKET` in `app/src/features/audio/domain/contract.ts`.
 
 Both app hosts load audio from that origin. The Cloudflare builds set
 `VITE_AUDIO_BASE_URL=https://audio.chronosbible.com` themselves
 (`AUDIO_BASE_URL` in `scripts/hosting/cloudflare-policy.mjs`; a test pins it to the
 contract); Vercel takes the same **public** value from its environment.
-`vite.config.ts` validates it and inlines it as `__AUDIO_BASE_URL__`, so the app
+`app/vite.config.ts` validates it and inlines it as `__AUDIO_BASE_URL__`, so the app
 never reads `import.meta.env`. Day, chapter and chronological playlist JSON stay
 with each app build and revalidate, so timing fixes take effect.
 
@@ -299,7 +299,7 @@ other than `true`, `false` or empty fails the build) **and** every catalogued
 chapter in the verified inventory; otherwise the build fails and names a
 missing chapter. A chronological playlist is advertised only when every file it
 references, full chapters and clips alike, is verified. Chapters whose media is
-present in the build's own `public/` folder are advertised regardless, so local
+present in the build's own `app/public/` folder are advertised regardless, so local
 development with prepared media still works. Synthetic fixture hosts on the
 reserved `.test` domain (CI) bypass the inventory; real hosts never do. The
 build also deletes from `dist/` every manifest it does not advertise, so an
@@ -352,7 +352,7 @@ files (150 days, 1,189 chapters and the chronological clips).
 
 ## Vercel-only alternative
 
-Serve `public/audio/days/` from the deployment and leave `VITE_AUDIO_BASE_URL`
+Serve `app/public/audio/days/` from the deployment and leave `VITE_AUDIO_BASE_URL`
 unset. `vercel.json` sets immutable media caching. The media must be present at
 build/deploy time; it is intentionally absent from a fresh Git checkout.
 

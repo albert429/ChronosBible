@@ -15,10 +15,10 @@ artifacts/
 !.env.example
 .DS_Store
 
-public/readings/
+app/public/readings/
 .vercel/
-public/study/
-public/audio/
+app/public/study/
+app/public/audio/
 dist-ai/
 .claude/worktrees/
 # Keep local agent worktrees ignored while sharing repository skills.
@@ -26,8 +26,8 @@ dist-ai/
 .agents/*
 !.agents/skills/
 
-public/bible/
-public/chronology/
+app/public/bible/
+app/public/chronology/
 assets/video/
 assets/reel*/
 

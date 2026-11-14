@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chooseTrack, createChoiceGuard } from "../../src/app/trackChoice.ts";
-import { pagingTarget, type PagingKey } from "../../src/app/keyboardPaging.ts";
-import { documentTitle } from "../../src/app/useDocumentTitle.ts";
-import type { ChronologyCatalog } from "../../src/core/reading/chronology.ts";
-import type { ChronologicalLocation } from "../../src/core/reading/types.ts";
+import {
+  chooseTrack,
+  createChoiceGuard,
+} from "../../app/src/app/trackChoice.ts";
+import {
+  pagingTarget,
+  type PagingKey,
+} from "../../app/src/app/keyboardPaging.ts";
+import { documentTitle } from "../../app/src/app/useDocumentTitle.ts";
+import type { ChronologyCatalog } from "../../app/src/core/reading/chronology.ts";
+import type { ChronologicalLocation } from "../../app/src/core/reading/types.ts";
 
 const catalog = (testament: "OT" | "NT", id: string) =>
   ({

@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { serviceWorker, serviceWorkerConfig } from "../service-worker.ts";
 
-const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
+const ROOT = fileURLToPath(new URL("../../../app/", import.meta.url));
 
 test("The worker build has no config file, plugins or public folder", () => {
   const config = serviceWorkerConfig({
@@ -56,7 +56,7 @@ test("The worker is written beside the app's files as one classic script", async
         "assets/index-AbCdEf12.js": { type: "chunk" },
       },
     );
-    // Nothing removed, nothing copied from public/: only sw.js was added.
+    // Nothing removed, nothing copied from app/public/: only sw.js was added.
     assert.deepEqual(readdirSync(outDir).sort(), [
       "index.html",
       "keep.txt",

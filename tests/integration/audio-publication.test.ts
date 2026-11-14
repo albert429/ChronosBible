@@ -22,7 +22,7 @@ import {
   manifestOutputPath,
   publicationErrors,
   publishedMedia,
-} from "../../src/features/audio/domain/publication.ts";
+} from "../../app/src/features/audio/domain/publication.ts";
 import { AUDIO_MANIFEST_PATH } from "../../scripts/lib/audio-manifests.js";
 import {
   planUploads,
@@ -383,14 +383,14 @@ test("Each batch runs in its own wrangler process, retried then stopped", () => 
 
 test("The build removes manifests it does not advertise", async () => {
   const { root, write } = repository("vite");
-  write("public/audio/chapters/assets/GEN-1-aa.m4a", "");
+  write("app/public/audio/chapters/assets/GEN-1-aa.m4a", "");
   const original = process.cwd();
   const saved = { ...process.env };
   for (const name of Object.keys(process.env))
     if (name.startsWith("VITE_")) delete process.env[name];
   process.chdir(root);
   try {
-    const { default: config } = await import("../../vite.config.ts");
+    const { default: config } = await import("../../app/vite.config.ts");
     const env: ConfigEnv = {
       command: "build",
       mode: "production",
@@ -417,7 +417,7 @@ test("The build removes manifests it does not advertise", async () => {
     assert.ok(!existsSync(join(root, "dist/audio/1.json")));
     assert.ok(existsSync(join(root, "dist/audio/chapters/GEN/1.json")));
     assert.ok(!existsSync(join(root, "dist/audio/chrono/OT/a.json")));
-    // A manifest no catalog lists (a stale copy left in public/audio) never
+    // A manifest no catalog lists (a stale copy left in app/public/audio) never
     // ships either; recordings and other files beside them stay.
     for (const path of [
       "dist/audio/99.json",

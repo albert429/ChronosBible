@@ -6,7 +6,7 @@
 // `app` is the fixture-audio reference build (npm run build: data, type-check,
 // bundle). `ai` regenerates the data itself, then bundles the ai-stub
 // configuration against the SSE stub on <n>, so it never depends on whatever
-// an earlier build left in public/. Both set every VITE_* variable the build
+// an earlier build left in app/public/. Both set every VITE_* variable the build
 // reads (build-config.mjs), so neither inherits shell values; explicit values,
 // even empty ones, also take priority over local .env files. Unlike the
 // reference builds, they keep local files: no checkout is required to be
@@ -53,8 +53,10 @@ export function buildForBrowser(name, { stubPort } = {}) {
     [
       "node_modules/vite/bin/vite.js",
       "build",
+      "--config",
+      "app/vite.config.ts",
       "--outDir",
-      "dist-ai",
+      "../dist-ai",
       "--emptyOutDir",
       "--logLevel",
       "warn",

@@ -113,13 +113,15 @@ export function assertClean(root = ROOT) {
   );
   if (stray.length)
     throw new Error(`remove local env files first: ${stray.join(", ")}`);
-  const audio = join(root, "public/audio");
+  const audio = join(root, "app/public/audio");
   if (existsSync(audio)) {
     const media = readdirSync(audio, { recursive: true }).filter(
       (file) => typeof file === "string" && /\.(m4a|mp3|wav|opus)$/i.test(file),
     );
     if (media.length)
-      throw new Error("public/audio holds local media; refusing to delete it");
+      throw new Error(
+        "app/public/audio holds local media; refusing to delete it",
+      );
   }
 }
 
@@ -128,7 +130,7 @@ export function clean(root = ROOT, outDirs = ["dist", "dist-ai"]) {
   for (const dir of outDirs)
     rmSync(join(root, dir), { recursive: true, force: true });
   for (const folder of GENERATED_FOLDERS)
-    rmSync(join(root, "public", folder), { recursive: true, force: true });
+    rmSync(join(root, "app/public", folder), { recursive: true, force: true });
 }
 
 const run = (root, command, args, env) =>
@@ -149,8 +151,10 @@ export function build(name, root = ROOT) {
         "--no-install",
         "vite",
         "build",
+        "--config",
+        "app/vite.config.ts",
         "--outDir",
-        config.outDir,
+        join("..", config.outDir),
         "--emptyOutDir",
         "--logLevel",
         "warn",

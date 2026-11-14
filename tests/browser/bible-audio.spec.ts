@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { chapterVerse } from "../../src/core/scripture/reference.ts";
+import { chapterVerse } from "../../app/src/core/scripture/reference.ts";
 import {
   chooseFromMenu,
   closeSheet,

@@ -5,22 +5,22 @@ import {
   readingSearch,
   validChronologicalLocation,
   locationSearch,
-} from "../../src/core/reading/location.ts";
-import { catalog } from "../../src/core/scripture/catalog.ts";
-import { type ChronologicalLocation } from "../../src/core/reading/types.ts";
-import { readingKey, trackOf } from "../../src/core/reading/identity.ts";
+} from "../../app/src/core/reading/location.ts";
+import { catalog } from "../../app/src/core/scripture/catalog.ts";
+import { type ChronologicalLocation } from "../../app/src/core/reading/types.ts";
+import { readingKey, trackOf } from "../../app/src/core/reading/identity.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
   isChronologicalReadingData,
-} from "../../src/features/chronology/data/validate.ts";
+} from "../../app/src/features/chronology/data/validate.ts";
 import {
   isReadingComplete,
   readerCompletion,
   readerPlaces,
-} from "../../src/features/profiles/domain/state.ts";
-import { validChapterId } from "../../src/features/profiles/domain/serialization.ts";
-import { exportBackup } from "../../src/features/profiles/domain/backup.ts";
+} from "../../app/src/features/profiles/domain/state.ts";
+import { validChapterId } from "../../app/src/features/profiles/domain/serialization.ts";
+import { exportBackup } from "../../app/src/features/profiles/domain/backup.ts";
 import {
   PROGRESS_KEY,
   STATE_KEY,
@@ -33,13 +33,13 @@ import {
   selectReader,
   setReadingCompletion,
   LOCATION_KEY,
-} from "../../src/features/profiles/storage.ts";
+} from "../../app/src/features/profiles/storage.ts";
 import {
   currentPlace,
   parseTrackPlaces,
   trackPlace,
   withPlace,
-} from "../../src/core/reading/places.ts";
+} from "../../app/src/core/reading/places.ts";
 
 type Store = ReturnType<typeof storage>;
 function storage(entries: Record<string, string> = {}) {

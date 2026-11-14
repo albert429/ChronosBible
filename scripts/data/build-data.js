@@ -7,9 +7,9 @@ import { buildChronology } from "./build-chronology.js";
 import { buildReadings } from "./build-readings.js";
 import { buildStudy } from "./build-study.js";
 
-const out = (name) => join(ROOT, "public", name);
+const out = (name) => join(ROOT, "app/public", name);
 // Inventories of what each builder last wrote into a shipped folder; kept
-// outside public/ so they never ship (scripts/lib/ownership.js).
+// outside app/public/ so they never ship (scripts/lib/ownership.js).
 const inventory = (name) => join(ROOT, OWNERSHIP_DIR, `${name}.json`);
 for (const summary of [
   buildReadings({ out: out("readings"), inventory: inventory("readings") }),

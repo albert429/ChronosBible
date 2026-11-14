@@ -53,7 +53,7 @@
       }
     }
   },
-  "main": "worker/index.ts",
+  "main": "app/worker/index.ts",
   "compatibility_flags": ["enable_request_signal"],
   "durable_objects": {
     "bindings": [

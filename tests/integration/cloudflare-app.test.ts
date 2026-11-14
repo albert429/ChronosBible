@@ -15,8 +15,8 @@ import { tmpdir } from "node:os";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { audioUrl } from "../../src/features/audio/domain/url.ts";
-import * as studyLimits from "../../src/features/study/domain/limits.ts";
+import { audioUrl } from "../../app/src/features/audio/domain/url.ts";
+import * as studyLimits from "../../app/src/features/study/domain/limits.ts";
 import {
   AUDIO_BASE_URL,
   CHAPTER_AUDIO,
@@ -320,7 +320,7 @@ test("Ignored env files and media in public OR old dist stop deployment", () => 
       assert.throws(() => preflight("production", options), /local .env/);
       rmSync(join(f.root, name));
     }
-    for (const base of ["public", "dist"]) {
+    for (const base of ["app/public", "dist"]) {
       mkdirSync(join(f.root, base, "audio"), { recursive: true });
       writeFileSync(join(f.root, base, "audio/local.m4a"), "binary");
       assert.throws(
@@ -520,8 +520,9 @@ for (const testCase of buildCases) {
         join(f.root, "hosting/cloudflare-app/_redirects"),
         "/audio/days/* https://audio.example.test/audio/days/:splat 301\n",
       );
+      mkdirSync(join(f.root, "app"), { recursive: true });
       // The chapter flag comes from the explicit policy, not from this file.
-      writeFileSync(join(f.root, "vite.config.ts"), "// no audio settings");
+      writeFileSync(join(f.root, "app/vite.config.ts"), "// no audio settings");
       writeFileSync(
         join(f.root, "package.json"),
         JSON.stringify({
@@ -565,8 +566,8 @@ for (const [name, body] of Object.entries(${JSON.stringify(assets)})) {
       );
       mkdirSync(join(f.root, "dist"));
       writeFileSync(join(f.root, "dist/stale.txt"), "old");
-      mkdirSync(join(f.root, "public"));
-      writeFileSync(join(f.root, "public/keep.json"), "{}");
+      mkdirSync(join(f.root, "app/public"), { recursive: true });
+      writeFileSync(join(f.root, "app/public/keep.json"), "{}");
       const result = spawnSync(
         process.execPath,
         [join(f.root, "scripts/cloudflare-app.mjs"), "build", target],
@@ -613,7 +614,7 @@ for (const [name, body] of Object.entries(${JSON.stringify(assets)})) {
         readFileSync(join(f.root, "hosting/cloudflare-app/_redirects"), "utf8"),
       );
       assert.equal(
-        readFileSync(join(f.root, "public/keep.json"), "utf8"),
+        readFileSync(join(f.root, "app/public/keep.json"), "utf8"),
         "{}",
       );
       assert.throws(

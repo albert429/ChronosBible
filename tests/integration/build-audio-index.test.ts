@@ -1,5 +1,5 @@
 // buildAudioIndex reads a scratch repository and writes a scratch directory, so
-// these tests never touch public/.
+// these tests never touch app/public/.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -13,8 +13,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildAudioIndex } from "../../scripts/data/build-audio-index.js";
-import { readingHash } from "../../src/features/audio/domain/compatibility.ts";
-import type { Day } from "../../src/core/reading/types.ts";
+import { readingHash } from "../../app/src/features/audio/domain/compatibility.ts";
+import type { Day } from "../../app/src/core/reading/types.ts";
 
 const reading: Day = {
   day: 1,
@@ -56,15 +56,15 @@ function repository(days: number[], hash: string) {
   return root;
 }
 const build = (root: string) =>
-  buildAudioIndex({ root, out: join(root, "public/audio") });
+  buildAudioIndex({ root, out: join(root, "app/public/audio") });
 
-test("A manifest whose hash matches the Scripture is published to public/audio", async () => {
+test("A manifest whose hash matches the Scripture is published to app/public/audio", async () => {
   const hash = await readingHash(reading);
   const root = repository([1], hash);
   try {
     assert.match(build(root), /Prepared 1 audio manifests/);
     assert.deepEqual(
-      JSON.parse(readFileSync(join(root, "public/audio/1.json"), "utf8")),
+      JSON.parse(readFileSync(join(root, "app/public/audio/1.json"), "utf8")),
       manifest(hash),
     );
   } finally {
@@ -76,7 +76,7 @@ test("A stale manifest hash fails the build and publishes nothing", () => {
   const root = repository([1], "0".repeat(64));
   try {
     assert.throws(() => build(root), /Audio for day 1 is stale/);
-    assert.equal(existsSync(join(root, "public/audio/1.json")), false);
+    assert.equal(existsSync(join(root, "app/public/audio/1.json")), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -91,7 +91,7 @@ test("A malformed manifest fails the build instead of the player", async () => {
   );
   try {
     assert.throws(() => build(root), /manifest for day 1 is malformed/);
-    assert.equal(existsSync(join(root, "public/audio/1.json")), false);
+    assert.equal(existsSync(join(root, "app/public/audio/1.json")), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -106,10 +106,10 @@ test("A catalog day that is not in the plan fails the build", async () => {
   }
 });
 
-test("A manifest dropped from the catalog leaves public/audio on the next build; media stays", async () => {
+test("A manifest dropped from the catalog leaves app/public/audio on the next build; media stays", async () => {
   const hash = await readingHash(reading);
   const root = repository([1], hash);
-  const out = join(root, "public/audio");
+  const out = join(root, "app/public/audio");
   const inventory = join(root, "artifacts/generated-output/audio.json");
   try {
     buildAudioIndex({ root, out, inventory });

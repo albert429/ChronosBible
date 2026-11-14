@@ -9,22 +9,22 @@ test("unit discovery includes colocated and integration suites exactly once", ()
   const root = mkdtempSync(join(tmpdir(), "chronos-discovery-"));
   try {
     for (const directory of [
-      "src/features/audio/tests",
+      "app/src/features/audio/tests",
       "scripts/quality/tests",
-      "worker/tests",
+      "app/worker/tests",
       "tests/integration",
       "tests/browser",
     ])
       mkdirSync(join(root, directory), { recursive: true });
     const suites = [
-      "src/features/audio/tests/player.test.ts",
+      "app/src/features/audio/tests/player.test.ts",
       "scripts/quality/tests/check.test.ts",
-      "worker/tests/prompt.test.ts",
+      "app/worker/tests/prompt.test.ts",
       "tests/integration/contracts.test.ts",
     ];
     for (const file of [
       ...suites,
-      "worker/tests/runtime.test.mjs",
+      "app/worker/tests/runtime.test.mjs",
       "tests/browser/audio.spec.ts",
     ])
       writeFileSync(join(root, file), "");
@@ -37,8 +37,8 @@ test("unit discovery includes colocated and integration suites exactly once", ()
 test("unit discovery refuses an empty test selection", () => {
   const root = mkdtempSync(join(tmpdir(), "chronos-empty-tests-"));
   try {
-    for (const directory of ["src", "scripts", "worker", "tests"])
-      mkdirSync(join(root, directory));
+    for (const directory of ["app/src", "scripts", "app/worker", "tests"])
+      mkdirSync(join(root, directory), { recursive: true });
     assert.throws(() => unitTests(root), /No unit tests discovered/);
   } finally {
     rmSync(root, { recursive: true, force: true });

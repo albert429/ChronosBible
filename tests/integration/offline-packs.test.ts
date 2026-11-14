@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { catalog } from "../../src/core/scripture/catalog.ts";
-import type { ChronologyCatalog } from "../../src/core/reading/chronology.ts";
-import { PLAN_DAYS } from "../../src/core/reading/schedule.ts";
+import { catalog } from "../../app/src/core/scripture/catalog.ts";
+import type { ChronologyCatalog } from "../../app/src/core/reading/chronology.ts";
+import { PLAN_DAYS } from "../../app/src/core/reading/schedule.ts";
 import {
   packUrls,
   studyPackPaths,
   textPackPaths,
-} from "../../src/features/offline/packs.ts";
+} from "../../app/src/features/offline/packs.ts";
 import {
   CHECK_FAILED,
   SAVE_FAILED,
@@ -15,7 +15,7 @@ import {
   packController,
   type PackDevice,
   type PackStatus,
-} from "../../src/features/offline/packStatus.ts";
+} from "../../app/src/features/offline/packStatus.ts";
 
 const globals = globalThis as unknown as { fetch: typeof fetch };
 const realFetch = globals.fetch;

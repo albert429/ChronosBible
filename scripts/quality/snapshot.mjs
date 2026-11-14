@@ -4,7 +4,7 @@
 //   node scripts/quality/snapshot.mjs compare <baseline-dir> [<candidate-dir>] [--full]
 //
 // `capture` writes <dir>/snapshot.json: the complete relative-path set and the
-// SHA-256 of every byte under public/{readings,bible,chronology,study,audio}
+// SHA-256 of every byte under app/public/{readings,bible,chronology,study,audio}
 // (what the generators produced), the same folders inside the built <dist>
 // (what actually ships, after build filtering), the other files in <dist>, and
 // size measurements of the bundle. `compare` exits 1 and lists added, removed
@@ -29,7 +29,7 @@ import { ROOT, isMain } from "../lib/paths.js";
 import { gzipSync } from "node:zlib";
 
 export const GROWTH_LIMIT = 512;
-/** Generated data folders: public/<folder> and, once built, dist/<folder>. */
+/** Generated data folders: app/public/<folder> and, once built, dist/<folder>. */
 export const GENERATED_FOLDERS = [
   "readings",
   "bible",
@@ -141,7 +141,7 @@ function git(root, ...args) {
  */
 export function capture(root, options = {}) {
   const { dist = "dist", label = "", requireDist = true } = options;
-  const publicDir = join(root, "public");
+  const publicDir = join(root, "app/public");
   const distDir = join(root, dist);
 
   const generated = {};
@@ -149,7 +149,7 @@ export function capture(root, options = {}) {
     const files = walk(join(publicDir, folder));
     if (!Object.keys(files).length)
       throw new Error(
-        `public/${folder} is missing or empty: run npm run build first`,
+        `app/public/${folder} is missing or empty: run npm run build first`,
       );
     for (const [rel, info] of Object.entries(files))
       generated[`${folder}/${rel}`] = info;

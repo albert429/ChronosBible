@@ -1,20 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { BibleChapter } from "../../src/core/reading/types.ts";
-import type { Day } from "../../src/core/reading/types.ts";
-import { audioManifestUrl } from "../../src/features/audio/domain/identity.ts";
-import { validManifest } from "../../src/features/audio/domain/manifest.ts";
+import type { BibleChapter } from "../../app/src/core/reading/types.ts";
+import type { Day } from "../../app/src/core/reading/types.ts";
+import { audioManifestUrl } from "../../app/src/features/audio/domain/identity.ts";
+import { validManifest } from "../../app/src/features/audio/domain/manifest.ts";
 import {
   matchesReading,
   readingHash,
-} from "../../src/features/audio/domain/compatibility.ts";
+} from "../../app/src/features/audio/domain/compatibility.ts";
 import {
   activeCueIndex,
   announcementAt,
   stepCueIndex,
   stepCueStart,
-} from "../../src/features/audio/domain/timeline.ts";
-import type { AudioManifestV2 } from "../../src/features/audio/domain/types.ts";
+} from "../../app/src/features/audio/domain/timeline.ts";
+import type { AudioManifestV2 } from "../../app/src/features/audio/domain/types.ts";
 const reading: BibleChapter = {
   mode: "bible",
   usfm: "GEN",

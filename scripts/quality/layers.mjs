@@ -1,4 +1,4 @@
-// Directory-level import graph of src/: its edges, cycles and boundary
+// Directory-level import graph of app/src/: its edges, cycles and boundary
 // violations. The same table that drives the ESLint rule
 // (scripts/quality/import-boundaries.mjs) checks every edge, and the strongly
 // connected components catch cycles between features, which the per-edge rule
@@ -75,10 +75,10 @@ export function cyclesOf(edges) {
 /** Edges between units, cycles, and boundary violations for repository `root`. */
 export function analyzeLayers(root) {
   const resolved = path.resolve(root);
-  const src = path.join(resolved, "src");
+  const src = path.join(resolved, "app/src");
   const edges = new Map();
   const violations = [];
-  const sources = [src, path.join(resolved, "worker")].filter((dir) =>
+  const sources = [src, path.join(resolved, "app/worker")].filter((dir) =>
     fs.existsSync(dir),
   );
   for (const file of sources.flatMap((dir) => [...walk(dir)])) {
@@ -100,7 +100,11 @@ export function analyzeLayers(root) {
         .join("/");
       const to = placeOf(targetRelative);
       if (!to) continue;
-      const reason = violation(from, to, targetRelative.slice("src/".length));
+      const reason = violation(
+        from,
+        to,
+        targetRelative.slice("app/src/".length),
+      );
       if (reason)
         violations.push(`${relative} -> ${targetRelative}: ${reason}`);
       const a = unitOf(relative);

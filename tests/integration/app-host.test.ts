@@ -5,7 +5,7 @@ import { AUDIO_BASE_URL } from "../../scripts/hosting/cloudflare-policy.mjs";
 import {
   AUDIO_HOST_ORIGIN,
   AUDIO_MEDIA_PREFIXES,
-} from "../../src/features/audio/domain/contract.ts";
+} from "../../app/src/features/audio/domain/contract.ts";
 
 const json = (path: string) =>
   JSON.parse(readFileSync(new URL("../../" + path, import.meta.url), "utf8"));
@@ -22,7 +22,7 @@ test("wrangler.json routes only AI API requests through Worker code", () => {
     binding: "ASSETS",
     run_worker_first: ["/api/ai/*"],
   });
-  assert.equal(config.main, "worker/index.ts");
+  assert.equal(config.main, "app/worker/index.ts");
   assert.equal(
     config.build.command,
     "node scripts/cloudflare-app.mjs build production",

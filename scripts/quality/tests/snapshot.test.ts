@@ -54,10 +54,10 @@ function fixture() {
     "audio/chrono/OT/gen-1-1.json": '{"cues":[2]}',
   };
   for (const [path, bytes] of Object.entries(data)) {
-    put(`public/${path}`, bytes);
+    put(`app/public/${path}`, bytes);
     put(`dist/${path}`, bytes);
   }
-  put("public/manifest.json", "{}");
+  put("app/public/manifest.json", "{}");
   put("dist/manifest.json", "{}");
   put("dist/index.html", PAGE());
   put("dist/sw.js", "self.x=1");
@@ -105,7 +105,9 @@ test("Capture records nested generated, shipped and gzip files from a path with 
     assert.equal(
       snapshot.generated["study/v2/lex/H1.json.gz"].sha256,
       createHash("sha256")
-        .update(readFileSync(join(repo.root, "public/study/v2/lex/H1.json.gz")))
+        .update(
+          readFileSync(join(repo.root, "app/public/study/v2/lex/H1.json.gz")),
+        )
         .digest("hex"),
     );
     assert.deepEqual(Object.keys(snapshot.shell).sort(), [
@@ -138,8 +140,11 @@ test("Compare lists added, removed and changed paths in nested output and exits 
   try {
     const base = repo.out("base");
     assert.equal(repo.run("capture", base).status, 0);
-    repo.put("public/study/v2/GEN/1/1-31.words.json.gz", gzipSync("changed"));
-    repo.put("public/audio/chapters/GEN/2.json", "{}");
+    repo.put(
+      "app/public/study/v2/GEN/1/1-31.words.json.gz",
+      gzipSync("changed"),
+    );
+    repo.put("app/public/audio/chapters/GEN/2.json", "{}");
     rmSync(join(repo.root, "dist/audio/chrono/OT/gen-1-1.json"));
     const after = repo.out("after");
     assert.equal(repo.run("capture", after).status, 0);
@@ -207,7 +212,7 @@ test("Compare enforces the 512-byte initial gzip growth allowance, not inline gr
 test("Capture refuses a tree without generated data and rejects unknown commands", () => {
   const repo = fixture();
   try {
-    rmSync(join(repo.root, "public/study"), { recursive: true });
+    rmSync(join(repo.root, "app/public/study"), { recursive: true });
     const result = repo.run("capture", repo.out("missing"));
     assert.equal(result.status, 2);
     assert.match(result.stderr, /public\/study is missing or empty/);
@@ -244,8 +249,8 @@ test("Compare flags AI code that appears in a build without it", () => {
 test("Walk visits nested files in a stable order and records symlinks without following them", () => {
   const repo = fixture();
   try {
-    symlinkSync("../../elsewhere", join(repo.root, "public/study/link"));
-    const files = Object.keys(walk(join(repo.root, "public/study")));
+    symlinkSync("../../elsewhere", join(repo.root, "app/public/study/link"));
+    const files = Object.keys(walk(join(repo.root, "app/public/study")));
     assert.deepEqual(files, [
       "link",
       "v2/GEN/1/1-31.words.json.gz",

@@ -1,4 +1,4 @@
-// Publish verse study under public/study/ (CC BY-SA / CC BY data): one
+// Publish verse study under app/public/study/ (CC BY-SA / CC BY data): one
 // canonical set for every book, chapter and verse (build-study-canonical.js).
 import { lstatSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +8,7 @@ import { ROOT } from "../lib/paths.js";
 /** Writes the study files into `out`; returns the summary line. */
 export function buildStudy({ out, root = ROOT }) {
   // The 150-day plan's per-day files are replaced by the canonical set; an
-  // older build's copies would otherwise stay in public/ and ship. Their
+  // older build's copies would otherwise stay in app/public/ and ship. Their
   // builder kept no inventory, so the owned set is this fixed list of 450
   // names. Only regular files are removed; anything else stops the build.
   const retired = [];
@@ -23,7 +23,7 @@ export function buildStudy({ out, root = ROOT }) {
       }
       if (!entry.isFile())
         throw new Error(
-          `public/study/${day}${part}.json is not a regular file; refusing removal`,
+          `app/public/study/${day}${part}.json is not a regular file; refusing removal`,
         );
       retired.push(path);
     }

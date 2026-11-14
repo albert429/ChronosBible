@@ -3,7 +3,7 @@ import type {
   ChronologicalReadingDefinition,
   ChronologyCatalog,
   PassageOccurrence,
-} from "../../src/core/reading/chronology.ts";
+} from "../../app/src/core/reading/chronology.ts";
 
 /**
  * Small OT/NT chronologies served at the chronology agent's routes

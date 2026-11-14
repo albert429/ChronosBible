@@ -9,7 +9,7 @@ import { AUDIO_MANIFEST_PATH } from "../lib/audio-manifests.js";
  * Never ship a manifest for audio this build does not advertise. `published`
  * lists the advertised manifests' output paths (`audio/...`). Every other
  * file under audio/ with a manifest name is removed from the build output,
- * catalogued or not, so a stale copy left in public/audio cannot ship. Other
+ * catalogued or not, so a stale copy left in app/public/audio cannot ship. Other
  * files there (local recordings in a development build) are left alone.
  */
 export function removeUnpublishedManifests(published: string[]): Plugin {

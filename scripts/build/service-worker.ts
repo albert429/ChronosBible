@@ -6,9 +6,9 @@ import { build, type Plugin } from "vite";
 
 /**
  * Build /sw.js once the app's files are known: a separate classic script
- * (src/features/offline/sw.ts), so it never imports a chunk the page shares. It caches
+ * (app/src/features/offline/sw.ts), so it never imports a chunk the page shares. It caches
  * the page, every hashed file, the manifest and its icons. It writes only
- * sw.js into the app's output: never empties it or copies public/ again.
+ * sw.js into the app's output: never empties it or copies app/public/ again.
  */
 export function serviceWorker(versions: Record<string, string>): Plugin {
   let outDir = "dist";
@@ -49,7 +49,7 @@ export function serviceWorker(versions: Record<string, string>): Plugin {
   };
 }
 
-/** The worker's own Vite configuration: no config file, plugins or public/. */
+/** The worker's own Vite configuration: no config file, plugins or app/public/. */
 export function serviceWorkerConfig({
   root,
   outDir,

@@ -7,8 +7,8 @@ test("Published study attribution matches the source licence notice", () => {
     readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
   assert.equal(
-    read("public/licenses/study-data.txt"),
+    read("app/public/licenses/study-data.txt"),
     read("data/study/LICENSE.md"),
-    "Copy data/study/LICENSE.md to public/licenses/study-data.txt when study attribution changes",
+    "Copy data/study/LICENSE.md to app/public/licenses/study-data.txt when study attribution changes",
   );
 });

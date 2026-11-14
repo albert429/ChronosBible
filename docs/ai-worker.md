@@ -4,7 +4,7 @@ AI is optional. The reader stays a static application; only `/api/ai/*` runs Wor
 
 ## Architecture and public contract
 
-`worker/index.ts` routes requests to one SQLite-backed `AiCoordinator` per environment. `worker/` owns credentials, prompts, trusted context, provider calls, stream parsing, atomic quotas and shared answers. `src/features/ai/domain/` holds pure contracts; `src/features/ai/data/` holds the same-origin API client. Browser imports of Worker code are rejected by ESLint and `npm run layers`.
+`app/worker/index.ts` routes requests to one SQLite-backed `AiCoordinator` per environment. `app/worker/` owns credentials, prompts, trusted context, provider calls, stream parsing, atomic quotas and shared answers. `app/src/features/ai/domain/` holds pure contracts; `app/src/features/ai/data/` holds the same-origin API client. Browser imports of Worker code are rejected by ESLint and `npm run layers`.
 
 - `GET /api/ai/v1/status`: `available`, `cacheRevision`, device `limits` and `usage`, and `resets.device` (Cairo) / `resets.provider` (UTC), as epoch milliseconds. Availability describes runtime configuration; generation can still be refused by an allowance or concurrency limit.
 - `POST /api/ai/v1/answer`: `{ verseId, chip, question?, fresh?, turnstileToken }`. `chip` is `explain`, `words`, `background` or `ask`. Only `ask` accepts a question, cleaned and bounded to 3–200 characters. The entire UTF-8 body is bounded to 16 KiB, including chunked bodies. Extra fields are rejected.
@@ -35,7 +35,7 @@ The server constructs an explicit upstream header allowlist. Gateway receives `c
 
 ## Local work and verification
 
-Use Node 22 and `npm ci`. Wrangler, Miniflare, Workers types and the bundler are pinned. Worker output lives in ignored `artifacts/worker/`, never `public/` or `dist/assets/`.
+Use Node 22 and `npm ci`. Wrangler, Miniflare, Workers types and the bundler are pinned. Worker output lives in ignored `artifacts/worker/`, never `app/public/` or `dist/assets/`.
 
 For live local development, generate a build, put secrets in ignored `.dev.vars.dev` using `.dev.vars.example`, configure the dev Gateway identifiers and local `AI_ORIGIN` through a local Wrangler config, then run `npm run worker:dev`. Vite proxies `/api/ai/` to port 8787; its local origin must match that runtime setting. Enable the UI with `VITE_AI_ENABLED=true` and `VITE_TURNSTILE_SITE_KEY`. Never copy real keys into `VITE_*`. Deployment tooling rejects all local secret files except committed examples.
 

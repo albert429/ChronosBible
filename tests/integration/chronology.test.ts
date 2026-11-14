@@ -15,13 +15,13 @@ import {
 } from "../../scripts/data/chronology/grouping.js";
 import { readingTitle } from "../../scripts/data/chronology/readings.js";
 import { readBibleChapters } from "../../scripts/data/build-bible.js";
-import type { BibleChapter } from "../../src/core/reading/types.ts";
-import { catalog as books } from "../../src/core/scripture/catalog.ts";
-import type { Day } from "../../src/core/reading/types.ts";
+import type { BibleChapter } from "../../app/src/core/reading/types.ts";
+import { catalog as books } from "../../app/src/core/scripture/catalog.ts";
+import type { Day } from "../../app/src/core/reading/types.ts";
 import type {
   ChronologicalReadingDefinition,
   ChronologyCatalog,
-} from "../../src/core/reading/chronology.ts";
+} from "../../app/src/core/reading/chronology.ts";
 
 const root = new URL("../../", import.meta.url).pathname;
 const built = prepareChronology(root);

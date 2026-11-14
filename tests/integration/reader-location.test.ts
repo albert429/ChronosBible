@@ -3,17 +3,17 @@ import { test } from "node:test";
 import {
   loadPreferences,
   placesFromPreferences,
-} from "../../src/features/profiles/domain/legacy.ts";
+} from "../../app/src/features/profiles/domain/legacy.ts";
 import {
   readingPosition,
   saveReadingPosition,
-} from "../../src/features/reader/position.ts";
+} from "../../app/src/features/reader/position.ts";
 import {
   locationSearch,
   validPlanOrBibleLocation,
-} from "../../src/core/reading/location.ts";
-import { sameLocation } from "../../src/core/reading/identity.ts";
-import { chapterSegments } from "../../src/features/reader/chapterSegments.ts";
+} from "../../app/src/core/reading/location.ts";
+import { sameLocation } from "../../app/src/core/reading/identity.ts";
+import { chapterSegments } from "../../app/src/features/reader/chapterSegments.ts";
 
 test("v1 device places keep each reader's last plan place, the Bible place and the mode", () => {
   const saved = {

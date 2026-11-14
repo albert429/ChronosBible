@@ -23,14 +23,14 @@ locations. Creating a video does not require changing or deploying the app.
 The playbook includes historical Bible150 examples. Current source, labels,
 schemas, and the user's brief take precedence over those fallback examples:
 
-- App identity/credits: `src/shared/lib/appInfo.ts` and the current README.
-- Visual tokens/fonts: `src/shared/styles/tokens.css`, `src/assets/`, and adjacent
-  component CSS under `src/features/` and `src/shared/ui/`.
-- Reader/navigation/audio: `src/features/reader/`, `src/features/navigation/`,
-  `src/features/audio/`, and composition in `src/app/`.
-- Study/AI demos: `src/features/study/`, `worker/prompt.ts`, and
-  `src/features/study/domain/types.ts`. Canonical study assets are under
-  `public/study/v2/`, with chapter indexes and ranged word/translation resources;
+- App identity/credits: `app/src/shared/lib/appInfo.ts` and the current README.
+- Visual tokens/fonts: `app/src/shared/styles/tokens.css`, `app/src/assets/`, and adjacent
+  component CSS under `app/src/features/` and `app/src/shared/ui/`.
+- Reader/navigation/audio: `app/src/features/reader/`, `app/src/features/navigation/`,
+  `app/src/features/audio/`, and composition in `app/src/app/`.
+- Study/AI demos: `app/src/features/study/`, `app/worker/prompt.ts`, and
+  `app/src/features/study/domain/types.ts`. Canonical study assets are under
+  `app/public/study/v2/`, with chapter indexes and ranged word/translation resources;
   the old day-based study paths and seven-field Greek tuple are historical.
   Confirm Greek, Hebrew, or Aramaic labels and disclose sample AI answers.
 - Source Scripture and attribution: `data/`, its provenance/license documents,

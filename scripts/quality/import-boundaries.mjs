@@ -43,10 +43,11 @@ const posix = (value) => value.split(path.sep).join("/");
 
 /**
  * Where a repository-relative path sits in the layering, or undefined for
- * files outside src/ (tooling).
+ * files outside app/src/ (tooling).
  */
 export function placeOf(relative) {
   const parts = posix(relative).split("/");
+  if (parts.shift() !== "app") return undefined;
   if (parts[0] === "worker") return { layer: "worker", area: "" };
   if (parts[0] !== "src") return undefined;
   if (parts.length === 2) return { layer: "root", area: "" };
@@ -78,7 +79,7 @@ const label = (place) =>
 
 /**
  * Why `from` may not import `to` (both from placeOf), or undefined when the
- * edge is allowed. `toFile` is the target path relative to src/.
+ * edge is allowed. `toFile` is the target path relative to app/src/.
  */
 export function violation(from, to, toFile) {
   if (to.layer === "worker")
@@ -90,7 +91,7 @@ export function violation(from, to, toFile) {
       ? undefined
       : "worker imports only worker, domain and shared/lib";
   if (to.layer === "app" && from?.layer !== "app" && from?.layer !== "root")
-    return "nothing imports app/ except src/main.tsx";
+    return "nothing imports app/ except app/src/main.tsx";
   if (!from) {
     if (to.layer === "domain" || to.layer === "data") return undefined;
     if (to.layer === "shared" && to.area === "lib") return undefined;
@@ -133,14 +134,14 @@ export function violation(from, to, toFile) {
   return undefined;
 }
 
-/** The place and path (relative to src/) of an import target, if inside src/. */
+/** The place and path (relative to app/src/) of an import target, if inside app/src/. */
 export function targetOf(root, importer, specifier) {
   if (!specifier.startsWith(".")) return undefined;
   const absolute = path.resolve(path.dirname(importer), specifier);
   const relative = posix(path.relative(root, absolute));
   const place = placeOf(relative);
   if (!place) return undefined;
-  return { place, file: relative.slice("src/".length) };
+  return { place, file: relative.slice("app/src/".length) };
 }
 
 function describe(from, to) {
@@ -150,7 +151,7 @@ function describe(from, to) {
 const rule = {
   meta: {
     type: "problem",
-    docs: { description: "Enforce the layering of src/" },
+    docs: { description: "Enforce the layering of app/src/" },
     schema: [],
     messages: {
       forbidden: "Forbidden import ({{edge}}): {{reason}}.",

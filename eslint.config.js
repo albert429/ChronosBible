@@ -9,9 +9,9 @@ export default tseslint.config(
     ignores: [
       "dist",
       "dist-ai",
-      "public/readings",
-      "public/study",
-      "public/audio",
+      "app/public/readings",
+      "app/public/study",
+      "app/public/audio",
       "artifacts",
       // Local or Git-ignored work: concurrent checkouts, video projects,
       // Wrangler/Vercel output, Playwright MCP captures.
@@ -40,7 +40,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["app/src/**/*.{ts,tsx}"],
     languageOptions: { globals: globals.browser },
     plugins: { "react-hooks": reactHooks },
     rules: {
@@ -49,13 +49,13 @@ export default tseslint.config(
     },
   },
   {
-    // The layering of src/ (see scripts/quality/import-boundaries.mjs). Build
+    // The layering of app/src/ (see scripts/quality/import-boundaries.mjs). Build
     // and tool code is held to the same table from the other side.
     files: [
-      "src/**/*.{ts,tsx}",
-      "worker/**/*.ts",
+      "app/src/**/*.{ts,tsx}",
+      "app/worker/**/*.ts",
       "scripts/**/*.{js,mjs,ts}",
-      "vite.config.ts",
+      "app/vite.config.ts",
     ],
     ignores: ["**/tests/**"],
     plugins: { chronos: boundaries },
@@ -63,7 +63,11 @@ export default tseslint.config(
   },
   {
     // Domain and shared/lib stay free of the UI framework and Node.
-    files: ["src/core/**", "src/features/*/domain/**", "src/shared/lib/**"],
+    files: [
+      "app/src/core/**",
+      "app/src/features/*/domain/**",
+      "app/src/shared/lib/**",
+    ],
     ignores: ["**/tests/**"],
     rules: {
       "no-restricted-globals": [

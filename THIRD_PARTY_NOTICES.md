@@ -12,7 +12,7 @@ Source archive: [arb-vd USFM](https://ebible.org/Scriptures/arb-vd_usfm.zip). Im
 
 ## Study data
 
-The verse study panel uses openly licensed data. It is stored in `data/study/` and published as canonical chapter/verse ranges and shared lexicon shards under `public/study/v2/`; legacy per-day resources remain under `public/study/`. The attribution notice is also shipped as [`/licenses/study-data.txt`](public/licenses/study-data.txt). These files are licensed under the data licences below, separately from the app code, which is AGPL-3.0-or-later. Changes made: extraction of the fields used, normalisation, removal of markup, re-keying by verse, per-day and canonical range splitting, shared lexicon sharding, and gzip storage of word resources. OT transformations also separate prefixes/suffixes, retain only verified Arabic mappings, and handle reviewed source exceptions. Full licences and transformations: [data/study/LICENSE.md](data/study/LICENSE.md) and [data/study/CANONICAL.md](data/study/CANONICAL.md).
+The verse study panel uses openly licensed data. It is stored in `data/study/` and published as canonical chapter/verse ranges and shared lexicon shards under `app/public/study/v2/`; legacy per-day resources remain under `app/public/study/`. The attribution notice is also shipped as [`/licenses/study-data.txt`](app/public/licenses/study-data.txt). These files are licensed under the data licences below, separately from the app code, which is AGPL-3.0-or-later. Changes made: extraction of the fields used, normalisation, removal of markup, re-keying by verse, per-day and canonical range splitting, shared lexicon sharding, and gzip storage of word resources. OT transformations also separate prefixes/suffixes, retain only verified Arabic mappings, and handle reviewed source exceptions. Full licences and transformations: [data/study/LICENSE.md](data/study/LICENSE.md) and [data/study/CANONICAL.md](data/study/CANONICAL.md).
 
 - **Greek–Arabic and Hebrew/Aramaic–Arabic word tags (TTAraSVD NT/OT)** — STEPBible.org, CC BY-SA 4.0. The original work by STEPBible.org, and Arabic Bible Outreach Ministry, is available for free at ["STEPBible Arabic Bibles"](https://github.com/STEPBible/STEPBible-Data/tree/master/Tagged-Bibles/Arabic%20Bibles). Arabic text digitisation, formatting and diacritics by Arabic Bible Outreach Ministry (https://www.arabicbible.com/). Underlying OT Hebrew/Aramaic data: TAHOT, STEPBible.org, CC BY 4.0.
 - **Hebrew/Aramaic lemma and gloss metadata (TBESH)** — STEPBible.org, based on work at Tyndale House Cambridge, CC BY 4.0. The definition column is excluded from import and redistribution because its source header additionally requests Online Bible permission for those definitions.
@@ -26,8 +26,8 @@ Deployments may enable AI explanations of verses through [OpenRouter](https://op
 
 ## Fonts
 
-- **Amiri** — Copyright 2010–2022 The Amiri Project Authors. [Bundled SIL Open Font License 1.1](public/fonts/Amiri-OFL.txt).
-- **Noto Sans Arabic** — Copyright 2022 The Noto Project Authors. [Bundled SIL Open Font License 1.1](public/fonts/NotoSansArabic-OFL.txt).
+- **Amiri** — Copyright 2010–2022 The Amiri Project Authors. [Bundled SIL Open Font License 1.1](app/public/fonts/Amiri-OFL.txt).
+- **Noto Sans Arabic** — Copyright 2022 The Noto Project Authors. [Bundled SIL Open Font License 1.1](app/public/fonts/NotoSansArabic-OFL.txt).
 
 Original TTF files are retained in `assets/source-fonts/`; WOFF2 conversions preserve glyphs and Arabic shaping tables. Font licenses remain available in the deployed app under `/fonts/`.
 
@@ -47,7 +47,7 @@ The banner's laptop and phone are generated likenesses of Apple products. Mac, M
 
 React, React DOM and fflate (gzip decoding for older browsers) use the MIT License; Lucide uses the ISC License. Each installed dependency retains its own license in the npm package. The lockfile records exact dependency versions. The application copyright notice does not override these licenses.
 
-The small React mark in About the app and the README is adapted from the [official React website's Logo component](https://github.com/reactjs/react.dev/blob/main/src/components/Logo.tsx), credited to Meta Platforms, Inc. and affiliates under MIT. It uses a restrained monochrome color. The [MIT notice is bundled](public/licenses/react-logo-MIT.txt).
+The small React mark in About the app and the README is adapted from the [official React website's Logo component](https://github.com/reactjs/react.dev/blob/main/src/components/Logo.tsx), credited to Meta Platforms, Inc. and affiliates under MIT. It uses a restrained monochrome color. The [MIT notice is bundled](app/public/licenses/react-logo-MIT.txt).
 
 ## Optional recorded Scripture
 

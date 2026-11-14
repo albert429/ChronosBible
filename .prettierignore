@@ -1,6 +1,6 @@
 data/plan.json
 data/source-plan.json
-public/readings/
+app/public/readings/
 dist/
 artifacts/
 test-results/
@@ -8,8 +8,8 @@ playwright-report/
 package-lock.json
 data/books.json
 data/study/
-public/study/
-public/audio/
+app/public/study/
+app/public/audio/
 data/audio/manifests/
 dist-ai/
 data/audio/catalog.json
@@ -17,7 +17,7 @@ data/audio/alignments/
 data/audio/chapters/
 
 data/bible/catalog.json
-public/bible/
+app/public/bible/
 data/audio/readings/
 data/audio/review/
 data/audio/reading-catalog.json

@@ -1,4 +1,4 @@
-"""Hash contract between the Python audio tools and src/features/audio/domain/manifest.ts.
+"""Hash contract between the Python audio tools and app/src/features/audio/domain/manifest.ts.
 
 Standard library only: run `npm run test:python`
 from the repository root.

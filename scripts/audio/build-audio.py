@@ -371,13 +371,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("source", type=Path)
     parser.add_argument("--aligned", type=Path, default=ROOT / "data/audio/alignments")
-    parser.add_argument("--output", type=Path, help="Media folder (default public/audio; announced: artifacts)")
+    parser.add_argument("--output", type=Path, help="Media folder (default app/public/audio; announced: artifacts)")
     parser.add_argument("--days", help="Comma-separated days for a pilot; default all 150")
     parser.add_argument("--announcements", type=Path, help="Reviewed spoken-reference catalog (catalog.json)")
     parser.add_argument("--manifests", type=Path, help="Announced manifests folder (default under artifacts/)")
     parser.add_argument("--separation", type=float, default=.25, help="Seconds around each reference (0.2–0.35)")
     parser.add_argument("--draft", action="store_true",
-                        help="Private pilot with unreviewed wording or clips; never written into public/ or data/")
+                        help="Private pilot with unreviewed wording or clips; never written into app/public/ or data/")
     args = parser.parse_args()
     books = usfm_by_name()
     plan = json.loads((ROOT / "data/plan.json").read_text())
@@ -388,8 +388,8 @@ def main():
         output = args.output or work
         manifests = args.manifests or work / "manifests"
         if args.draft and any(inside(path, ROOT / folder) for path in (output, manifests)
-                              for folder in ("public", "data")):
-            parser.error("--draft output must stay outside public/ and data/")
+                              for folder in ("app/public", "data")):
+            parser.error("--draft output must stay outside app/public/ and data/")
         references = {r["id"]: r for r in json.loads(
             (ROOT / "data/audio/reference-texts.json").read_text(encoding="utf-8"))["references"]}
         clips = load_clips(args.announcements, references, args.draft, ffmpeg_pcm)
@@ -407,7 +407,7 @@ def main():
             {"draft": args.draft, "voice": voice, "separation": args.separation, "loudness": LOUDNESS,
              "days": reports}, ensure_ascii=False, indent=2) + "\n")
         return
-    output = args.output or ROOT / "public/audio"
+    output = args.output or ROOT / "app/public/audio"
     manifests = args.manifests or ROOT / "data/audio/manifests"
     manifests.mkdir(parents=True, exist_ok=True)
     stray = stray_manifest_days(manifests, plan)

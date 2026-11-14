@@ -4,7 +4,7 @@ import { expect, type Page } from "@playwright/test";
 import {
   PROGRESS_KEY,
   STATE_KEY,
-} from "../../src/features/profiles/storage.ts";
+} from "../../app/src/features/profiles/storage.ts";
 
 export const profile = {
   id: "reader-one",

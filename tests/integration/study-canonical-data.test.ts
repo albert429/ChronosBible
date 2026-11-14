@@ -24,11 +24,11 @@ import { scanAssets } from "../../scripts/hosting/cloudflare-assets.mjs";
 import type {
   GreekToken,
   StudyWords,
-} from "../../src/features/study/domain/types.ts";
+} from "../../app/src/features/study/domain/types.ts";
 import {
   verseWordsTitle,
   wordsTitle,
-} from "../../src/features/study/domain/words.ts";
+} from "../../app/src/features/study/domain/words.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 

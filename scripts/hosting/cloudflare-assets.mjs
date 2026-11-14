@@ -7,7 +7,7 @@ import { usfmCodes } from "../lib/books.js";
 import { ROOT } from "../lib/paths.js";
 import { fail } from "./cloudflare-policy.mjs";
 
-// The word-range limits of src/features/study/domain/limits.ts, kept here as plain
+// The word-range limits of app/src/features/study/domain/limits.ts, kept here as plain
 // numbers: Workers Builds runs this file with plain `node`, which may lack
 // TypeScript support, so nothing on the deploy path imports a .ts module.
 // tests/integration/cloudflare-app.test.ts fails if the two copies differ.

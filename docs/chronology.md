@@ -24,10 +24,10 @@ about ten minutes. The PDF and page renders are not committed.
    repetition, every omission and every applied correction. If the source
    audit differs from this file in any way, the build stops.
 4. `scripts/data/build-chronology.js` (run by `scripts/data/build-data.js`) writes the
-   ignored output `public/chronology/OT.json` and `NT.json` (catalogs:
+   ignored output `app/public/chronology/OT.json` and `NT.json` (catalogs:
    summaries only) and one definition per reading,
-   `public/chronology/<T>/<id>.json` (references only). Scripture text is
-   never copied: at run time `src/features/chronology/data/client.ts` slices the existing
+   `app/public/chronology/<T>/<id>.json` (references only). Scripture text is
+   never copied: at run time `app/src/features/chronology/data/client.ts` slices the existing
    canonical chapters, `/bible/<USFM>/<n>.json`, which load through the shared
    chapter cache. Headings, superscriptions, acrostics, paragraphs and poetry
    blocks inside each range are kept with their canonical verse numbers and

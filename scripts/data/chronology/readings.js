@@ -1,10 +1,10 @@
 /** Assemble validated reading definitions, titles and catalog summaries. */
-import { catalog as books } from "../../../src/core/scripture/catalog.ts";
+import { catalog as books } from "../../../app/src/core/scripture/catalog.ts";
 import {
   chronologyCatalogErrors,
   chronologyDefinitionErrors,
-} from "../../../src/features/chronology/data/validate.ts";
-import { ar } from "../../../src/shared/lib/format.ts";
+} from "../../../app/src/features/chronology/data/validate.ts";
+import { ar } from "../../../app/src/shared/lib/format.ts";
 import {
   SOURCE_ID,
   SOURCE_TITLE,

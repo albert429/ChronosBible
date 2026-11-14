@@ -5,22 +5,22 @@ import { join } from "node:path";
 import { after, test } from "node:test";
 import { readBibleChapters } from "../../scripts/data/build-bible.js";
 import { buildChronology } from "../../scripts/data/build-chronology.js";
-import { createBibleClient } from "../../src/features/bible/data/client.ts";
+import { createBibleClient } from "../../app/src/features/bible/data/client.ts";
 import type {
   BibleChapter,
   ChronologicalLocation,
-} from "../../src/core/reading/types.ts";
-import { createChronologyClients } from "../../src/features/chronology/data/client.ts";
+} from "../../app/src/core/reading/types.ts";
+import { createChronologyClients } from "../../app/src/features/chronology/data/client.ts";
 import {
   adjacentChronologicalLocation,
   firstChronologicalLocation,
-} from "../../src/core/reading/chronologyCatalog.ts";
-import { chronologicalKeyLocation } from "../../src/core/reading/identity.ts";
+} from "../../app/src/core/reading/chronologyCatalog.ts";
+import { chronologicalKeyLocation } from "../../app/src/core/reading/identity.ts";
 import type {
   ChronologicalReading,
   ChronologyCatalog,
-} from "../../src/core/reading/chronology.ts";
-import { isChronologicalReadingData } from "../../src/features/chronology/data/validate.ts";
+} from "../../app/src/core/reading/chronology.ts";
+import { isChronologicalReadingData } from "../../app/src/features/chronology/data/validate.ts";
 
 const root = new URL("../../", import.meta.url).pathname;
 const out = mkdtempSync(join(tmpdir(), "chronology-"));

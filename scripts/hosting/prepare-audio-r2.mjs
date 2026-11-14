@@ -16,11 +16,11 @@ import { isMain } from "../lib/paths.js";
 import {
   AUDIO_MAX_BYTES,
   AUDIO_MEDIA_PATTERN,
-} from "../../src/features/audio/domain/contract.ts";
+} from "../../app/src/features/audio/domain/contract.ts";
 import {
   manifestMedia,
   publishedMedia,
-} from "../../src/features/audio/domain/publication.ts";
+} from "../../app/src/features/audio/domain/publication.ts";
 
 /** One wrangler process uploads this many objects at most (tokens can expire). */
 export const UPLOAD_BATCH_SIZE = 300;
@@ -72,7 +72,7 @@ export function placeMedia(srcs, output, roots, { link = true } = {}) {
 }
 
 /** Compatibility: copy each manifest's recording from `root` into the folder. */
-export function copyMedia(manifestPaths, output, root = "public") {
+export function copyMedia(manifestPaths, output, root = "app/public") {
   const srcs = manifestPaths.flatMap((path) => {
     const media = manifestMedia(JSON.parse(readFileSync(path, "utf8")));
     if (!media.length || !media.every((src) => AUDIO_MEDIA_PATTERN.test(src)))
@@ -216,7 +216,7 @@ export function writeUploadBatches(dir, batches) {
 
 // Kept separate from the Vercel build: recordings never enter Git or its bundle.
 // Media roots (AUDIO_MEDIA_ROOT, a path-delimited list, or repeated --media)
-// may lie outside public/, so local builds do not copy recordings into dist/.
+// may lie outside app/public/, so local builds do not copy recordings into dist/.
 // Nothing here talks to Cloudflare: `npm run audio:host:upload` uploads.
 if (isMain(import.meta.url)) {
   const { values } = parseArgs({
@@ -237,7 +237,7 @@ if (isMain(import.meta.url)) {
   });
   const roots = values.media?.length
     ? values.media
-    : (process.env.AUDIO_MEDIA_ROOT || "public").split(delimiter);
+    : (process.env.AUDIO_MEDIA_ROOT || "app/public").split(delimiter);
   const inventory = prepareRelease({
     root: values.root,
     output: resolve(values.output),

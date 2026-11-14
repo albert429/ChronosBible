@@ -11,7 +11,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 from chronos_tools.paths import ROOT as root  # noqa: E402
 
-output = root / "src/assets"
+output = root / "app/src/assets"
 output.mkdir(parents=True, exist_ok=True)
 for source in (root / "assets/source-fonts").glob("*.ttf"):
     font = TTFont(source, recalcTimestamp=False)

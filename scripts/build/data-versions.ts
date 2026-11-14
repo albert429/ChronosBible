@@ -3,14 +3,14 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
-import { DATA_FOLDERS } from "../../src/features/offline/rules.ts";
+import { DATA_FOLDERS } from "../../app/src/features/offline/rules.ts";
 
 /**
- * A short content hash of each generated data folder under public/: the
+ * A short content hash of each generated data folder under app/public/: the
  * client names files with it, so hosting can cache them for good. A missing
  * folder has no version and its files are fetched by their plain address.
  */
-export function dataVersions(root = "public"): Record<string, string> {
+export function dataVersions(root = "app/public"): Record<string, string> {
   const versions: Record<string, string> = {};
   for (const folder of DATA_FOLDERS) {
     const base = join(root, folder);

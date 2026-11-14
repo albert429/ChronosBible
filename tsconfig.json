@@ -2,7 +2,7 @@
   "files": [],
   "references": [
     {
-      "path": "./config/typescript/tsconfig.app.json"
+      "path": "./app/tsconfig.json"
     },
     {
       "path": "./config/typescript/tsconfig.node.json"
@@ -11,7 +11,7 @@
       "path": "./config/typescript/tsconfig.scripts.json"
     },
     {
-      "path": "./config/typescript/tsconfig.worker.json"
+      "path": "./app/worker/tsconfig.json"
     }
   ]
 }

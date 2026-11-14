@@ -16,10 +16,10 @@ import {
   prepareBible,
   readBibleChapters,
 } from "../../scripts/data/build-bible.js";
-import { catalog } from "../../src/core/scripture/catalog.ts";
-import { validBibleChapter } from "../../src/features/bible/data/client.ts";
-import type { BibleChapter } from "../../src/core/reading/types.ts";
-import type { Day } from "../../src/core/reading/types.ts";
+import { catalog } from "../../app/src/core/scripture/catalog.ts";
+import { validBibleChapter } from "../../app/src/features/bible/data/client.ts";
+import type { BibleChapter } from "../../app/src/core/reading/types.ts";
+import type { Day } from "../../app/src/core/reading/types.ts";
 
 const root = new URL("../../", import.meta.url).pathname;
 const chapters: BibleChapter[] = readBibleChapters(root);

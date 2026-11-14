@@ -73,21 +73,21 @@ adapted from the portrait design.
   `@remotion/google-fonts`, `@remotion/bundler` and `@remotion/renderer`
   (4.0.x). Add React 19, `lucide-react` (app icons) and TypeScript.
 - **`remotion.config.ts`:**
-  - `setEntryPoint("src/index.ts")` and `setConcurrency(6)`.
+  - `setEntryPoint("app/src/index.ts")` and `setConcurrency(6)`.
   - Unless `REMOTION_AUDIO_ONLY=1`: jpeg frames at quality 95, h264, CRF 16,
     yuv420p (the WAV codec rejects these options).
   - `if (process.env.REMOTION_BROWSER) Config.setBrowserExecutable(...)`.
     Remotion can't download its Chrome here, so use Playwright's
     `~/Library/Caches/ms-playwright/chromium_headless_shell-<ver>/chrome-headless-shell-mac-arm64/chrome-headless-shell`.
 - **Fonts:**
-  - Arabic faces copied into `public/fonts`, loaded with `new FontFace` and
+  - Arabic faces copied into `app/public/fonts`, loaded with `new FontFace` and
     `staticFile`, inside `delayRender` / `continueRender`, with
     `cancelRender` on failure.
   - Latin faces from `@remotion/google-fonts`, which needs network at render
     time.
   - Import a `base.css` that repeats the app's `p, h1–h3 { margin: 0 }`.
 - **Layout:**
-  - `src/timeline.json` and `src/timeline-short.json` hold
+  - `app/src/timeline.json` and `app/src/timeline-short.json` hold
     `{ fps, crossfade, scenes: [{ id, frames, offset?, framesWithoutDrama?, dramaAt? }] }`.
   - `Promo.tsx` maps ids to components.
   - `Root.tsx` registers `Promo` (1920×1080), `PromoVertical` and
@@ -95,7 +95,7 @@ adapted from the portrait design.
     for review. `calculateMetadata` sets the duration from the props.
   - Read orientation with `useLayout()`: portrait when height exceeds width.
 - **Data.** A script extracts the real data the film shows from the app into
-  `src/data.json`, so the film never drifts from the app.
+  `app/src/data.json`, so the film never drifts from the app.
 
 ## Reels
 
@@ -344,11 +344,11 @@ crossfades minus offsets).
   is `#f4efe3`.
 - **Data:**
   - `data/plan.json`: 150 days of passages and verses.
-  - `public/study/<day>.json`: Greek tokens
+  - `app/public/study/<day>.json`: Greek tokens
     `[word, translit, strong, morph, gloss, a0, a1]`. The Greek list shows
     only morph N/V/A/INJ, one row per Strong's number.
   - `.tr.json`: `n` is كتاب الحياة, `e` is KJV.
-  - `public/audio/<day>.json`: verse cues.
+  - `app/public/audio/<day>.json`: verse cues.
 - **UI facts:**
   - references are written «١: ١٦», with a space;
   - a tap on the verse text opens the study sheet;

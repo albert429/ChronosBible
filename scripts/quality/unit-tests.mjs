@@ -15,7 +15,7 @@ export function unitTests(root = ROOT) {
       else if (entry.name.endsWith(".test.ts")) found.push(name);
     }
   };
-  for (const directory of ["src", "scripts", "worker", "tests"])
+  for (const directory of ["app/src", "scripts", "app/worker", "tests"])
     visit(directory);
   if (!found.length) throw new Error("No unit tests discovered");
   return found.sort();

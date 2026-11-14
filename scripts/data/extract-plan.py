@@ -18,14 +18,14 @@ def extract_rows(source: Path) -> list:
         document = ET.fromstring(archive.read("word/document.xml"))
 
     rows = []
-    for row in document.findall(".//w:tr", NAMESPACES):
+    for row in document.findall("./w:tr", NAMESPACES):
         cells = []
         for cell in row.findall("w:tc", NAMESPACES):
             paragraphs = []
-            for paragraph in cell.findall(".//w:p", NAMESPACES):
+            for paragraph in cell.findall("./w:p", NAMESPACES):
                 text = "".join(
                     run.text or ""
-                    for run in paragraph.findall(".//w:t", NAMESPACES)
+                    for run in paragraph.findall("./w:t", NAMESPACES)
                 )
                 paragraphs.append(text)
             cells.append(paragraphs)

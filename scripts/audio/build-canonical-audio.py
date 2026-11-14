@@ -98,7 +98,7 @@ def stray_manifests(manifests, chapters):
     """Manifest files (CODE/N.json) for chapters the Bible source no longer has.
 
     Reported, never deleted: the catalog lists built chapters only, and media
-    under public/audio is immutable and content-named.
+    under app/public/audio is immutable and content-named.
     """
     expected = {f"{reading['usfm']}/{reading['chapter']}.json" for _, reading in chapters}
     found = {path.relative_to(manifests).as_posix() for path in Path(manifests).rglob('*.json')}
@@ -114,7 +114,7 @@ def main():
     parser.add_argument('--alignments', type=Path, nargs='+', default=DEFAULT_FOLDERS)
     parser.add_argument('--review', type=Path, nargs='+', default=DEFAULT_REVIEWS)
     parser.add_argument('--data-root', type=Path, default=ROOT / 'data/audio')
-    parser.add_argument('--output', type=Path, default=ROOT / 'public/audio')
+    parser.add_argument('--output', type=Path, default=ROOT / 'app/public/audio')
     parser.add_argument('--manifests', type=Path)
     parser.add_argument('--chapters', help='Optional comma-separated CODE:N pilot; coverage still checked against full sources')
     parser.add_argument('--trims', type=Path, default=ROOT / 'data/audio/source-trims.json')

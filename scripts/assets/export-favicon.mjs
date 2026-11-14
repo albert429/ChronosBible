@@ -1,6 +1,6 @@
 /**
  * Export the SVG source as PNGs without changing its design: the 32px
- * favicon fallback, and the installed app's icons in public/icons/ (192 and
+ * favicon fallback, and the installed app's icons in app/public/icons/ (192 and
  * 512px as drawn; maskable and Apple touch icons full-bleed, the book inside
  * the safe zone that launchers may crop to).
  */
@@ -8,29 +8,29 @@ import { chromium } from "playwright";
 import { mkdir, readFile } from "node:fs/promises";
 import { repoPath } from "../lib/paths.js";
 
-const source = await readFile(repoPath("src/assets/favicon.svg"), "utf8");
+const source = await readFile(repoPath("app/src/assets/favicon.svg"), "utf8");
 const out = (path) => repoPath(path);
-// The paper tone of the icon's own background (src/shared/styles/tokens.css --bg).
+// The paper tone of the icon's own background (app/src/shared/styles/tokens.css --bg).
 const PAPER = "#f7f5ef";
 const exports = [
-  { path: "src/assets/favicon.png", size: 32, scale: 1, bleed: false },
-  { path: "public/icons/icon-192.png", size: 192, scale: 1, bleed: false },
-  { path: "public/icons/icon-512.png", size: 512, scale: 1, bleed: false },
+  { path: "app/src/assets/favicon.png", size: 32, scale: 1, bleed: false },
+  { path: "app/public/icons/icon-192.png", size: 192, scale: 1, bleed: false },
+  { path: "app/public/icons/icon-512.png", size: 512, scale: 1, bleed: false },
   {
-    path: "public/icons/maskable-512.png",
+    path: "app/public/icons/maskable-512.png",
     size: 512,
     scale: 0.72,
     bleed: true,
   },
   {
-    path: "public/icons/apple-touch-icon.png",
+    path: "app/public/icons/apple-touch-icon.png",
     size: 180,
     scale: 0.84,
     bleed: true,
   },
 ];
 
-await mkdir(out("public/icons"), { recursive: true });
+await mkdir(out("app/public/icons"), { recursive: true });
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || undefined,
 });

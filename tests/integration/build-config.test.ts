@@ -31,7 +31,7 @@ const viteKeys = (env: Record<string, string | undefined>) =>
 test("Every reference configuration sets every VITE_ variable the build reads", () => {
   const read_ = new Set(
     [
-      read("vite.config.ts"),
+      read("app/vite.config.ts"),
       ...readdirSync(new URL("../../scripts/build/", import.meta.url))
         .filter((name) => name.endsWith(".ts"))
         .map((name) => read(`scripts/build/${name}`)),
@@ -162,8 +162,8 @@ test("A reference build refuses local env files and local audio media", () => {
     writeFileSync(join(root, ".env.local"), "VITE_X=1");
     assert.throws(() => assertClean(root), /\.env\.local/);
     rmSync(join(root, ".env.local"));
-    mkdirSync(join(root, "public/audio/days"), { recursive: true });
-    writeFileSync(join(root, "public/audio/days/1.m4a"), "x");
+    mkdirSync(join(root, "app/public/audio/days"), { recursive: true });
+    writeFileSync(join(root, "app/public/audio/days/1.m4a"), "x");
     assert.throws(() => assertClean(root), /local media/);
   } finally {
     rmSync(root, { recursive: true, force: true });

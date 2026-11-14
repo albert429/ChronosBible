@@ -168,7 +168,7 @@ def audit(data, chronology, folders, summaries, listening, media=(), publication
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-root', type=Path, default=ROOT / 'data/audio')
-    parser.add_argument('--chronology', type=Path, default=ROOT / 'public/chronology')
+    parser.add_argument('--chronology', type=Path, default=ROOT / 'app/public/chronology')
     parser.add_argument('--alignments', type=Path, nargs='+', default=DEFAULT_FOLDERS)
     parser.add_argument('--review', type=Path, nargs='+', default=DEFAULT_REVIEWS)
     parser.add_argument('--listening', type=Path, default=ROOT / 'data/audio/review/listening.json')

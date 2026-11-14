@@ -10,9 +10,9 @@
 // folders are never removed.
 //
 // The canonical study set keeps its inventory inside its folder
-// (public/study/v2/inventory.json, which the app also reads). The other
+// (app/public/study/v2/inventory.json, which the app also reads). The other
 // builders' outputs are shipped as they are, so their inventories live outside
-// public/ (OWNERSHIP_DIR). The Python tools follow the same rules
+// app/public/ (OWNERSHIP_DIR). The Python tools follow the same rules
 // (scripts/lib/chronos_tools/ownership.py).
 import { createHash } from "node:crypto";
 import {

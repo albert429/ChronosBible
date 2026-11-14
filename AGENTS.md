@@ -2,20 +2,31 @@
 
 ## Project Structure & Module Organization
 
+The deployable application lives in `app/`: browser source and static assets,
+the Worker runtime, the HTML entrypoint, and Vite and application TypeScript
+configuration. Run npm commands from the repository root; one package manifest
+and lockfile serve both runtimes. Build output stays in root `dist/` (and
+`dist-ai/` for browser tests), so hosting and preview commands keep their paths.
+
+Repository-wide lint/format settings, the aggregate `tsconfig.json`, and hosting
+discovery files (`wrangler.json`, `vercel.json`) stay at the root. Source data,
+build tools, documentation, and cross-owner tests remain alongside `app/`.
+
 ChronosBible uses feature ownership with a shared pure foundation:
 
-- `src/core/scripture/` and `src/core/reading/` hold shared Scripture and reading
+- `app/src/core/scripture/` and `app/src/core/reading/` hold shared Scripture and reading
   contracts. Core imports only core and pure `shared/lib` helpers.
-- `src/features/<name>/` owns its UI, hooks, adjacent CSS, `domain/` pure logic,
+- `app/src/features/<name>/` owns its UI, hooks, adjacent CSS, `domain/` pure logic,
   `data/` network clients, and `tests/`. Feature domain modules import only
   their own domain, core and pure shared helpers. Clients import contracts,
   other clients and `shared/network` transport; never feature UI.
-- `src/shared/` holds generic UI, hooks, browser adapters, network transport,
+- `app/src/shared/` holds generic UI, hooks, browser adapters, network transport,
   styles and pure helpers. It never imports features or app code.
-- `src/app/` composes features; only `src/main.tsx` imports it.
-- `worker/` owns the server runtime and `worker/tests/`. It consumes pure
+- `app/src/app/` composes features; only `app/src/main.tsx` imports it.
+- `app/worker/` owns the server runtime and `app/worker/tests/`. It consumes pure
   contracts, never browser implementation. Browser code never imports Worker code.
-- `config/typescript/` contains supporting compiler projects;
+- `app/tsconfig.json` checks browser code; `app/worker/tsconfig.json` checks the
+  Worker. `config/typescript/` contains the Node and build-tool projects;
   `config/playwright.config.ts` configures browser tests from the repository root.
 - `tests/integration/` holds cross-owner contracts, `tests/browser/` holds browser
   workflows, and `tests/fixtures/` holds shared fixtures. Unit tests live beside
@@ -37,15 +48,15 @@ One reader serves four tracks: the 150-day youth plan (Cairo dates), the full
 Bible, and Old/New Testament chronology. The place lives in the query string
 (`?day=N`, `?mode=bible&book=GEN&chapter=1`,
 `?mode=chronological&testament=OT&reading=<id>`), parsed in
-`src/core/reading/location.ts`; there is no path routing. `vite.config.ts` validates
+`app/src/core/reading/location.ts`; there is no path routing. `app/vite.config.ts` validates
 `VITE_*` settings and inlines them as build constants (`__AUDIO_BASE_URL__`,
 `__AI_ENABLED__`, …); app code never reads `import.meta.env`, and disabled
 features are absent from the bundle.
 
 `data/` holds source data; `scripts/` is grouped by workflow (`build/`, `data/`,
 `audio/`, `hosting/`, `assets/`, `quality/`, shared `lib/`) and builds static
-JSON into `public/` (`scripts/data/build-data.js` runs in `predev`/`prebuild`; a
-bare `vite build` skips it). A few old script paths stay as thin wrappers. Runtime assets live in `src/assets/`; documentation
+JSON into `app/public/` (`scripts/data/build-data.js` runs in `predev`/`prebuild`; a
+bare `vite build` skips it). A few old script paths stay as thin wrappers. Runtime assets live in `app/src/assets/`; documentation
 images belong in `docs/assets/`. See `docs/development.md` for the full
 architecture and `docs/audio.md` for the audio pipeline.
 
@@ -61,7 +72,7 @@ Use Node.js 22 and `npm ci` for locked dependencies.
   recursive `py_compile` and the browser tests; honors `PW_PORT`.
 - `npm run test:e2e`: build audio fixtures and run Playwright workflows.
 - `npm run test:python`: test Python utilities.
-- One unit test: `node --experimental-strip-types --test src/features/profiles/tests/progress.test.ts`
+- One unit test: `node --experimental-strip-types --test app/src/features/profiles/tests/progress.test.ts`
   (use the owner’s `tests/` path; `--test-name-pattern` filters).
 - One browser spec: export `AUDIO_TEST_FIXTURES=1`,
   `VITE_AUDIO_BASE_URL=https://audio.example.test` and
@@ -89,7 +100,7 @@ Playwright specs live in `tests/browser/*.spec.ts`, covering Chromium, mobile
 WebKit, and axe accessibility checks. Add regression coverage for changed
 behavior and preserve exact Scripture-data checks. Storage changes must keep
 the `bible-reader-state-v2` migration and backup import tests passing
-(`tests/integration/reader-contracts.test.ts`, `src/features/profiles/tests/progress.test.ts`). For UI changes,
+(`tests/integration/reader-contracts.test.ts`, `app/src/features/profiles/tests/progress.test.ts`). For UI changes,
 verify 320–430px widths, both themes, large Arabic text, focus, and reduced
 motion.
 
@@ -113,7 +124,7 @@ both branches.
 Every push deploys. Cloudflare Workers Builds publishes `main` to
 chronosbible.com and `dev` to dev.chronosbible.com; Vercel publishes `main` to
 sfk-bible-reading.vercel.app plus branch previews. Both Workers serve static
-assets directly, with `/api/ai/*` handled by `worker/` (`wrangler.json`). `hosting/cloudflare-app/_headers` and
+assets directly, with `/api/ai/*` handled by `app/worker/` (`wrangler.json`). `hosting/cloudflare-app/_headers` and
 `_redirects` are copied into `dist/` for Cloudflare only, while Vercel reads
 `vercel.json`; keep caching and redirects in step.
 
@@ -137,7 +148,7 @@ commit the updated inventory.
 
 Preserve Scripture wording, passage order, attribution, and progress/backup
 compatibility. Regenerate data through documented importers; do not hand-edit
-`public/readings/`, `public/study/`, or `public/audio/`.
+`app/public/readings/`, `app/public/study/`, or `app/public/audio/`.
 Never commit credentials, private backups, audio binaries, or generated reports.
 Treat `VITE_*` values as public. Keep working artifacts in ignored `artifacts/`
 and concurrent worktrees in `.agents/`; leave other contributors' checkouts

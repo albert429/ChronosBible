@@ -1,7 +1,7 @@
 /** Committed source inputs, canonical coverage audits and reviewed corrections. */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalog as books } from "../../../src/core/scripture/catalog.ts";
+import { catalog as books } from "../../../app/src/core/scripture/catalog.ts";
 import { ROOT } from "../../lib/paths.js";
 
 export const TESTAMENTS = ["OT", "NT"];

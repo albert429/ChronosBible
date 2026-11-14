@@ -114,7 +114,7 @@ export function preflight(
         binding: "ASSETS",
         run_worker_first: ["/api/ai/*"],
       }) ||
-    (effective.main ?? config.main) !== "worker/index.ts" ||
+    (effective.main ?? config.main) !== "app/worker/index.ts" ||
     config.compatibility_date !== "2026-10-01" ||
     JSON.stringify(config.compatibility_flags) !==
       JSON.stringify(["enable_request_signal"]) ||
@@ -137,7 +137,7 @@ export function preflight(
   )
     fail("unexpected Worker, routes, assets, or build configuration");
   const redirects = committedRedirects(root);
-  scanAssets(join(root, "public"), env, redirects);
+  scanAssets(join(root, "app/public"), env, redirects);
   scanAssets(join(root, "dist"), env, redirects);
   return { ...selected, head };
 }

@@ -4,18 +4,18 @@ import assert from "node:assert/strict";
 import {
   readingTranscript,
   validManifest,
-} from "../../src/features/audio/domain/manifest.ts";
+} from "../../app/src/features/audio/domain/manifest.ts";
 import {
   matchesReading,
   readingHash,
-} from "../../src/features/audio/domain/compatibility.ts";
-import { cueAt } from "../../src/features/audio/domain/timeline.ts";
+} from "../../app/src/features/audio/domain/compatibility.ts";
+import { cueAt } from "../../app/src/features/audio/domain/timeline.ts";
 import type {
   Cue,
   LegacyAudioManifest,
-} from "../../src/features/audio/domain/types.ts";
-import { audioUrl } from "../../src/features/audio/domain/url.ts";
-import type { Day } from "../../src/core/reading/types.ts";
+} from "../../app/src/features/audio/domain/types.ts";
+import { audioUrl } from "../../app/src/features/audio/domain/url.ts";
+import type { Day } from "../../app/src/core/reading/types.ts";
 
 const reading: Day = {
   day: 1,
