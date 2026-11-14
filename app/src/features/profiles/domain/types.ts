@@ -26,8 +26,10 @@ export type TrackCompletion = {
  */
 export type ReadOn = Record<string, string>;
 export type Completed = { completion: TrackCompletion; readOn?: ReadOn };
-/** A stored reader. `completed` always mirrors `completion.plan`. */
-export type ReaderProfile = Reader & ReaderPlaces & Completed;
+/** A stored reader; plan progress lives in `completion.plan`. */
+export type ReaderProfile = Omit<Reader, "completed"> &
+  ReaderPlaces &
+  Completed;
 /**
  * Reading without a profile (id ""): places and explicit completion. Never
  * copied into, or merged with, a profile.
@@ -42,4 +44,4 @@ export type ProgressState = {
   continuous: boolean;
 };
 /** The reader portion of a version 2 backup file. */
-export type BackupReader = Omit<ReaderProfile, "id" | "completed">;
+export type BackupReader = Omit<ReaderProfile, "id">;

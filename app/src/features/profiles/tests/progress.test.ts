@@ -22,13 +22,14 @@ function current(s: ReturnType<typeof memoryStorage>) {
 test("Local progress survives reopening, is idempotent, supports reading ahead and undo", () => {
   const s = memoryStorage();
   const r = createReader(s, "ألبرت", "2026-10-01");
+  assert.equal("completed" in r, false);
   setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
   setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, true);
   setReadingCompletion(s, r.id, { mode: "plan", day: 150 }, true);
-  assert.deepEqual(current(s).completed, [1, 150]);
+  assert.deepEqual(current(s).completion.plan, [1, 150]);
   assert.equal(current(s).startDate, "2026-10-01");
   setReadingCompletion(s, r.id, { mode: "plan", day: 1 }, false);
-  assert.deepEqual(current(s).completed, [150]);
+  assert.deepEqual(current(s).completion.plan, [150]);
   assert.throws(() =>
     setReadingCompletion(s, r.id, { mode: "plan", day: 151 }, true),
   );
@@ -39,11 +40,11 @@ test("Switching between duplicate names preserves separate progress", () => {
   setReadingCompletion(s, a.id, { mode: "plan", day: 9 }, true);
   const b = createReader(s, "قارئ", "2026-10-01");
   assert.notEqual(a.id, b.id);
-  assert.deepEqual(b.completed, []);
+  assert.deepEqual(b.completion.plan, []);
   selectReader(s, null);
   assert.equal(currentReader(s), null);
   selectReader(s, a.id);
-  assert.deepEqual(current(s).completed, [9]);
+  assert.deepEqual(current(s).completion.plan, [9]);
   assert.equal(loadProgress(s).profiles.length, 2);
 });
 test("Backup can move to another browser and never overwrites an existing profile", () => {
@@ -61,10 +62,10 @@ test("Backup can move to another browser and never overwrites an existing profil
   setReadingCompletion(second, existing.id, { mode: "plan", day: 2 }, true);
   const restored = importBackup(second, text);
   assert.equal(restored.name, "ميخائيل");
-  assert.deepEqual(restored.completed, [3]);
+  assert.deepEqual(restored.completion.plan, [3]);
   assert.notEqual(restored.id, r.id);
   selectReader(second, existing.id);
-  assert.deepEqual(current(second).completed, [2]);
+  assert.deepEqual(current(second).completion.plan, [2]);
 });
 test("Bad dates, malformed backups, and corrupt stored data do not replace progress", () => {
   const s = memoryStorage();
@@ -110,5 +111,5 @@ test("Blocked storage reports failed saving instead of pretending success", () =
     () => setReadingCompletion(blocked, r.id, { mode: "plan", day: 1 }, true),
     /لم يتم الحفظ/,
   );
-  assert.deepEqual(current(s).completed, []);
+  assert.deepEqual(current(s).completion.plan, []);
 });

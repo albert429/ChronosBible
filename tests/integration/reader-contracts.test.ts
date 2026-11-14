@@ -117,7 +117,7 @@ test("v1 progress and places migrate into v2, keeping the originals", () => {
   assert.equal(state.continuous, true);
   const [a, b] = state.profiles;
   // v1 completed days are youth plan days, never chronology.
-  assert.deepEqual(a.completed, [1, 3]);
+  assert.equal("completed" in a, false);
   assert.deepEqual(a.completion, {
     bible: [],
     plan: [1, 3],
@@ -170,12 +170,12 @@ test("a failed migration write keeps v1 intact and is retried", () => {
   assert.equal(s.getItem(STATE_KEY), null);
   // The next change (or load) commits the migration together with it.
   setReadingCompletion(s, "reader-a", { mode: "plan", day: 7 }, true);
-  assert.deepEqual(loadProgress(s).profiles[0].completed, [1, 3, 7]);
+  assert.deepEqual(loadProgress(s).profiles[0].completion.plan, [1, 3, 7]);
   assert.equal(s.getItem(PROGRESS_KEY), legacyProgress);
   assert.ok(migrateProgress(s).migrated);
   // Once v2 exists, v1 is no longer read.
   s.setItem(PROGRESS_KEY, "corrupt");
-  assert.deepEqual(loadProgress(s).profiles[0].completed, [1, 3, 7]);
+  assert.deepEqual(loadProgress(s).profiles[0].completion.plan, [1, 3, 7]);
 });
 
 test("a write that does not read back is not treated as saved", () => {
@@ -243,7 +243,7 @@ test("each reader keeps separate places and completion in every track", () => {
     "chrono:OT": ["ot-002"],
     "chrono:NT": ["ot-002"],
   });
-  assert.deepEqual(ra.completed, [4]);
+  assert.deepEqual(ra.completion.plan, [4]);
   assert.ok(isReadingComplete(ra, nt("ot-002")));
   assert.ok(!isReadingComplete(rb, nt("ot-002")));
   assert.ok(isReadingComplete(rb, nt("mark-1")));
@@ -452,7 +452,8 @@ test("v2 backups round trip every track; v1 backups map to the youth plan", () =
   assert.deepEqual(got, want);
   assert.equal(exportBackup(restored), text);
   assert.deepEqual(
-    loadProgress(second).profiles.find((p) => p.id === existing.id)!.completed,
+    loadProgress(second).profiles.find((p) => p.id === existing.id)!.completion
+      .plan,
     [2],
   );
   const v1 = importBackup(

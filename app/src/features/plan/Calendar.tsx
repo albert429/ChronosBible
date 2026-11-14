@@ -8,7 +8,7 @@ import {
   dateFor,
   dayStatus,
 } from "../../core/reading/schedule";
-import type { Reader } from "../profiles/domain/types";
+import type { ReaderProfile } from "../profiles/domain/types";
 import { planIndex } from "./data/client";
 import { useResource } from "../../shared/hooks/useResource";
 import { Loading, LoadError } from "../../shared/ui/Feedback";
@@ -31,7 +31,7 @@ export default function Calendar({
   setPage,
   go,
 }: {
-  member: Reader | null;
+  member: ReaderProfile | null;
   completed: readonly number[];
   start: string;
   current: number;

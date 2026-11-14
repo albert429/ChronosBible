@@ -59,11 +59,7 @@ export function addReader(
 ): { state: ProgressState; reader: ReaderProfile } {
   if (state.profiles.length >= MAX_READERS)
     throw Error("وصلت إلى الحد الأقصى للقراء على هذا الجهاز.");
-  const reader: ReaderProfile = {
-    id,
-    ...body,
-    completed: body.completion.plan,
-  };
+  const reader: ReaderProfile = { id, ...body };
   return {
     state: {
       ...state,
@@ -179,12 +175,7 @@ export function withReadingCompletion(
   const reader = state.profiles.find((p) => p.id === id);
   if (!reader) throw Error("اختر القارئ أولًا.");
   const completion = toggle(reader.completion, location, completed);
-  const profile = stamp(
-    { ...reader, completion, completed: completion.plan },
-    location,
-    completed,
-    date,
-  );
+  const profile = stamp({ ...reader, completion }, location, completed, date);
   return {
     state: {
       ...state,
