@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -41,4 +42,13 @@ test("Study licence publishes exact source bytes and owns only its notice", (t) 
   symlinkSync(source, join(out, "study-data.txt"));
   assert.throws(() => buildStudyLicense({ out, inventory, root }), /symlink/);
   assert.equal(readFileSync(source, "utf8"), "Updated attribution\n");
+  rmSync(join(out, "study-data.txt"));
+  const missing = join(root, "outside-notice.txt");
+  symlinkSync(missing, join(out, "study-data.txt"));
+  assert.throws(() => buildStudyLicense({ out, inventory, root }), /symlink/);
+  assert.equal(
+    existsSync(missing),
+    false,
+    "a dangling link must not create its target",
+  );
 });
