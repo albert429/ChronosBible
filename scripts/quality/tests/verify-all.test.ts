@@ -35,11 +35,15 @@ test("verify:all runs the checks CI runs, in CI's order, and validate keeps its 
       "npm run test:e2e",
     ],
   );
-  // The same commands appear in the workflow, in the same order.
-  const at = (text: string) => workflow.indexOf(text);
-  assert.ok(at("npm run validate") < at("npm run test:python"));
-  assert.ok(at("npm run test:python") < at("py_compile"));
-  assert.ok(at("py_compile") < at("npm run test:e2e"));
+  // CI delegates to the same gate rather than maintaining a second step list.
+  const commands = [...workflow.matchAll(/^ {6}- run: (.+)$/gm)].map(
+    (match) => match[1],
+  );
+  assert.deepEqual(commands, [
+    "npm ci",
+    "npx playwright install --with-deps chromium webkit",
+    "npm run verify:all",
+  ]);
 });
 
 test("Only validate gets the CI audio environment; the browser tests keep PW_PORT", () => {
@@ -52,7 +56,7 @@ test("Only validate gets the CI audio environment; the browser tests keep PW_POR
   assert.equal(python.env.AUDIO_TEST_FIXTURES, undefined);
   assert.equal(browser.env.AUDIO_TEST_FIXTURES, undefined);
   assert.equal(browser.env.PW_PORT, "4470");
-  assert.match(workflow, /AUDIO_TEST_FIXTURES: "1"/);
+  assert.doesNotMatch(workflow, /AUDIO_TEST_FIXTURES|VITE_AUDIO_BASE_URL/);
 });
 
 test("py_compile covers every Python file under scripts/, including the package and tests", () => {

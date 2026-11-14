@@ -4,8 +4,8 @@
 //
 // 1. `npm run validate` in CI's environment (audio fixtures on, a fixture
 //    audio host): format, lint, types, unit tests and the build.
-// 2. The Python tests.
-// 3. `py_compile` over every Python file under scripts/, recursively.
+// 2. Worker integration and import layers.
+// 3. The Python tests and recursive `py_compile` over scripts/.
 // 4. The browser tests (`npm run test:e2e`: Chromium, mobile WebKit, AI build).
 //
 // The faster everyday gate stays `npm run validate`. The first failing step
